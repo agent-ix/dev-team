@@ -1,0 +1,65 @@
+{
+  "skills": [
+    {
+      "name": "coder",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "feature-check",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "feature-feedback",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "feature-request",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "reviewer",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "status-report",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
+      "name": "team-leader",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md",
+        "references/briefs.md",
+        "references/churn.md",
+        "references/harness.md",
+        "references/never.md",
+        "references/workflows.md"
+      ]
+    },
+    {
+      "name": "team-planner",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    }
+  ]
+}

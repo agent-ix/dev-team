@@ -1,0 +1,40 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "dev-team",
+  "version": "0.1.0",
+  "description": "Team planning, leadership, coding, review coordination, feature feedback, and program status workflows.",
+  "author": {
+    "name": "Agent IX",
+    "url": "https://github.com/agent-ix"
+  },
+  "homepage": "https://github.com/agent-ix/dev-team",
+  "repository": "https://github.com/agent-ix/dev-team",
+  "license": "MIT",
+  "keywords": [
+    "team",
+    "planning",
+    "coding",
+    "review",
+    "linear"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Dev Team",
+        "shortDescription": "Coordinate an engineering team from plan to accepted delivery.",
+        "longDescription": "Team planning, leadership, coding, review coordination, feature feedback, and program status workflows.",
+        "developerName": "Agent IX",
+        "category": "Productivity",
+        "capabilities": [
+          "Skills",
+          "Planning"
+        ],
+        "defaultPrompt": [
+          "Plan this feature with the team.",
+          "Lead this team through its ready work.",
+          "Review this PR as the reviewer role."
+        ]
+      }
+    }
+  }
+}

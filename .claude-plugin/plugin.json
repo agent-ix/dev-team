@@ -1,0 +1,11 @@
+{
+  "name": "dev-team",
+  "version": "0.1.0",
+  "description": "Team planning, leadership, coding, review coordination, feature feedback, and program status workflows.",
+  "author": {
+    "name": "Agent IX"
+  },
+  "homepage": "https://github.com/agent-ix/dev-team",
+  "repository": "https://github.com/agent-ix/dev-team",
+  "license": "MIT"
+}

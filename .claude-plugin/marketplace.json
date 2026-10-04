@@ -1,0 +1,15 @@
+{
+  "name": "agent-ix-dev-team",
+  "description": "Agent IX dev-team plugin",
+  "owner": {
+    "name": "Agent IX"
+  },
+  "plugins": [
+    {
+      "name": "dev-team",
+      "source": "./",
+      "description": "Team planning, leadership, coding, review coordination, feature feedback, and program status workflows.",
+      "version": "0.1.0"
+    }
+  ]
+}
