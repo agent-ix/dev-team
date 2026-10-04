@@ -5,6 +5,8 @@ description: Run an acceptance check on a delivered feature against its ticket's
 
 # Feature Check
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 Decide whether a feature meets its acceptance criteria. Measure it yourself.
 
 ## Context

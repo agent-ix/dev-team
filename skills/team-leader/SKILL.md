@@ -5,6 +5,8 @@ description: Run a team as its long-lived team leader. Pull work from the team's
 
 # Team Leader
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 The team leader is a long-running orchestrator for one team or project. The
 owner gives it a large body of work and mostly talks only to it. It runs for
 hours or days. Subagents do all specifying, coding and reviewing, so the
