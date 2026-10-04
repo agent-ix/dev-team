@@ -1,14 +1,22 @@
 # dev-team
 
 [![Agent IX Plugins](https://github.com/agent-ix/agent-plugins/raw/refs/heads/main/assets/agent-ix-plugins.svg)](https://github.com/agent-ix/agent-plugins)
+[![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/k8DVhuYBR2)
 
 Team planning, leadership, coding and review roles, feature coordination, and program status skills.
 
 ## Skills
 
-- `team-planner`, `team-leader`, `coder`, `reviewer`
-- `feature-request`, `feature-feedback`, `feature-check`
-- `status-report`
+| Skill | Action |
+| --- | --- |
+| `team-planner` | Turn an idea into a structured Linear plan with dependencies and ready tickets. |
+| `team-leader` | Coordinate a team's planned work through coding, review, and delivery. |
+| `coder` | Implement an assigned ticket in its worktree and open the PR. |
+| `reviewer` | Run applicable review methods and record findings against a PR and ticket. |
+| `feature-request` | Record a new capability request as a buildable Linear ticket. |
+| `feature-feedback` | Report observed strengths, friction, and gaps after using a feature. |
+| `feature-check` | Check delivered behavior against each ticket acceptance criterion. |
+| `status-report` | Report program progress, blockers, and next actions from Linear evidence. |
 
 `team-planner` and `status-report` use Linear and ix-board for structured project status and blockers. `reviewer` can invoke review methods from `dev-tools` and specification methods from Quoin when installed. `coder` can use `dev-tools:rust-style` for Rust work. Install those plugins when the corresponding methods are needed. The role skills report unavailable methods rather than inventing results.
 
