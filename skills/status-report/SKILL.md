@@ -5,6 +5,8 @@ description: Report evidence-backed status for a Linear initiative, project, or 
 
 # Status Report
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 Produce a report that answers what is complete, what remains, what blocks it, and who owns the next action. Linear is the status record; repository artifacts and GitHub pull requests provide delivery evidence.
 
 ## Gather the record

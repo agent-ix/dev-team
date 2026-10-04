@@ -5,6 +5,8 @@ description: Give structured works / friction / gaps feedback on a feature you h
 
 # Feature Feedback
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 Report what happened when you used a feature, in a fixed shape the builder can act on.
 
 ## Context

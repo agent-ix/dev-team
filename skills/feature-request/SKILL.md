@@ -5,6 +5,8 @@ description: Write a request for a new capability as a Linear ticket that anothe
 
 # Feature Request
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 Request something new. The reader is the agent or team that will build it, and later the agent that will check it. Write for both.
 
 ## Context

@@ -5,6 +5,8 @@ description: Run a PR's review stage as the dedicated reviewer role — run ever
 
 # Reviewer
 
+If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
 The reviewer role is a sibling of `skills/team-leader/` — one skill per role. A
 team leader (or any orchestrator) dispatches one reviewer subagent per tracked
 PR through `/reviewer`, for the review pass and again for dispositions. The
