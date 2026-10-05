@@ -45,6 +45,7 @@ At each layer gate and on the agreed cadence (proposed default: every two weeks)
 
 - Name every active priority goal by project or milestone and set its minimum worker count. The minimum must be at least one while the goal remains active.
 - Treat each goal's minimum as reserved capacity: higher-ranked work gets workers above the minimums and never draws from them.
+- The minimums must add up to no more than the available workers, so name few priority goals; a priority goal can be another team's blockers that this team owns, scoped to that.
 - Agree a short monitoring interval and a no-progress threshold in hours for each priority goal; do not rely only on the two-week program review. Check for a completion or issue state transition on the goal while other work advances.
 - When the threshold is crossed, identify the advancing work by project and ticket name, then rebalance by assigning a worker back to the priority goal. Recheck staffing after the change.
 - Use this same report format on every check: **Goal**; **hours since last progress**; **workers assigned / minimum**; **what took them** (project and ticket names, or “none observed”). Include unavailable history explicitly rather than implying there was no activity.
