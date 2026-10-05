@@ -9,7 +9,7 @@
       "name": "dev-team",
       "source": "./",
       "description": "Team planning, leadership, coding, review coordination, feature feedback, and program status workflows.",
-      "version": "0.1.2"
+      "version": "0.1.3"
     }
   ]
 }
