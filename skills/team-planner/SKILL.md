@@ -41,6 +41,15 @@ Each ticket needs a bounded outcome, acceptance criteria, specification or desig
 
 At each layer gate and on the agreed cadence (proposed default: every two weeks), compare planned versus landed capabilities, open blockers, requirement and test evidence, design defects, change cost across boundaries, and performance against stated budgets. Revisit architecture after a material boundary or quality-goal change. Invoke Quoin's architecture evaluation when available. Convert findings into owned corrective work, adjust downstream blocker edges, and record the decision in the program. Do not invent a numeric health score.
 
+## 6. Protect priority goals from crowding
+
+- Name every active priority goal by project or milestone and set its minimum worker count. The minimum must be at least one while the goal remains active.
+- Agree a short monitoring interval and a no-progress threshold in hours for each priority goal; do not rely only on the two-week program review. Check for a completion or issue state transition on the goal while other work advances.
+- When the threshold is crossed, identify the advancing work by project and ticket name, then rebalance by assigning a worker back to the priority goal. Recheck staffing after the change.
+- Use this same report format on every check: **Goal**; **hours since last progress**; **workers assigned / minimum**; **what took them** (project and ticket names, or “none observed”). Include unavailable history explicitly rather than implying there was no activity.
+- Use `ix-board drift --config ... --evidence ...` when its configured goal signals are available. Count an active issue as worked only when it has recent state-transition, completion, linked-PR, or commit activity. Report stale Coding/In Progress/Review issues as claimed but unworked. Since shared Linear assignees may not identify individual coders, describe `recently worked active issues / minimum workers` as a coverage proxy, not a verified headcount.
+- Otherwise inspect the structured Linear issue, transition, PR, and commit records and report any missing evidence. Never present missing timestamps as proof that work did or did not occur.
+
 ## Output
 
 Report the selected or created hierarchy with IDs, owners, milestones, blocker edges, spec and architecture decisions, ready tickets, and the exact `/team-leader` or `/coder` handoff. Separate observed tracker facts from proposed records and unavailable data. For status-only requests, report the existing focus without creating work.
