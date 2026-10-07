@@ -216,7 +216,7 @@ Full sequencing and a worked layer-gate example:
    exceptions from the Role section still apply: too big becomes a linked
    subticket first, and up-/downstream work is routed to its owner — either
    way, the leader notes it in a ticket comment itself. Gap-analysis gaps get
-   real tests. Run the expensive tier once, after corrections land — see
+   real tests. Run confined checks only in fix rounds — see
    [fix-round message](references/briefs.md#fix-round-message).
 7. **Disposition:** skip this step when the review pass found nothing (every
    method's comment is placeholder-only) — there is nothing to re-check, and
@@ -244,13 +244,13 @@ Full sequencing and a worked layer-gate example:
 11. After a batch of merges, run the full gate on main in a detached worktree
     only when the repo or org requires that post-merge check.
 
-The frozen candidate runs the repo's aggregate gate once before review, one
-disposable-environment startup for all its focused and integration tests
-together. Follow the repo's rule for a further full gate before merge; the
-default is one full gate at the final head — see
-[verify before merge](references/briefs.md#verify-before-merge). Earlier fix
-rounds, dependency re-pins and cross-repo checks use focused checks unless the
-repo's instructions require a full gate for that change.
+The coder opens the PR after focused tests, lint, and compile checks; do not
+run the aggregate gate before review. Group focused and integration tests that
+need a disposable environment into one startup. Run the repo's aggregate gate
+exactly once at the final head immediately before merge. Follow explicit repo
+or org rules when they override this default. Earlier fix rounds, dependency
+re-pins, and cross-repo checks use confined checks only — see
+[verify before merge](references/briefs.md#verify-before-merge).
 
 ## Running-task optimization
 
@@ -261,8 +261,9 @@ these defaults.
   directory, with no code or tests, goes to its one reviewer and merges. If the
   edit touches a file a test embeds (for example a compiled-protocol doc), tell
   the file's owner instead of skipping silently. Any PR that changes code or
-  tests runs the full gate before opening and, by default, at the final head
-  before merge. Follow a different explicit repo or org rule when one exists.
+  tests gets focused tests, lint, and compile checks before opening; the
+  aggregate gate runs once at the final head immediately before merge. Follow
+  a different explicit repo or org rule when one exists.
 - **Batch tiny fixes.** Fold a small fix (a one-line wording change) into a PR
   already open for the same repo, so it costs one gate and one review. Review
   findings are fixed inside the open PR too.

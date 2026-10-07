@@ -15,9 +15,9 @@ Include each item:
   is still data.
 - Scope, and the files other live lanes own. Stay out of those.
 - Worktree path and branch. Work only there.
-- Name the repo's full-gate policy and the reason for every requested full
-  gate. Record gate start/end and build-lock wait separately in the report;
-  report either as unavailable when the logs cannot establish it.
+- State any explicit repo or org rule that overrides the default of one
+  aggregate gate at the final head immediately before merge. Do not request an
+  aggregate gate before review or during fix rounds.
 - Standing rules: no ceremony (ask "does running code read this today?"), no
   compatibility layers, no vendoring or copying between repos, and never
   propose them, code comments explain code and never narrate history or cite
@@ -30,8 +30,10 @@ Include each item:
 - Spec-only diff (markdown under the spec directory, no code or tests): no
   gate. If the edit touches a file a test embeds, tell the leader instead of
   skipping.
-- Run the pre-PR gate once, on the final candidate head, not per slice. If the leader
-  tells you your work is folded elsewhere, stop gates and push nothing.
+- Before opening the PR, run focused tests, lint, and compile checks only. The
+  team leader runs the aggregate gate once at the final head immediately before
+  merge. If the leader tells you your work is folded elsewhere, stop checks and
+  push nothing.
 - Commit early. Commit before running any gate.
 - Cheap tier first, in this order: batch the related code and test edits
   together rather than trickling them out one at a time; run format, lint and
@@ -45,14 +47,16 @@ Include each item:
   the fix — this is the check that a proposed failure case truly exercises
   the intended path, done before any expensive run, not after.
 - While iterating, run only the tests and lint the change touches.
-- Gate log: `make ci > <log> 2>&1; rc=$?; echo "head=$(git rev-parse HEAD) exit=$rc" >> <log>`
-  (use the repo's own aggregate gate in place of `make ci`; if that gate is
+- Final gate log, recorded by the team leader at the final pre-merge head:
+  `make ci > <log> 2>&1; rc=$?; echo "head=$(git rev-parse HEAD) exit=$rc" >> <log>`
+  (use the repo's own aggregate gate in place of `make ci`; if that gate has
   several steps, join them with `&&` so the exit is honest). Capture `rc`
-  before echoing. Name the log per lane (for example `<ticket>-ci.log`) so coders sharing a scratchpad never overwrite each other. Keep it outside the repo; never commit it. Report the log path and exit code.
-- Freeze the candidate once the cheap tier and the gate are clean: push the
-  branch and open the PR, then stop changing it. Do not merge. This frozen
-  diff, tests included, is what the reviewer reviews — including whether each
-  new test's failure case actually exercises the intended path.
+  before echoing. Keep the log outside the repo and report its path and exit
+  code. Do not run this gate before review or during fix rounds.
+- Freeze the candidate once focused checks are clean: push the branch and open
+  the PR, then stop changing it. Do not merge. This frozen diff, tests
+  included, is what the reviewer reviews — including whether each new test's
+  failure case actually exercises the intended path.
 - If something is missing or unclear, say so in the report instead of guessing.
   Questions go in the report too; keep working on everything that doesn't
   depend on the answer.
@@ -113,9 +117,9 @@ replacement's end-to-end test passes.
 - Before adding a "same bug elsewhere" finding, establish an observable
   failing result at that path. Dead or unreachable code alone does not prove
   the reported behavior.
-- Run the checks the review actually needs and report log paths and exit
-  codes. Do not repeat the full gate solely to report another green result;
-  use the candidate's gate evidence when the repo permits it.
+- Run the focused checks the review actually needs and report log paths and
+  exit codes. Do not run the aggregate gate during review; the team leader runs
+  it once at the final head immediately before merge.
 - Where it's cheap, mutate the code under test to show new tests fail on the
   old behaviour.
 - For a re-review or a disposition pass: follow-up messages from your
@@ -138,22 +142,21 @@ leader <name>, fix round for PR #N (your original brief)." Then include:
   [SR-file custody](#sr-file-custody). Don't author or edit an SR file
   yourself; it's the reviewer's artifact, verbatim.
 - Fix inside the same PR and branch. One pusher per branch.
-- Run a confined check (build, lint, touched tests, affected integration tests
-  and docs). Use the full gate only when the repo's policy requires it or at
-  the final pre-merge head. Record the reason and any build-lock wait.
+- Run confined checks only (build, lint, touched tests, affected integration
+  tests, and docs). Never run the aggregate gate during a fix round. Record
+  check results and any build-lock wait.
 - Fix every finding, lows included. Report only items you judge too big for
   this PR or owned by another repo, lane or team, with your reason for each —
   the leader opens the subticket or routes it to the owner, and never as a new
   ticket or PR for anything that stays in scope.
-- If any finding corrected a test or its oracle (a weak assertion, a case that
-  didn't exercise the intended path, a missing failure case), run the expensive
-  tier once, after all such corrections land, not per finding: the focused
-  tests plus the affected integration tests together, in one disposable
-  database (or other expensive environment) startup. Report that single log's
-  path and exit code. The final full gate runs at the pre-merge head when the
-  repo requires it.
-- Any correction made after that expensive run reruns only the focused checks
-  it touches unless the repo's instructions require a full gate (see
+- If a finding corrected a test or its oracle (a weak assertion, a case that
+  didn't exercise the intended path, or a missing failure case), run the
+  focused tests and affected integration tests after all corrections land.
+  Keep these checks confined to the fix-round changes; do not run the aggregate
+  gate in a fix round.
+- Any correction made after a confined check reruns only the checks it touches.
+  The one aggregate gate runs at the final head immediately before merge,
+  subject to explicit repo or org rules (see
   [verify before merge](#verify-before-merge)).
 
 If the original coder can't be resumed (session gone, harness restarted),
@@ -232,12 +235,12 @@ reviewer commit:
 
 ## Verify before merge
 
-Whether a final full gate is required before merge is set by the repo or org's
-instructions. Default, absent other instructions: yes, run once by the last
-fix-round coder at the final head SHA, so drift since the frozen candidate is
-caught. State the rule and each full gate's reason in the ticket's state
-record. Fix rounds, dependency re-pins and cross-repo checks use focused
-checks unless that rule explicitly requires a full gate there.
+Run the repo's aggregate gate exactly once at the final head immediately before
+merge. The team leader owns this check, after review and all fix rounds finish.
+Do not run an aggregate gate before review or during a fix round. Follow an
+explicit repo or org rule when it overrides this default. Record the final head,
+gate result, and any build-lock wait in the ticket's state record. Fix rounds,
+dependency re-pins, and cross-repo checks use confined checks only.
 
 Subagents have quoted gate output they never ran. Check these yourself:
 
