@@ -88,6 +88,31 @@ One leader can run several teams. Treat the argument as a list.
    each ticket's spec state before queuing it — see [Workflows](#workflows).
 5. Order the queue: land open PRs first, then unblocked tickets in plan order.
 
+## Priority-goal PRs
+
+Use the active priority goals and minimum worker counts established in the
+team's plan (see `/team-planner`). For each open PR serving one of those goals:
+
+- Keep its assigned worker on that PR from the first push through merge. A fix
+  round, disposition pass, gate wait, or build-lock wait does not release the
+  worker to another ticket or PR. Preserve the goal's minimum worker count
+  while other work advances.
+- Require a report immediately after each worker stage finishes, including a
+  fix round or disposition pass, before that worker takes another task. The
+  report names the PR, head SHA, completed stage, result, and next needed
+  stage. On receipt, start that next stage promptly; if it cannot start,
+  record the blocker and the wait start time. The leader records and advances
+  its own verification and gate stages the same way.
+- Track the current stage and timestamp of its last meaningful change in the
+  state record. A new commit, review or disposition result, gate start or
+  result, merge, or explicit blocker change counts; a routine status message
+  does not reset the clock. Reconcile open PRs and stage timestamps against
+  the tracker and GitHub at each work cycle, so an absent worker report cannot
+  leave a finished stage marked in progress indefinitely.
+- Give its required aggregate gate the next turn on a shared build lock, ahead
+  of lower-priority work. Do not interrupt a gate already running. Record when
+  the PR began waiting and when its gate starts.
+
 ## Dashboard work reports
 
 When a session monitor is assigned to this lead, report its explicit scope after
@@ -177,6 +202,11 @@ Full sequencing and a worked layer-gate example:
 [references/workflows.md](references/workflows.md).
 
 ## Per-ticket loop
+
+Every worker reports a completed PR stage before starting another task. The
+leader starts the next stage on receipt, or records the blocker and wait start
+time. Apply the stronger assignment and status rules above to priority-goal
+PRs.
 
 1. **Worktree** off fresh main, one per ticket, inside `<worktrees>` (the
    org's worktree directory):
@@ -346,6 +376,10 @@ order, falling through only when the previous step is unavailable:
   code landed, not PRs merged or bookkeeping — state production code landed
   separately from test or matrix work in progress, and name what's causing any
   delay (environment setup, semantic review, or something else).
+- In every status report, list each open priority-goal PR with its current
+  stage and elapsed time since the last meaningful change. Include its next
+  stage or blocker and any build-lock wait. If a timestamp is unavailable,
+  say so rather than implying recent progress.
 - Plain English, framed as the use case. Numbers say what they count.
 - To ask: full context, one decision at a time, options, and a recommendation.
 - When the owner is away, keep landing until the epic is done. Queue questions

@@ -57,6 +57,10 @@ Include each item:
   the PR, then stop changing it. Do not merge. This frozen diff, tests
   included, is what the reviewer reviews — including whether each new test's
   failure case actually exercises the intended path.
+- For a priority-goal PR, report the PR number, head SHA, and completed stage
+  immediately after the first push and after every later fix round. Do not
+  take another task until the leader reports that this PR has merged, including
+  while waiting for review, disposition, or the final gate.
 - If something is missing or unclear, say so in the report instead of guessing.
   Questions go in the report too; keep working on everything that doesn't
   depend on the answer.
@@ -120,6 +124,9 @@ replacement's end-to-end test passes.
 - Run the focused checks the review actually needs and report log paths and
   exit codes. Do not run the aggregate gate during review; the team leader runs
   it once at the final head immediately before merge.
+- Report the completed review to the leader immediately, with the PR, reviewed
+  SHA, findings or clean result, and next needed stage. Wait for the leader's
+  next instruction before taking another task on a priority-goal PR.
 - Where it's cheap, mutate the code under test to show new tests fail on the
   old behaviour.
 - For a re-review or a disposition pass: follow-up messages from your
@@ -158,6 +165,9 @@ leader <name>, fix round for PR #N (your original brief)." Then include:
   The one aggregate gate runs at the final head immediately before merge,
   subject to explicit repo or org rules (see
   [verify before merge](#verify-before-merge)).
+- Report the completed fix round to the leader immediately after pushing,
+  with the PR, head SHA, check results, and remaining findings. Wait for the
+  leader's next instruction before taking another task.
 
 If the original coder can't be resumed (session gone, harness restarted),
 dispatch a new coder instead: give it the original brief, the PR branch, and
@@ -205,6 +215,9 @@ PR #<N> (your original brief)." Then include:
   mergeable.
 - State plainly whether the PR is mergeable now that dispositions are posted —
   it isn't, while any finding in this round's dispositions reads `still-open`.
+- Report the completed disposition pass to the leader immediately, with the
+  PR, reviewed SHA, outcome, and next needed stage. Wait for the leader's next
+  instruction before taking another task on a priority-goal PR.
 
 If the original reviewer can't be resumed, dispatch a new reviewer instead:
 give it the PR, the fix-round commits, the round number, and the original SR
