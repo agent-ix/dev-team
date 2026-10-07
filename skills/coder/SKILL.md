@@ -1,6 +1,6 @@
 ---
 name: coder
-description: Run a ticket's coding stage as the dedicated coder role. Work in one assigned worktree, follow the repo's own conventions, run the cheap checks first, then the gate once on the final head, open the PR, freeze it, and report. Later fix rounds fix every review finding inside the same PR. Use when invoked as /coder, or when dispatched as the coder subagent for a ticket (for example from `/team-leader`).
+description: Run a ticket's coding stage as the dedicated coder role. Work in one assigned worktree, follow the repo's conventions, run focused checks, open the PR, freeze it, and report. Fix review findings inside the same PR. The aggregate gate runs once at the final head immediately before merge. Use when invoked as /coder or dispatched by `/team-leader`.
 ---
 
 # Coder
@@ -29,27 +29,21 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 - Each new failing test must fail for the intended reason: its assertion names the targeted behaviour, not a setup error or compile error. Where cheap, revert the code under test to confirm red on the old behaviour and green on the fix.
 - While iterating, run only the tests and lint the change touches.
 
-## 3. Gate once
+## 3. Focused checks before review
 
-Run the repo's aggregate gate once, on the final head, not per slice.
+Before opening the PR, run only the focused tests, lint, and compile checks for the change. Do not run the aggregate gate before review. The team leader runs the aggregate gate once at the final head immediately before merge, subject to explicit repo or org rules.
 
 - Markdown-only spec diff, no code or tests: no gate. If the edit touches a file a test embeds, tell the leader instead of skipping.
-- The log stays in the scratchpad, outside the repo, named per lane (`<ticket>-ci.log`). Capture the exit code before echoing it:
-
-```bash
-make ci > <log> 2>&1; rc=$?; echo "head=$(git rev-parse HEAD) exit=$rc" >> <log>
-```
-
-Use the repo's own gate in place of `make ci`. Join a multi-step gate with `&&` so the exit is honest. Never quote output you did not produce.
+- Record the focused check commands and results for the leader. Never report checks you did not run.
 
 ## 4. Freeze and report
 
-1. Push the branch and open the PR (`gh pr create --head <branch>`). Never merge.
+1. After focused tests, lint, and compile pass, push the branch and open the PR (`gh pr create --head <branch>`). Never run the aggregate gate before review and never merge.
 2. Stop changing the branch. This frozen diff is what the one reviewer reviews.
 3. Delete your build dirs (`target/`, `*-target/`, `node_modules/`). Leave the worktree for the leader.
 4. Report:
    - PR number and head SHA
-   - Gate log path and exit code
+   - Focused check commands, log path, and exit code; note that the team leader owns the final aggregate gate
    - Done, found, left undone
    - Decisions the leader or owner must make
    - Lessons worth remembering for later tickets (optional)
@@ -64,7 +58,7 @@ The leader resumes you with the reviewer's findings. The reviewer's findings are
 - Report only items too big for this PR or owned by another repo, with your reason. The leader files those.
 - A gap-analysis gap gets a real test.
 - Copy each reviewer SR file, from the scratchpad path in the message, over the matching file under `reviews/` in your fix commit. Never write or edit an SR file yourself.
-- Confined check only: build, lint and the touched tests. Run the full gate only if docs or generated artifacts changed, or a finding corrected a test or its oracle. Then run the focused and integration tests once, after all corrections land, plus the aggregate gate, and report that one log.
+- Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change. The team leader runs it once at the final head immediately before merge, subject to explicit repo or org rules.
 
 ## Output
 
