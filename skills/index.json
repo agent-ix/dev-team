@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "coder",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "files": [
         "SKILL.md"
       ]
@@ -44,7 +44,7 @@
     },
     {
       "name": "team-leader",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "files": [
         "SKILL.md",
         "references/briefs.md",
