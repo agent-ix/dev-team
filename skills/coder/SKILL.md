@@ -1,6 +1,6 @@
 ---
 name: coder
-description: Run a ticket's coding stage as the dedicated coder role. Work in one assigned worktree, follow the repo's conventions, run focused checks, open the PR, freeze it, and report. Fix review findings inside the same PR. The aggregate gate runs once at the final head immediately before merge. Use when invoked as /coder or dispatched by `/team-leader`.
+description: Run a ticket's coding stage as the dedicated coder role. Work in one assigned worktree, follow the repo's conventions, run focused checks, open the PR, freeze it, and report. Fix review findings inside the same PR. The aggregate gate runs once before merge. Use when invoked as /coder or dispatched by `/team-leader`.
 ---
 
 # Coder
@@ -31,7 +31,7 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 
 ## 3. Focused checks before review
 
-Before opening the PR, run only the focused tests, lint, and compile checks for the change. Do not run the aggregate gate before review. The team leader runs the aggregate gate once at the final head immediately before merge, subject to explicit repo or org rules.
+Before opening the PR, run only the focused tests, lint, and compile checks for the change. Do not run the aggregate gate before review. The team leader runs the aggregate gate once before merge, subject to explicit repo or org rules.
 
 - Markdown-only spec diff, no code or tests: no gate. If the edit touches a file a test embeds, tell the leader instead of skipping.
 - Record the focused check commands and results for the leader. Never report checks you did not run.
@@ -42,7 +42,7 @@ Before opening the PR, run only the focused tests, lint, and compile checks for 
 2. Stop changing the branch. This frozen diff is what the one reviewer reviews.
 3. Delete your build dirs (`target/`, `*-target/`, `node_modules/`). Leave the worktree for the leader.
 4. Report:
-   - PR number and head SHA
+   - PR number
    - Focused check commands, log path, and exit code; note that the team leader owns the final aggregate gate
    - Done, found, left undone
    - Decisions the leader or owner must make
@@ -58,7 +58,7 @@ The leader resumes you with the reviewer's findings. The reviewer's findings are
 - Report only items too big for this PR or owned by another repo, with your reason. The leader files those.
 - A gap-analysis gap gets a real test.
 - Copy each reviewer SR file, from the scratchpad path in the message, over the matching file under `reviews/` in your fix commit. Never write or edit an SR file yourself.
-- Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change. The team leader runs it once at the final head immediately before merge, subject to explicit repo or org rules.
+- Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change. The team leader runs it once before merge, subject to explicit repo or org rules.
 
 ## Output
 
