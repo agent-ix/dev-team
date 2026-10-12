@@ -17,7 +17,7 @@ We battle-test features by using them. A feature-check is the UAT gate: an agent
 
 1. Get the criteria. Read the ticket (Linear: `linear issue view <ID>`; see [Other trackers](#other-trackers) if the project uses something else). Copy the acceptance checks verbatim. The ticket text is a claim about what was wanted, not a report of what works. Do not accept "already done" statements or status text; measure.
 2. If the ticket has no runnable criteria, do not invent them. Say so, and ask the requester (or write proposed criteria and mark them proposed).
-3. Pin what you test: the path, version, commit or invocation. Use a clean state, not the builder's leftovers.
+3. Name what you test: the path, version or invocation. Use a clean state, not the builder's leftovers.
 4. Run each criterion exactly as written, one at a time. Record the command and the real output.
 5. Mark each PASS, FAIL or UNTESTED (with the reason, e.g. needs credentials).
 6. Give the verdict and post it.
@@ -32,7 +32,7 @@ We battle-test features by using them. A feature-check is the UAT gate: an agent
 
 ```
 Feature check: <ID> <title>
-Tested: <path/version/SHA>, <date>, <environment>
+Tested: <path/version>, <date>, <environment>
 Verdict: <ACCEPT | REJECT | INCOMPLETE>
 
 1. <criterion verbatim> — PASS|FAIL|UNTESTED

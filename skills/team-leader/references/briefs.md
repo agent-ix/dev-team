@@ -16,7 +16,7 @@ Include each item:
 - Scope, and the files other live lanes own. Stay out of those.
 - Worktree path and branch. Work only there.
 - State any explicit repo or org rule that overrides the default of one
-  aggregate gate at the final head immediately before merge. Do not request an
+  aggregate gate before merge. Do not request an
   aggregate gate before review or during fix rounds.
 - Standing rules: no ceremony (ask "does running code read this today?"), no
   compatibility layers, no vendoring or copying between repos, and never
@@ -31,8 +31,7 @@ Include each item:
   gate. If the edit touches a file a test embeds, tell the leader instead of
   skipping.
 - Before opening the PR, run focused tests, lint, and compile checks only. The
-  team leader runs the aggregate gate once at the final head immediately before
-  merge. If the leader tells you your work is folded elsewhere, stop checks and
+  team leader runs the aggregate gate once before merge. If the leader tells you your work is folded elsewhere, stop checks and
   push nothing.
 - Commit early. Commit before running any gate.
 - Cheap tier first, in this order: batch the related code and test edits
@@ -47,8 +46,8 @@ Include each item:
   the fix — this is the check that a proposed failure case truly exercises
   the intended path, done before any expensive run, not after.
 - While iterating, run only the tests and lint the change touches.
-- Final gate log, recorded by the team leader at the final pre-merge head:
-  `make ci > <log> 2>&1; rc=$?; echo "head=$(git rev-parse HEAD) exit=$rc" >> <log>`
+- Final gate log, recorded by the team leader before merge:
+  `make ci > <log> 2>&1; rc=$?; echo "exit=$rc" >> <log>`
   (use the repo's own aggregate gate in place of `make ci`; if that gate has
   several steps, join them with `&&` so the exit is honest). Capture `rc`
   before echoing. Keep the log outside the repo and report its path and exit
@@ -61,7 +60,7 @@ Include each item:
   Questions go in the report too; keep working on everything that doesn't
   depend on the answer.
 - Delete build dirs when done. End with a report in this shape:
-  - PR number and head SHA
+  - PR number
   - Gate log path and exit code
   - Done, found, left undone
   - Decisions the leader or owner must make
@@ -119,7 +118,7 @@ replacement's end-to-end test passes.
   the reported behavior.
 - Run the focused checks the review actually needs and report log paths and
   exit codes. Do not run the aggregate gate during review; the team leader runs
-  it once at the final head immediately before merge.
+  it once before merge.
 - Where it's cheap, mutate the code under test to show new tests fail on the
   old behaviour.
 - For a re-review or a disposition pass: follow-up messages from your
@@ -155,7 +154,7 @@ leader <name>, fix round for PR #N (your original brief)." Then include:
   Keep these checks confined to the fix-round changes; do not run the aggregate
   gate in a fix round.
 - Any correction made after a confined check reruns only the checks it touches.
-  The one aggregate gate runs at the final head immediately before merge,
+  The one aggregate gate runs before merge,
   subject to explicit repo or org rules (see
   [verify before merge](#verify-before-merge)).
 
@@ -175,8 +174,8 @@ PR #<N> (your original brief)." Then include:
   ad hoc re-check.
 - The round number (1 for the first disposition pass on this PR, 2 for the
   second, and so on — count actual disposition dispatches, not fix rounds)
-  and the fix-round commit(s) or head SHA to check the findings against.
-  Both go in the `reviewer-dispositions` marker as `round=` and `reviewed=`.
+  and the fix-round commit(s) to check the findings against. The round goes in
+  the `reviewer-dispositions` marker as `round=`.
 - The path to the SR files last committed under `reviews/` (or, on a second
   or later round, the reviewer's own scratchpad copy from the prior round) and
   a fresh scratchpad path to write the updated ones to — see
@@ -186,7 +185,7 @@ PR #<N> (your original brief)." Then include:
   `still-open`, plus every finding that has no outcome yet at all — from
   `## Findings` and from every `## New findings` section, including one added
   by the previous round — against the current code, and decide an explicit
-  outcome for each (`fixed <sha>` / `rejected: <reason>` /
+  outcome for each (`fixed` / `rejected: <reason>` /
   `deferred: <reason>` / `accepted-no-change` / `still-open: <reason>` for one
   the fix round didn't actually resolve). Add a new disposition row for each —
   never edit an earlier round's row, `still-open` included; a later row simply
@@ -196,7 +195,7 @@ PR #<N> (your original brief)." Then include:
   `FND-NNN` sequence.
 - Post the `reviewer-dispositions` comment(s) to the ticket, one per artifact
   that had findings, every round — with no rows if nothing needed checking
-  that round — with this round's `round=` and `reviewed=` in the marker.
+  that round — with this round's `round=` in the marker.
   Dedup keys on id + round, so an earlier round's comment never blocks this
   one.
 - Report any new or `still-open` finding from this pass separately; the leader
@@ -235,41 +234,36 @@ reviewer commit:
 
 ## Verify before merge
 
-Run the repo's aggregate gate exactly once at the final head immediately before
-merge. The team leader owns this check, after review and all fix rounds finish.
-Do not run an aggregate gate before review or during a fix round. Follow an
-explicit repo or org rule when it overrides this default. Record the final head,
-gate result, and any build-lock wait in the ticket's state record. Fix rounds,
+Run the repo's aggregate gate exactly once before merge. The team leader owns
+this check, after review and all fix rounds finish. Do not run an aggregate
+gate before review or during a fix round. Follow an explicit repo or org rule
+when it overrides this default. Record the gate result and any build-lock wait in the ticket's state record. Fix rounds,
 dependency re-pins, and cross-repo checks use confined checks only.
 
 Subagents have quoted gate output they never ran. Check these yourself:
 
-1. The gate log's last line carries the PR head SHA and `exit=0`. A log from
-   a shared target dir is not evidence.
-2. `gh pr view <N> --json headRefOid,mergeable` matches that SHA and is
-   mergeable.
+1. The gate log's last line carries `exit=0`. A log from a shared target dir
+   is not evidence.
+2. `gh pr view <N> --json mergeable` shows the PR is mergeable.
 3. If main moved since the gate ran, compare
    `git diff --name-only <base> origin/main` (`<base>` is
    `git merge-base <head> origin/main`) against the PR's files. Overlap means
    rebase and rerun the confined check — send the rebase to the branch's
    coder; one pusher per branch.
 4. A PR outside a spec-only directory has the full-gate evidence required by
-   the repo's policy, including a final-head run when required. Tests can
+   the repo's policy. Tests can
    embed docs. A markdown-only spec PR that touches no embedded file skips
    the gate.
 5. The ticket's review comments carry `/reviewer`'s markers, matched to
-   *this* PR and *this* head, not an older review left on the same ticket:
-   a `<!-- reviewer ... pr=<repo>#<N> reviewed=<sha> ... -->` comment per
-   method that ran, where `pr=` is this PR and `reviewed=` is the sha the
-   review pass actually reviewed (the frozen candidate, not necessarily the
-   final head). Required always, clean review included — a placeholder-only
+   *this* PR, not an older review left on the same ticket:
+   a `<!-- reviewer ... pr=<repo>#<N> ... -->` comment per
+   method that ran, where `pr=` is this PR. Required always, clean review included — a placeholder-only
    clean review still needs its per-method `reviewer` markers and its
    committed SR files (item 6); what a clean review skips is only the
    *dispositions* requirement below, since there's nothing to re-check and no
    disposition pass runs. Where the review found real findings, additionally
    require, for every `SR-NNN` named in those review markers, a `<!--
-   reviewer-dispositions ... id=SR-NNN round=<N> reviewed=<sha> ... -->`
-   comment whose `reviewed=` is at or after the last fix-round commit —
+   reviewer-dispositions ... id=SR-NNN round=<N> ... -->` comment,
    matched by the SR id, not by the ticket alone, so a disposition on a
    different artifact never satisfies this one. Missing a required marker
    means the reviewer skipped its role skill or a round is still outstanding —
@@ -284,5 +278,3 @@ Subagents have quoted gate output they never ran. Check these yourself:
    by a later `fixed`/`rejected`/`deferred`/`accepted-no-change` row is fine;
    one with no later row, or whose latest row is still `still-open`, means a
    fix round is still owed, not a PR ready to merge.
-
-Then merge with `--match-head-commit <sha>`.

@@ -11,19 +11,19 @@ or a quiet window is a prompt to investigate, not proof of churn.
 In the team's existing state record, keep one row per active PR and a dated
 retrospective below it. The state-record location remains the organization's
 choice. A row names the owning Linear ticket, repository and PR, coder and
-reviewer, current head SHA, the last reviewed SHA, and the dependency head (if
-any). Update it at dispatch, gate completion, review/disposition, re-pin, head
-change and merge, not from chat memory at retrospective time.
+reviewer, and the dependency (if any). Update it at dispatch, gate completion,
+review/disposition, re-pin and merge, not from chat memory at retrospective
+time.
 
 For the window since the last retrospective, record:
 
 | Measure | Source and counting rule |
 | --- | --- |
 | Merges per active hour | Owned PRs merged in the window divided by lead active hours; also show the raw count. |
-| Full gates per PR | Each aggregate gate start, with SHA, reason, duration and result. Count repeats on the same PR separately. |
+| Full gates per PR | Each aggregate gate start, with reason, duration and result. Count repeats on the same PR separately. |
 | Fix rounds per PR | Each coder fix-round dispatch after a `/reviewer` finding or disposition. |
 | Build-lock wait | Wait from requesting the lock to acquiring it, summed per PR; use the lock log or recorded timestamps. |
-| Re-pins and dependency head moves | Count each consumer pin edit and each observed upstream head SHA change separately. Record the trigger. |
+| Re-pins | Count each consumer pin edit. Record the trigger. |
 | Agent time per finding | Coder fix-round elapsed active time divided by findings addressed in that round; show numerator and denominator. Exclude recorded lock wait and other known idle time. |
 | Messages per ruling | Count decision-request and answer messages needed to settle each ruling, and record whether it changed a dispatched brief. |
 
@@ -43,19 +43,12 @@ owner. Do not use a fixed throughput threshold across projects.
   ticket churn; it does not supply these per-PR measures.
 - Use `gh pr list -R <owner/repo> --state merged --json number,mergedAt,url`
   for merge times and `gh pr view <N> -R <owner/repo> --json
-  headRefOid,commits,mergedAt,url` for the current PR. Attribute a PR to the
-  lead only from its ticket/state record, not the shared GitHub account. A
-  current commit list cannot reconstruct every old head.
-- When head churn matters, read the PR's paginated GitHub issue timeline with
-  `gh api --paginate repos/<owner>/<repo>/issues/<N>/timeline`. Its
-  `head_ref_force_pushed` events corroborate force pushes. Record ordinary
-  observed head SHA changes at each dependency check in the state record;
-  do not call a force-push count the total head-move count.
+  commits,mergedAt,url` for the current PR. Attribute a PR to the lead only
+  from its ticket/state record, not the shared GitHub account.
 - Use `linear issue comment list <TICKET> --json` for the `/reviewer` and
-  `reviewer-dispositions` markers. Their PR, reviewed SHA and round identify
-  the real review sequence. GitHub review counts are not the source of record.
-- Read each lane's gate log and the build-lock log for timestamps, head and
-  result. If the lock script does not record request/acquisition times, have
+  `reviewer-dispositions` markers. Their PR and round identify the real review
+  sequence. GitHub review counts are not the source of record.
+- Read each lane's gate log and the build-lock log for timestamps and result. If the lock script does not record request/acquisition times, have
   the coder record those two times in its report. Count re-pin edits and
   ruling messages from the state record and linked Linear or leader messages.
 
@@ -87,13 +80,13 @@ that lead instead of repeatedly rewriting a local brief for it.
 ## Agent conflicts
 
 Before dispatch and at each retrospective, compare every active agent's
-ticket, branch, expected files and dependency head against live lanes and open
+ticket, branch, expected files and dependency against live lanes and open
 PRs. Check actual changed files with `gh pr view <N> -R <owner/repo> --json
-files,headRefOid`. A shared branch has one pusher. If two lanes claim the same
+files`. A shared branch has one pusher. If two lanes claim the same
 files or requirement block, pause the later dispatch, identify the owning
 ticket and give that owner the edit; resume the other lane only after its
 scope no longer overlaps. If another lead owns the ticket, route the work to
 that lead and keep the dependency visible in the state record. Reconcile
-different head assumptions or incompatible rulings once before more re-pins,
+incompatible rulings once before more re-pins,
 gates or briefs. Escalate an unresolved cross-team ownership or protocol
 choice to the owner with the competing claims and a recommendation.

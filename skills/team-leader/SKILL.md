@@ -228,14 +228,14 @@ Full sequencing and a worked layer-gate example:
    finding with no outcome yet (including one the previous round raised), and
    adds a new row for each — never edits an earlier round's row. It posts
    dispositions to the ticket with its `reviewer-dispositions` markers, tagged
-   with that round number and the sha it reviewed. A new finding it raises
+   with that round number. A new finding it raises
    goes under its own section in the same SR file and back to the coder
    (step 6). A finding a fix round didn't resolve gets `still-open` instead.
    Dispatch the next disposition pass as round 2, 3, … after each further fix
    round, repeating until every finding's latest outcome is neither
    `still-open` nor missing and the reviewer reports the PR mergeable.
 8. **Verify yourself** before merging. See [verification](references/briefs.md#verify-before-merge).
-9. **Merge:** `gh pr merge <N> --squash --match-head-commit <sha>`, adding
+9. **Merge:** `gh pr merge <N> --squash`, adding
    `--admin` only if the org's instructions allow admin merge after review;
    otherwise merge normally or queue for the required approver.
 10. **Close out:** set the tracker state (Done, or back to backlog with a
@@ -247,7 +247,7 @@ Full sequencing and a worked layer-gate example:
 The coder opens the PR after focused tests, lint, and compile checks; do not
 run the aggregate gate before review. Group focused and integration tests that
 need a disposable environment into one startup. Run the repo's aggregate gate
-exactly once at the final head immediately before merge. Follow explicit repo
+exactly once before merge. Follow explicit repo
 or org rules when they override this default. Earlier fix rounds, dependency
 re-pins, and cross-repo checks use confined checks only — see
 [verify before merge](references/briefs.md#verify-before-merge).
@@ -262,7 +262,7 @@ these defaults.
   edit touches a file a test embeds (for example a compiled-protocol doc), tell
   the file's owner instead of skipping silently. Any PR that changes code or
   tests gets focused tests, lint, and compile checks before opening; the
-  aggregate gate runs once at the final head immediately before merge. Follow
+  aggregate gate runs once before merge. Follow
   a different explicit repo or org rule when one exists.
 - **Batch tiny fixes.** Fold a small fix (a one-line wording change) into a PR
   already open for the same repo, so it costs one gate and one review. Review
@@ -274,7 +274,7 @@ these defaults.
 - **Stop a coder whose work is folded elsewhere.** Message it at once to stop
   gates and push nothing, so no gate time goes to a PR about to close.
 - **Gate at the required checkpoints, not per slice.** Record each gate's
-  reason and head. Capture the exit code before echoing it, so the log's last
+  reason. Capture the exit code before echoing it, so the log's last
   line is honest (see the coder brief).
 
 ## Detect and resolve churn
