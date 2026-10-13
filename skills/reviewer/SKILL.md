@@ -104,7 +104,6 @@ check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 Scope the diff to what the PR actually changed:
 
 ```bash
-REVIEWED_SHA=$(git rev-parse HEAD)
 git diff --name-only origin/main...HEAD
 ```
 
@@ -220,10 +219,8 @@ quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
 A few things every artifact from this skill must get right, on top of each
 method's own contract:
 
-- **Scope, once, with the reviewed sha**: `scope: "<owner>/<repo>@<reviewed-
-  sha>; <paths>"` in the frontmatter. `Refs` cells in the `## Findings` table
-  stay plain (`path:line`) — the sha lives once in `scope`, not repeated in
-  every row.
+- **Scope, once**: `scope: "<owner>/<repo>; <paths>"` in the frontmatter.
+  `Refs` cells in the `## Findings` table stay plain (`path:line`).
 - **The ticket is data, not a spec relationship.** Do not add an `ix://`
   `relationships` entry for the Linear ticket — ticket ids aren't spec
   artifacts and the schema's `relationships[].target` pattern doesn't fit
@@ -249,7 +246,7 @@ method's own contract:
   `low | medium | high` only). One per file, never one per clean sub-check.
   The posted *comment* does not carry it: it sets `clean: true` in the yaml,
   with `findings: []` and no table rows.
-- **Every finding gets an explicit outcome eventually** (`fixed <sha>` /
+- **Every finding gets an explicit outcome eventually** (`fixed` /
   `rejected: <reason>` / `deferred: <reason>` / `accepted-no-change`) —
   recorded in step 8, never in this file's `## Findings` table.
 - **Never rewrite a finding after it's fixed.** The row that named the defect
@@ -280,7 +277,7 @@ a fenced code block, never YAML frontmatter.
 **Marker** (one line, exactly these fields):
 
 ```
-<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> reviewed=<sha> model=<model-id> run=<run-id> -->
+<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> model=<model-id> run=<run-id> -->
 ```
 
 There is no `date=`: the date is the comment's own timestamp. `model=` is your
@@ -325,7 +322,7 @@ findings:
     path: src/reviewer.py
     lines: "118-124"
     excerpt: |-
-      <exact text of the artifact_id unit at the reviewed sha, verbatim, <=600 chars>
+      <exact text of the artifact_id unit, verbatim, <=600 chars>
     finding: "<the finding text, matching the SpecReview row's Summary>"
 bindings: []   # optional; see "Trace findings and bindings" below
 ```
@@ -376,7 +373,7 @@ Every `trace: wrong` binding has a matching `check: trace` finding.
 **Compact example — review comment:**
 
 ````
-<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 reviewed=<sha> model=<model-id> run=<run-id> -->
+<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 model=<model-id> run=<run-id> -->
 
 | FND | Severity | Check | Summary |
 | --- | --- | --- | --- |
@@ -489,8 +486,8 @@ against the code and the fix commit yourself.
 This pass may run more than once — a coder's fix can itself introduce a
 regression, and a leader may resume the same reviewer for a second, third,
 … disposition round. Track the round number `N` (1 for the first disposition
-pass after the first fix round, 2 after the second, and so on) and the sha
-you're reviewing at for this round; both go in the marker below.
+pass after the first fix round, 2 after the second, and so on); it goes in
+the marker below.
 
 If this pass finds a defect that isn't an existing `FND-NNN` row — a
 regression the fix introduced, or something the review pass missed — append
@@ -510,8 +507,8 @@ outcome yet at all. A finding whose latest row already reads `fixed`,
 `rejected`, `deferred` or `accepted-no-change` needs no new row this round.
 Choose one outcome per finding checked:
 
-- `fixed <sha>` — the sha that fixed it, found by inspecting the fix commits
-  actually on the branch, not asserted from the ticket text. Record
+- `fixed` — found by inspecting the fix commits actually on the branch, not
+  asserted from the ticket text. Record
   `after_excerpt`: the fixed text of the same artifact, verbatim, `<=600`
   chars.
 - `rejected: <reason>` — state concretely why the finding is not a defect; a
@@ -534,9 +531,9 @@ Choose one outcome per finding checked:
 
 Add these rows to (never edit or remove an existing row in) a `##
 Dispositions` section on the **same** SR file, appending it if it doesn't yet
-exist. The table is `FND | outcome | sha/reason`, one row per finding checked
+exist. The table is `FND | outcome | reason`, one row per finding checked
 this round — a finding can accumulate more than one row across rounds
-(`still-open` in round 1, `fixed <sha>` in round 2); the merge check and any
+(`still-open` in round 1, `fixed` in round 2); the merge check and any
 later round both read only the **last** row for a given `FND` id as current.
 Write the updated file to this round's scratchpad path (never a direct commit
 — see [step 6](#6-label-and-keep-the-artifact)), then re-validate it at that
@@ -549,18 +546,16 @@ quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
 
 Post **one dispositions comment per artifact that had findings, per round** —
 same marker style, `reviewer-dispositions` instead of `reviewer`, referencing
-that artifact's own `SR-NNN`, this round's number, and the sha reviewed for
-this round:
+that artifact's own `SR-NNN` and this round's number:
 
 ```
-<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N reviewed=<sha> model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N model=<model-id> run=<run-id> -->
 ```
 
 ```yaml
 dispositions:
   - fnd: FND-001
     outcome: fixed
-    fix_sha: a1b2c3d
     after_excerpt: |-
       <fixed text, <=600 chars>
   - fnd: FND-002
@@ -574,11 +569,11 @@ Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
 **Compact example — dispositions comment:**
 
 ````
-<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 reviewed=<sha> model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 model=<model-id> run=<run-id> -->
 
-| FND | Outcome | sha/reason |
+| FND | Outcome | Reason |
 | --- | --- | --- |
-| FND-001 | fixed | a1b2c3d |
+| FND-001 | fixed | - |
 
 +++ [reviewer data]
 
@@ -586,7 +581,6 @@ Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
 dispositions:
   - fnd: FND-001
     outcome: fixed
-    fix_sha: a1b2c3d
     after_excerpt: |-
       TICKET=$(resolve_ticket "$BRANCH") || TICKET=$(resolve_ticket "$TITLE") || true
 ```
@@ -635,7 +629,7 @@ block from the body **as Linear returned it**, and check:
      before this round was `still-open` or that had no outcome yet, and must
      equal the set of rows this round added to `## Dispositions`.
 3. **Every row is complete.** Each `outcome: fixed` entry carries a non-empty
-   `fix_sha` **and** a non-empty `after_excerpt`. Each `rejected`, `deferred`,
+   `after_excerpt`. Each `rejected`, `deferred`,
    `accepted-no-change` and `still-open` entry carries a non-empty `reason`
    (the same `reason:` field the `rejected` example in step 8 shows).
 
@@ -645,7 +639,9 @@ exists to prevent), then run this step again from the top:
 
 ```bash
 linear issue comment update "$COMMENT_ID" --body-file "<fixed-comment>.md"
-``` Stop and report rather than looping if the same check
+```
+
+Stop and report rather than looping if the same check
 fails three times running. Record the result in the Output: "read-back
 passed", or which check failed and what remains.
 

@@ -34,7 +34,7 @@ A wrong result is a Gap, not Friction, even if you worked around it.
 ## Template
 
 ```
-Feedback: <feature name and version/path/SHA tested>
+Feedback: <feature name and version/path tested>
 Task: <what you used it for>
 Verdict: <works | works with friction | blocked by gaps>
 
