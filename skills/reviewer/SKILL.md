@@ -507,7 +507,8 @@ outcome yet at all. A finding whose latest row already reads `fixed`,
 `rejected`, `deferred` or `accepted-no-change` needs no new row this round.
 Choose one outcome per finding checked:
 
-- `fixed` — found by inspecting the fix commits actually on the branch, not asserted from the ticket text. Record
+- `fixed` — found by inspecting the fix commits actually on the branch, not
+  asserted from the ticket text. Record
   `after_excerpt`: the fixed text of the same artifact, verbatim, `<=600`
   chars.
 - `rejected: <reason>` — state concretely why the finding is not a defect; a
@@ -638,7 +639,9 @@ exists to prevent), then run this step again from the top:
 
 ```bash
 linear issue comment update "$COMMENT_ID" --body-file "<fixed-comment>.md"
-``` Stop and report rather than looping if the same check
+```
+
+Stop and report rather than looping if the same check
 fails three times running. Record the result in the Output: "read-back
 passed", or which check failed and what remains.
 

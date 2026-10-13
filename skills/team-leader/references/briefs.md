@@ -31,8 +31,8 @@ Include each item:
   gate. If the edit touches a file a test embeds, tell the leader instead of
   skipping.
 - Before opening the PR, run focused tests, lint, and compile checks only. The
-  team leader runs the aggregate gate once before merge. If the leader tells you your work is folded elsewhere, stop checks and
-  push nothing.
+  team leader runs the aggregate gate once before merge. If the leader tells
+  you your work is folded elsewhere, stop checks and push nothing.
 - Commit early. Commit before running any gate.
 - Cheap tier first, in this order: batch the related code and test edits
   together rather than trickling them out one at a time; run format, lint and
@@ -237,8 +237,9 @@ reviewer commit:
 Run the repo's aggregate gate exactly once before merge. The team leader owns
 this check, after review and all fix rounds finish. Do not run an aggregate
 gate before review or during a fix round. Follow an explicit repo or org rule
-when it overrides this default. Record the gate result and any build-lock wait in the ticket's state record. Fix rounds,
-dependency re-pins, and cross-repo checks use confined checks only.
+when it overrides this default. Record the gate result and any build-lock wait
+in the ticket's state record. Fix rounds, dependency re-pins, and cross-repo
+checks use confined checks only.
 
 Subagents have quoted gate output they never ran. Check these yourself:
 
@@ -247,7 +248,7 @@ Subagents have quoted gate output they never ran. Check these yourself:
 2. `gh pr view <N> --json mergeable` shows the PR is mergeable.
 3. If main moved since the gate ran, compare
    `git diff --name-only <base> origin/main` (`<base>` is
-   `git merge-base <head> origin/main`) against the PR's files. Overlap means
+   `git merge-base <branch> origin/main`) against the PR's files. Overlap means
    rebase and rerun the confined check — send the rebase to the branch's
    coder; one pusher per branch.
 4. A PR outside a spec-only directory has the full-gate evidence required by
@@ -257,8 +258,8 @@ Subagents have quoted gate output they never ran. Check these yourself:
 5. The ticket's review comments carry `/reviewer`'s markers, matched to
    *this* PR, not an older review left on the same ticket:
    a `<!-- reviewer ... pr=<repo>#<N> ... -->` comment per
-   method that ran, where `pr=` is this PR. Required always, clean review included — a placeholder-only
-   clean review still needs its per-method `reviewer` markers and its
+   method that ran, where `pr=` is this PR. Required always, clean review
+   included — a placeholder-only clean review still needs its per-method `reviewer` markers and its
    committed SR files (item 6); what a clean review skips is only the
    *dispositions* requirement below, since there's nothing to re-check and no
    disposition pass runs. Where the review found real findings, additionally
