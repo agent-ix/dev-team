@@ -102,3 +102,21 @@ every team-minder tick will hit its "command missing" branch until 5a lands.
 - No new tracking, pins or gates introduced beyond PR #6's priority-goal stage
   timestamps, which the plan asked to fold in.
 - Gates: this repo has no gate covering skill markdown; none was run.
+
+## Dispositions
+
+Round 1, reviewed at 3f01843 (fixes in 3f01843). No new major findings.
+
+| FND | Outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | 3f01843 |
+| FND-002 | fixed | 3f01843 |
+| FND-003 | fixed | 3f01843 |
+| FND-004 | fixed | 3f01843 |
+| FND-005 | fixed | 3f01843 |
+| FND-006 | accepted-no-change | Owner ruling for this PR: mediums and lows are recorded, not fixed. |
+| FND-007 | accepted-no-change | Owner ruling for this PR: mediums and lows are recorded, not fixed. |
+| FND-008 | fixed | 3f01843 |
+| FND-009 | accepted-no-change | Owner ruling for this PR: mediums and lows are recorded, not fixed. |
+| FND-010 | fixed | 3f01843 |
+| FND-011 | accepted-no-change | Owner ruling for this PR: mediums and lows are recorded, not fixed. |
