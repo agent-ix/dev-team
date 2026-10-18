@@ -19,27 +19,29 @@ workspace label (`QSL`, `IR`, `kani`, `qsl-driver`) on any machine.
 
 ## Communication
 
-- **Who talks to whom:** message the stuck agent, its code-lead, or the user. Nobody else.
+- **Who talks to whom:** message the stuck agent, its code-lead, its planner (empty queue or a real blocker, once), or the user. Nobody else.
 - **Send** done, blocked, needs a decision, or handoff. Nothing else.
 - **Never send** per-commit, per-push, per-test-run, per-gate or per-review-step
   progress; acks; "still working"; FYIs about work outside the recipient's
   scope; status polls. Read status from git, gh, Linear and the pane instead.
 - **Unwanted message** (a never-send kind, or outside your scope): reply once
-  with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /code-lead).`,
+  with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /team-minder).`,
   and do not act on it. Send at most one reminder per sender per hour.
 - Silence is normal. Do not re-nudge.
 
 ## Loop setup (first thing, once)
 
-1. **Claude Code:** if this run was not started by `/loop`, invoke the `loop`
-   skill with `30m /team-minder <team>` (use the requested interval). Then stop;
-   the loop runs the ticks.
-2. **No loop support** (Codex, opencode, Copilot CLI): try the harness's goal
+1. **Already in a loop:** if this prompt is a loop's scheduled prompt, or a
+   loop for it is already active (check with CronList or the loop context),
+   skip setup and run the tick.
+2. **Claude Code, not in a loop:** invoke the `loop` skill with
+   `30m /team-minder <team>` (use the requested interval), then stop. The loop
+   runs the first tick.
+3. **No loop support** (Codex, opencode, Copilot CLI): try the harness's goal
    mechanism (Codex `/goal`). If you cannot set it yourself, ask the user once
-   and give them one of these to paste:
+   and give them one of these to paste, then run one tick now:
    - `/loop 30m /team-minder <team>`
    - `/goal Every 30 minutes run /team-minder <team> for one tick; never stop until I say so.`
-3. Then run one tick now.
 
 ## Each tick
 
@@ -56,7 +58,7 @@ workspace label (`QSL`, `IR`, `kani`, `qsl-driver`) on any machine.
 | `WORKING` | None. |
 | `IDLE` worker | Message its code-lead: "<worker> idle Nm; assign or continue <ticket/PR>". Include the next ready ticket from the row when there is one. |
 | `IDLE` code-lead | Message the lead: continue its queue (name the next ready ticket). If its queue is empty, message its planner. |
-| `WAITING-STUCK` | Send the agent a prompt through herdr to wake it. |
+| `WAITING-STUCK` | Wake it: `herdr [--machine M] agent prompt <pane> "continue" --wait --timeout 60000`. Herdr rejects a blocked agent; that is fine. |
 | `PROMPT` | Read the dialog text. If the agent is asking for something it already has (commit, push, open PR, admin merge per the user's CLAUDE.md), message it: "you have this; proceed", citing the rule. If only the user can answer, or the harness denied the action, message the user once with the exact allow-rule to add, and tell the agent to continue other work meanwhile. |
 | `ASKING` | Read the excerpt and decide as for `PROMPT`. A real blocker goes to the agent's planner, once. |
 | `UNKNOWN` | Look at the raw data. If it is not clearly a running agent, tell the user once. |

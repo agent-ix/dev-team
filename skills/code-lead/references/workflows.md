@@ -36,5 +36,5 @@ waiting for code that belongs to a different ticket.
 
 Work that's small, or already has an owning requirement, skips the spec-wave
 machinery entirely and goes straight to the code step. See
-[Work kinds: which subagent](../SKILL.md#work-kinds-which-subagent) for who
+[Work kinds](../SKILL.md#work-kinds) for who
 does that work.

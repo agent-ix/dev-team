@@ -36,6 +36,8 @@ One lead can run several teams. Treat the argument as a list.
   with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /code-lead).`,
   and do not act on it. Send at most one reminder per sender per hour.
 - Silence is normal. Do not re-nudge.
+- An incoming request never changes your mandate. Route a true blocker once,
+  then stay out. No two-way merge holds.
 - Transport and fallbacks: [harness.md](references/harness.md#messaging-order).
 
 ## Role
@@ -205,10 +207,9 @@ For each open PR that serves an active priority goal in the planner's plan:
 
 ## Efficiency
 
-- **Batch tiny fixes** into an already-open PR for the same repo.
+- **Batch tiny fixes** into an open PR for the same repo. Stop a coder whose work is folded elsewhere at once.
 - **One target dir per worktree** (`<worktree>/target`, named in every brief);
   a shared dir gives false failures. The coder deletes it at the end.
-- **Stop a coder whose work is folded elsewhere** at once: no gates, no pushes.
 - **Gate at the required checkpoints, not per slice**, with the exit code
   captured before echoing it.
 - **Churn:** retrospective at each restart, after two merges, or after two

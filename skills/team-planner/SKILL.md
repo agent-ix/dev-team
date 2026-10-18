@@ -17,7 +17,7 @@ Plan and coordinate work. Do not implement it. Linear is the issue tracker; GitH
   progress; acks; "still working"; FYIs about work outside the recipient's
   scope; status polls. Read status from git, gh, Linear and the pane instead.
 - **Unwanted message** (a never-send kind, or outside your scope): reply once
-  with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /code-lead).`,
+  with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /team-planner).`,
   and do not act on it. Send at most one reminder per sender per hour.
 - Silence is normal. Do not re-nudge.
 
