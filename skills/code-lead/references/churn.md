@@ -86,8 +86,8 @@ PRs. Check actual changed files with `gh pr view <N> -R <owner/repo> --json
 files`. A shared branch has one pusher. If two lanes claim the same
 files or requirement block, pause the later dispatch, identify the owning
 ticket and give that owner the edit; resume the other lane only after its
-scope no longer overlaps. If another lead owns the ticket, route the work to
-that lead and keep the dependency visible in the state record. Reconcile
+scope no longer overlaps. If another lead owns the ticket, route it through
+your planner and keep the dependency visible in the state record. Reconcile
 incompatible rulings once before more re-pins,
 gates or briefs. Escalate an unresolved cross-team ownership or protocol
 choice to the owner with the competing claims and a recommendation.

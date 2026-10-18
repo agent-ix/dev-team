@@ -51,7 +51,7 @@ the harness you're actually running in.
   `codex exec review --help`.
 - Message another leader: unverified. No cross-session send-message command
   was found in `codex --help` or its subcommands. Fall through to the herdr
-  step below, then to the ticket step in SKILL.md's "Other leaders" order.
+  step below, then to the ticket step in the messaging order below.
 - Skills load from the installed `dev-team` plugin (`codex plugin add
   dev-team@agent-ix-dev-team`), not from the reviewed repository. Resolve
   the skill by name; do not assume a cache version or workstation path.
@@ -83,4 +83,16 @@ state) and fails on timeout. If the target agent is already blocked, herdr
 rejects the submission up front with `agent_blocked`, before sending
 anything — treat that as "not delivered", not as a stall to retry blindly.
 When herdr is not on PATH, skip this step and fall through to the ticket step
-in SKILL.md's "Other leaders" order.
+in the messaging order below.
+
+## Messaging order
+
+The code lead messages only its planner (see the Communication section in
+SKILL.md). Send by, in order, falling through only when the previous step is
+unavailable:
+
+1. `ix-relay`, if it is installed.
+2. Your harness's own cross-session messaging, if it has one.
+3. The herdr command above, for a lead on another machine.
+4. Otherwise, record the message as a comment on the ticket and tell the owner
+   to relay it.

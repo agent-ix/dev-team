@@ -1,8 +1,20 @@
 {
   "skills": [
     {
+      "name": "code-lead",
+      "version": "0.3.0",
+      "files": [
+        "SKILL.md",
+        "references/briefs.md",
+        "references/churn.md",
+        "references/harness.md",
+        "references/never.md",
+        "references/workflows.md"
+      ]
+    },
+    {
       "name": "coder",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "files": [
         "SKILL.md"
       ]
@@ -30,7 +42,7 @@
     },
     {
       "name": "reviewer",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "files": [
         "SKILL.md"
       ]
@@ -43,20 +55,15 @@
       ]
     },
     {
-      "name": "team-leader",
-      "version": "0.2.0",
+      "name": "team-minder",
+      "version": "0.1.0",
       "files": [
-        "SKILL.md",
-        "references/briefs.md",
-        "references/churn.md",
-        "references/harness.md",
-        "references/never.md",
-        "references/workflows.md"
+        "SKILL.md"
       ]
     },
     {
       "name": "team-planner",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "files": [
         "SKILL.md"
       ]

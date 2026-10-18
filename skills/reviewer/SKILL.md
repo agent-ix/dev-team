@@ -1,14 +1,14 @@
 ---
 name: reviewer
-description: Run a PR's review stage as the dedicated reviewer role — run every applicable review method (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses) in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/team-leader`), or when a review needs to be logged to the tracker instead of only the PR.
+description: Run a PR's review stage as the dedicated reviewer role — run every applicable review method (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses) in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
 ---
 
 # Reviewer
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-The reviewer role is a sibling of `skills/team-leader/` — one skill per role. A
-team leader (or any orchestrator) dispatches one reviewer subagent per tracked
+The reviewer role is a sibling of `skills/code-lead/` — one skill per role. A
+code lead (or any orchestrator) dispatches one reviewer subagent per tracked
 PR through `/reviewer`, for the review pass and again for dispositions. The
 method skills (`/code-review`, `/quoin:spec-review`, and applicable language
 and gap analyses) run inside this role; they are not separate reviewer
@@ -45,6 +45,18 @@ review data later should need to `git blame`, `git show`, or join against the
 repo to make sense of one comment: the artifact ids, paths, excerpts, and
 outcomes go in the comment itself. See
 [the comment formats](#5-post-one-marked-comment-per-method) below.
+
+## Communication
+
+- **Who talks to whom:** report to your code-lead only.
+- **Send** done, blocked, needs a decision, or handoff. Nothing else.
+- **Never send** per-commit, per-push, per-test-run, per-gate or per-review-step
+  progress; acks; "still working"; FYIs about work outside the recipient's
+  scope; status polls. Read status from git, gh, Linear and the pane instead.
+- **Unwanted message** (a never-send kind, or outside your scope): reply once
+  with one line, `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /reviewer).`,
+  and do not act on it. Send at most one reminder per sender per hour.
+- Silence is normal. Do not re-nudge.
 
 ## 0. Resolve the ticket (stop if none is found)
 
@@ -124,6 +136,11 @@ scope applies.
 
 A mixed PR (code + spec) runs both branches. `lang=` in the marker (below) is
 the primary language reviewed by that method: `rust`, `ts`, `py`, or `spec`.
+
+If a method is unavailable (for example criterion-strength analysis without a
+Jev client), record the skip in the SR artifact and continue with the rest.
+Allocate one SR id per applicable method, from the range the brief gives, in
+order, with no padding for methods that do not run.
 
 If Quoin is unavailable, perform a manual acceptance-criteria-to-tests check,
 state that the Quoin method was unavailable, and record the manual check separately.
@@ -437,8 +454,8 @@ linear issue update "$TICKET" --add-label has-review
 keeping the artifact in the repo. Both are required. This skill runs
 reviewer-only, no edits — see [step 7](#7-github-gets-the-ticket-id-never-the-findings)'s
 frozen-branch note below for who actually makes that commit: nothing here
-pushes to the PR branch itself; `team-leader` conventions
-(frozen candidate, step 4 of the `team-leader` skill) forbid changing a
+pushes to the PR branch itself; `code-lead` conventions
+(frozen candidate, step 4 of the `code-lead` skill) forbid changing a
 branch mid-review.
 
 **Custody of the SR file, since this skill never pushes to the branch:**
@@ -451,7 +468,7 @@ branch mid-review.
 - **Findings exist (review pass, or any disposition pass that adds a
   finding)** — the next fix-round coder copies the reviewer's updated SR
   file over the committed one under `reviews/` as part of its fix-round
-  commit (the `team-leader` role's step 6 already resumes the coder for
+  commit (the `code-lead` role's step 6 already resumes the coder for
   that round; the brief tells it to copy the file over, not to author one).
 - **Clean review, nothing to fix, or a disposition pass that adds nothing
   further** — nothing else will touch the branch before merge, so the
@@ -674,7 +691,7 @@ plainly rather than inventing a place to post findings that doesn't exist.
 
 ## Output
 
-Report, to whoever dispatched this skill: the ticket id, each method's SR file
+Report once, to whoever dispatched this skill, when the review (or disposition round) is complete: the ticket id, each method's SR file
 path and id, the verdict per method, which methods ran and which were skipped
 and why, the Linear comment ids posted (or "refused: <reason>" from step 1 if
 the tracker was confirmed to sync comment content outward, or "stopped: no
