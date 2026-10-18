@@ -31,7 +31,7 @@ Include each item:
   gate. If the edit touches a file a test embeds, tell the leader instead of
   skipping.
 - Before opening the PR, run focused tests, lint, and compile checks only. The
-  team leader runs the aggregate gate once before merge. If the leader tells
+  code lead runs the aggregate gate once before merge. If the leader tells
   you your work is folded elsewhere, stop checks and push nothing.
 - Commit early. Commit before running any gate.
 - Cheap tier first, in this order: batch the related code and test edits
@@ -46,7 +46,7 @@ Include each item:
   the fix — this is the check that a proposed failure case truly exercises
   the intended path, done before any expensive run, not after.
 - While iterating, run only the tests and lint the change touches.
-- Final gate log, recorded by the team leader before merge:
+- Final gate log, recorded by the code lead before merge:
   `make ci > <log> 2>&1; rc=$?; echo "exit=$rc" >> <log>`
   (use the repo's own aggregate gate in place of `make ci`; if that gate has
   several steps, join them with `&&` so the exit is honest). Capture `rc`
@@ -56,6 +56,8 @@ Include each item:
   the PR, then stop changing it. Do not merge. This frozen diff, tests
   included, is what the reviewer reviews — including whether each new test's
   failure case actually exercises the intended path.
+- For a priority-goal PR, do not take another task until the lead reports the
+  PR merged, including while waiting for review, disposition or the final gate.
 - If something is missing or unclear, say so in the report instead of guessing.
   Questions go in the report too; keep working on everything that doesn't
   depend on the answer.
@@ -117,7 +119,7 @@ replacement's end-to-end test passes.
   failing result at that path. Dead or unreachable code alone does not prove
   the reported behavior.
 - Run the focused checks the review actually needs and report log paths and
-  exit codes. Do not run the aggregate gate during review; the team leader runs
+  exit codes. Do not run the aggregate gate during review; the code lead runs
   it once before merge.
 - Where it's cheap, mutate the code under test to show new tests fail on the
   old behaviour.
@@ -165,7 +167,7 @@ every finding. Note the handoff in the state record.
 ## Disposition-pass message
 
 Send to the original reviewer's agent ID, not a new agent, once the fix round
-has landed. Open with: "From team leader <name>, disposition pass <round> for
+has landed. Open with: "From code lead <name>, disposition pass <round> for
 PR #<N> (your original brief)." Then include:
 
 - **"Your role is `/reviewer` (dev-team plugin): invoke it and follow it
@@ -234,7 +236,7 @@ reviewer commit:
 
 ## Verify before merge
 
-Run the repo's aggregate gate exactly once before merge. The team leader owns
+Run the repo's aggregate gate exactly once before merge. The code lead owns
 this check, after review and all fix rounds finish. Do not run an aggregate
 gate before review or during a fix round. Follow an explicit repo or org rule
 when it overrides this default. Record the gate result and any build-lock wait

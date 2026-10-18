@@ -18,7 +18,8 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | Skill | Action |
 | --- | --- |
 | `team-planner` | Turn an idea into a structured Linear plan with dependencies and ready tickets. |
-| `team-leader` | Coordinate a team's planned work through coding, review, and delivery. |
+| `code-lead` | Run a team's coding lane through specs, coding, review, and merge. |
+| `team-minder` | Watch a team's agents on an interval and unstick idle or blocked ones by message. |
 | `coder` | Implement an assigned ticket in its worktree and open the PR. |
 | `reviewer` | Run applicable review methods and record findings against a PR and ticket. |
 | `feature-request` | Record a new capability request as a buildable Linear ticket. |
