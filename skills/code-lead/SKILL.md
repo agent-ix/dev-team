@@ -97,8 +97,12 @@ One lead can run several teams. Treat the argument as a list.
 5. Load the plan: initiative, projects in order, epic, gate. Find unblocked
    tickets from each gate's `blocked-by` relations and read each ticket's spec
    state before queuing it.
-6. Order the queue: land open PRs first, then unblocked tickets in plan order.
-   If the queue is empty, tell the planner once.
+6. Order the implementation queue: land open PRs first, then unblocked tickets
+   in plan order. If that queue is empty, tell the planner once.
+7. Dispatch `/spec-steward` for a blocking spec-gap issue, or for the next
+   queued issue when there is no blocking gap. Include the issue, affected
+   specification, implementation repo, and any linked blocker. The steward
+   skill owns queue ordering and build-capacity policy.
 
 ## Dashboard work reports
 
