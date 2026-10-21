@@ -86,3 +86,20 @@ Reviewed the two report reference files in PR #12 against all three SWM-106 acce
 
 - FND-005 is fixed: reconciliation now rejects blank identifiers and records a visible incomplete-source warning. The test covers a whitespace-only identifier; the same `strip()` guard rejects the empty string from the prior reproduction.
 - `pytest -q tests/test_program_review_report.py` passed (7 tests); the delta contains no additional findings.
+
+## Final review pass — exact PR head `bf961a2cf141b80e489c2cc87ddc7dbc19ef8fd4`
+
+### Exact-head summary
+
+Freshly reviewed the changed SWM-106 renderer, its added regression tests, and the report contract against the two findings requested for re-review. Duplicate normalized roadmap names are flagged even without `projects_in_multiple_initiatives`; blocker `nodes`/`paths` and their `blocked_by`/`issues` identifier arrays reject malformed shapes. No new findings were identified.
+
+### Exact-head verdict
+
+**PASS** — both requested behaviors are implemented and covered by regression tests; the focused suite passes (10 tests).
+
+### Exact-head review notes
+
+- Confirmed the duplicate normalized project warning is computed from roadmap entries, independent of the optional upstream membership field; test `test_reports_duplicate_normalized_project_names_without_source_finding` removes that field and verifies one project row plus the data-quality warning.
+- Confirmed blocker output requires `nodes` and `paths` arrays; each node requires non-empty string identifiers and a `blocked_by` array of non-empty string identifiers; each path requires an `issues` array of non-empty string identifiers. The new regression tests cover string-valued `blocked_by` and `issues`.
+- Ran `python3 -m pytest -q tests/test_program_review_report.py`: 10 passed.
+- Ran `quire validate --scope . 'reviews/**/*.md'`: passed with existing module duplicate-archetype warnings. `quire write` is unavailable in this installed version (`unrecognized subcommand 'write'`). No applicable AssuranceProfile or repository spec root exists.

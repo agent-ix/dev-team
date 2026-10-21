@@ -77,3 +77,17 @@ The approved proposal artifact URL was not accessible in this review; the Linear
 
 - FND-004 is fixed: reconciliation now rejects blank identifiers and records a visible incomplete-source warning. The test covers a whitespace-only identifier; the same `strip()` guard rejects the empty string from the prior reproduction.
 - `pytest -q tests/test_program_review_report.py` passed (7 tests); the delta contains no additional findings.
+
+## Final acceptance pass — exact PR head `bf961a2cf141b80e489c2cc87ddc7dbc19ef8fd4`
+
+### Current acceptance verdict
+
+**PASS** — all three SWM-106 acceptance criteria are implemented and covered by the renderer tests. Reconcile evidence is included in canonical ticket rows, duplicate normalized roadmap names are flagged, and responsive table labels are present.
+
+### Current coverage update
+
+- AC-1: the renderer consumes captured command JSON and judgments, writes the HTML artifact, and merges reconcile findings. Malformed reconcile groups and blocker identifier arrays are surfaced or rejected according to the report contract.
+- AC-2: tests cover duplicate normalized project names without the optional membership field, repeated issue evidence, and reconcile-only tickets.
+- AC-3: tests cover mobile table labels and narrow-screen stacking rules.
+- `python3 -m pytest -q tests/test_program_review_report.py`: 10 passed at the reviewed implementation head.
+- The computed requirement matrix remains unavailable because this repository has no `spec/` root; this is a ticket-scope acceptance review.
