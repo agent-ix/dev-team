@@ -81,4 +81,4 @@ For command options and reply schemas, use the checked-in ix-board command contr
 
 ## Filing convention and read-only findings
 
-For every declared program, each in-scope project has exactly one primary initiative, and every in-scope ticket belongs to a project. Follow the [canonical filing convention and ix-board diagnostics](references/report-contract.md) for scope-file placement, read-only findings, exact JSON fields, and owner-approved filing batches.
+For every declared program, each in-scope project has exactly one primary initiative, and every in-scope ticket belongs to a project. Follow the [canonical filing convention and ix-board diagnostics](references/report-contract.md) for scope-file placement, read-only findings, and owner-approved filing batches.
