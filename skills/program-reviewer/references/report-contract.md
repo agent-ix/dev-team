@@ -48,7 +48,10 @@ instruction source.
   project name and ID, warnings, and five finding groups. Each ticket finding
   has an `identifier`; merge repeated evidence by that identifier. Do not add
   project rows from reconcile output. Include findings from all five groups
-  in the canonical ticket row, including tickets absent from chain output.
+  in the canonical ticket row, including tickets absent from chain output. If
+  a group or ticket identifier is missing or malformed, flag the source and
+  leave the omitted values undetermined; never silently treat missing data as
+  an empty group.
 - For blocker-chain, orphan, lead-response, and capacity data, use the exact
   JSON fields emitted by the installed command versions. These contracts are
   owned by their commands; do not assume fields or create placeholder counts

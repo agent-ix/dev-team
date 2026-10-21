@@ -120,6 +120,7 @@ def blocker_html(doc: dict[str, Any]) -> str:
     nodes: OrderedDict[str, dict[str, Any]] = OrderedDict()
     chains: dict[str, set[str]] = {}
     reconcile_evidence: dict[str, set[str]] = {}
+    reconcile_warnings: list[str] = []
     for source in sources:
         output = source["output"]
         if not isinstance(output, dict) or not isinstance(output.get("nodes"), list) or not isinstance(output.get("paths", []), list):
@@ -152,15 +153,25 @@ def blocker_html(doc: dict[str, Any]) -> str:
     )
     for source in reconcile_sources:
         output = source["output"]
-        if not isinstance(output, dict) or not isinstance(output.get("findings"), dict):
-            raise ValueError(f"reconcile output from {source['name']!r} must contain a findings object")
+        if not isinstance(output, dict):
+            reconcile_warnings.append(f"{source['name']}: output is not a JSON object")
+            continue
+        findings = output.get("findings")
+        if not isinstance(findings, dict):
+            reconcile_warnings.append(f"{source['name']}: missing findings object")
+            continue
         for label, group_name in ticket_groups:
-            records = output["findings"].get(group_name, [])
+            if group_name not in findings:
+                reconcile_warnings.append(f"{source['name']}: missing finding group {group_name}")
+                continue
+            records = findings[group_name]
             if not isinstance(records, list):
-                raise ValueError(f"reconcile finding group {group_name!r} must be an array")
+                reconcile_warnings.append(f"{source['name']}: finding group {group_name} is not an array")
+                continue
             for record in records:
                 if not isinstance(record, dict) or not isinstance(record.get("identifier"), str):
-                    raise ValueError(f"each {group_name} finding must have a ticket identifier")
+                    reconcile_warnings.append(f"{source['name']}: ignored finding without a ticket identifier in {group_name}")
+                    continue
                 ident = record["identifier"]
                 title = record.get("title", "")
                 state = record.get("state", "Unavailable")
@@ -199,7 +210,8 @@ def blocker_html(doc: dict[str, Any]) -> str:
         if node.get("unowned_root_blocker"):
             chain_text += "<br><span class=\"status\">Unowned root blocker</span>"
         rows.append([h(owner), h(ident) + " — " + h(node.get("title", "")), h(node.get("state", "Unavailable")), chain_text])
-    return table(["Owner", "Ticket", "State", "Blocker chain"], rows)
+    warnings_html = "".join(f'<p class="incomplete" role="status">Incomplete reconcile output: {h(warning)}. Missing values remain undetermined.</p>' for warning in reconcile_warnings)
+    return warnings_html + table(["Owner", "Ticket", "State", "Blocker chain"], rows)
 
 
 def sources_html(commands: list[dict[str, Any]], section: str, empty: str) -> str:

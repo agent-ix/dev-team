@@ -143,6 +143,47 @@ class TestProgramReviewReport:
         assert result.count("<details><summary>ix-board agents SWM --json</summary>") == 1
         assert "<pre>{" in result
 
+    def test_missing_reconcile_groups_are_reported_as_incomplete(self):
+        """
+        Description:
+            Report omitted or malformed reconcile groups instead of treating them as empty.
+        Assumptions:
+            The reconcile command returns only a partial findings object.
+        Criteria:
+            Valid findings remain visible and every missing or unusable group is identified.
+
+        Trace: SWM-106-AC-1
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        document["commands"].append({
+            "name": "ix-board reconcile Partial Project --json",
+            "section": "reconcile",
+            "output": {
+                "project": "Partial Project",
+                "project_id": "project-2",
+                "stale_days": 14,
+                "searched_repositories": [],
+                "warnings": [],
+                "findings": {
+                    "merged_pr_open_ticket": [
+                        {"identifier": "SWM-888", "title": "Visible finding", "state": "In Progress", "age_days": None, "pull_requests": []},
+                        {"title": "Incomplete record"}
+                    ],
+                    "done_without_merged_pr": [],
+                    "stale_open_pr": "not-an-array"
+                }
+            }
+        })
+
+        result = render(document)
+
+        assert result.count('data-label="Ticket">SWM-888') == 1
+        assert "missing finding group in_progress_without_pr_or_branch" in result
+        assert "missing finding group draft_pr_closed_ticket" in result
+        assert "finding group stale_open_pr is not an array" in result
+        assert "ignored finding without a ticket identifier in merged_pr_open_ticket" in result
+        assert "Missing values remain undetermined." in result
+
     def test_cli_writes_self_contained_html_artifact(self, tmp_path):
         """
         Description:

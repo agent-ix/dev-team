@@ -66,8 +66,10 @@ python3 scripts/render_report.py review-input.json --output program-review.html
 The renderer reads command JSON and reviewer judgments, escapes every value,
 deduplicates project names and blocker ticket identifiers, merges the five
 reconcile finding groups into the canonical ticket rows, and fails on an
-invalid/missing roadmap, malformed blocker/reconcile data, or unresolved
-template token.
+invalid/missing roadmap, malformed blocker data, or unresolved template token.
+If reconcile groups or identifiers are missing or malformed, the report marks
+that source incomplete and leaves those values undetermined while retaining
+valid findings from the other groups.
 The output is a self-contained HTML artifact suitable for phone-width viewing.
 Review the generated file and publish it only when the caller requests
 publication.
