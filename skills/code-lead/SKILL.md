@@ -99,12 +99,10 @@ One lead can run several teams. Treat the argument as a list.
    state before queuing it.
 6. Order the implementation queue: land open PRs first, then unblocked tickets
    in plan order. If that queue is empty, tell the planner once.
-7. Check the shared **Spec gaps** view. If a gap blocks active implementation,
-   dispatch `/spec-steward` first for that issue; otherwise dispatch it for the
-   next queued item to value-test. Give the steward the issue, affected
-   specification and implementation repo, and any linked blocker. Spec work
-   runs independently and needs no build lane. Keep coders moving on scopes
-   that do not depend on the gap.
+7. Dispatch `/spec-steward` for a blocking spec-gap issue, or for the next
+   queued issue when there is no blocking gap. Include the issue, affected
+   specification, implementation repo, and any linked blocker. The steward
+   skill owns queue ordering and build-capacity policy.
 
 ## Dashboard work reports
 
@@ -163,16 +161,6 @@ issue states the missing or conflicting requirement and cites the code or
 acceptance evidence. Link the issue from the affected program ticket and keep
 it visible in the shared `Spec gaps` view; do not expand the implementation
 ticket silently.
-
-## Spec-steward dispatch and merge
-
-Use `/spec-steward` for issues in the shared Spec gaps view. Start it with the
-blocking issue first, then let it value-test non-blocking queue items and
-cancel ceremony. It works in a separate spec branch and does not consume build
-capacity. For a real gap, dispatch a different reviewer for the spec PR; merge
-the spec PR only after the required review and artifact validation pass, then
-link the merged contract to the affected implementation ticket. Never leave
-unrelated build lanes waiting for the steward.
 
 ## Per-ticket loop
 
