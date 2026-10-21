@@ -46,12 +46,16 @@ The report input has this shape:
 ```
 
 For each command entry, include its command name, report section (`roadmap`,
-`blockers`, `reconcile`, `allocation`, `leads`, or `linear_changes`), and
+`orphans`, `blockers`, `reconcile`, `allocation`, `leads`, or `linear_changes`), and
 exact parsed JSON output. Confirm command contracts using installed help,
 output, or implementation-owned documentation. Use `linear_changes` only for
 changes confirmed applied after owner approval; unapplied proposals belong in
 `owner_decisions`. See `references/report-contract.md` for rendering and
 de-duplication behavior; do not copy upstream command schemas here.
+
+Capture `orphans` output as a source-only command entry. The renderer does not
+include its raw output in the HTML; interpret relevant findings in
+`program_status` or `owner_decisions` using the captured JSON as evidence.
 
 Run the renderer from this skill directory or provide its absolute path:
 
