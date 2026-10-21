@@ -1,0 +1,55 @@
+{
+  "title": "Program review: Repeatable Program Review",
+  "scope": "Repeatable Program Review",
+  "observed_at": "2026-10-20T18:30:00Z",
+  "verdict": "On track; one shared blocker needs an owner.",
+  "program_status": [
+    {"program": "Swarm Tooling", "assessment": "M1 evidence is landed."}
+  ],
+  "owner_decisions": [
+    {"decision": "Choose a capacity target", "evidence": "The captured capacity output has no target.", "options": ["Set a target", "Leave unset"]}
+  ],
+  "unavailable_sources": ["agent-msg status-request --json"],
+  "commands": [
+    {
+      "name": "ix-board roadmap --json",
+      "section": "roadmap",
+      "output": {
+        "initiatives": [
+          {"name": "Swarm Tooling", "projects": [
+            {"name": "Repeatable Program Review", "status": "Started", "progress_percent": 25, "open": 6, "done": 2, "canceled": 0, "last_activity": "2026-10-20T17:00:00Z", "also_in": ["Agent Experience"]},
+            {"name": "  repeatable   program review ", "status": "Started", "progress_percent": 25, "open": 6, "done": 2, "canceled": 0, "last_activity": null, "also_in": []}
+          ]}
+        ],
+        "unplaced_projects": [
+          {"name": "Unplaced project", "status": "Planned", "progress_percent": 0, "open": 1, "done": 0, "canceled": 0, "last_activity": null}
+        ],
+        "projects_in_multiple_initiatives": ["Repeatable Program Review"]
+      }
+    },
+    {
+      "name": "ix-board chain SWM-102 --json",
+      "section": "blockers",
+      "output": {
+        "nodes": [
+          {"identifier": "SWM-102", "title": "Scope <script>alert(1)</script>", "state": "Blocked", "owner_lane": "terra:SWM:code", "blocked_by": ["SWM-104"], "root_blocker": false, "unowned_root_blocker": false},
+          {"identifier": "SWM-104", "title": "Reconcile", "state": "Backlog", "owner_lane": null, "blocked_by": [], "root_blocker": true, "unowned_root_blocker": true}
+        ],
+        "paths": [{"start": "SWM-102", "issues": ["SWM-102", "SWM-104"]}]
+      }
+    },
+    {
+      "name": "ix-board chain SWM-103 --json",
+      "section": "blockers",
+      "output": {
+        "nodes": [
+          {"identifier": "SWM-102", "title": "Scope <script>alert(1)</script>", "state": "Blocked", "owner_lane": "terra:SWM:code", "blocked_by": ["SWM-104"], "root_blocker": false, "unowned_root_blocker": false}
+        ],
+        "paths": [{"start": "SWM-103", "issues": ["SWM-103", "SWM-102", "SWM-104"]}]
+      }
+    },
+    {"name": "ix-board agents SWM --json", "section": "allocation", "output": {"agents": [{"name": "code", "state": "working"}]}},
+    {"name": "agent-msg status-request --json", "section": "leads", "output": {"responses": []}},
+    {"name": "linear issue update SWM-103 --state Done", "section": "linear_changes", "output": {"identifier": "SWM-103", "state": "Done"}}
+  ]
+}
