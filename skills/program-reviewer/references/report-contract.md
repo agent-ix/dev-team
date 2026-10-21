@@ -51,23 +51,26 @@ and continue with independent evidence.
 
 The program convention is one primary initiative per scoped project, every
 project in an initiative, and every in-scope ticket in a project. Linear has no
-primary-initiative flag, so the scope file identifies one primary initiative
-for each scoped project and records any additional initiative memberships. Do not
+primary-initiative flag, so the scope file identifies exactly one primary
+initiative for each scoped project and records any additional initiative
+memberships. That primary determines the project's single roadmap row. Do not
 infer a primary from Linear membership order.
 
-Use the current `ix-board roadmap` output to report placement gaps between the
-scope file and Linear: projects without an initiative, initiatives without
-projects, scope-declared initiatives or projects absent from Linear, multiple
-memberships, and differences between the scope file and Linear membership.
-Follow installed help and output for current JSON fields; do not maintain a
-second copy of that schema here.
-
-Use the current `ix-board orphans` output for open and completed tickets in
-scope teams that have no project. It is read-only and supplies candidate
-projects, reasons, and team-mismatch warnings. It does not audit tickets that
-already have a project. Treat suggestions as candidates, never as writes. A
-bulk filing batch should be accompanied by a project update that explains the
-denominator change if it affects the reported progress percent.
+Inspect the current `ix-board roadmap` output for placement gaps between the
+scope file and Linear, and the current `ix-board orphans` output for open and
+completed unprojected tickets in scope teams. Follow installed help and output
+for current JSON fields; do not maintain a second copy of either schema. These
+outputs are evidence to review, not a promise that every diagnostic is printed
+verbatim in the HTML. The renderer currently shows the roadmap roster, an
+available multiple-membership note, and duplicate normalized-name findings. It
+does not render the other roadmap placement diagnostics or orphan findings as
+raw output. Summarize relevant interpreted findings in per-program status or
+owner decisions, sourced from the captured JSON, and keep project and ticket
+rows canonical. The orphan command is read-only, does not audit tickets that
+already have a project, and supplies candidate destinations only; never treat
+suggestions as writes. A bulk filing batch should be accompanied by a project
+update that explains the denominator change if it affects the reported
+progress percent.
 
 ## De-duplication
 
