@@ -103,3 +103,15 @@ Freshly reviewed the changed SWM-106 renderer, its added regression tests, and t
 - Confirmed blocker output requires `nodes` and `paths` arrays; each node requires non-empty string identifiers and a `blocked_by` array of non-empty string identifiers; each path requires an `issues` array of non-empty string identifiers. The new regression tests cover string-valued `blocked_by` and `issues`.
 - Ran `python3 -m pytest -q tests/test_program_review_report.py`: 10 passed.
 - Ran `quire validate --scope . 'reviews/**/*.md'`: passed with existing module duplicate-archetype warnings. `quire write` is unavailable in this installed version (`unrecognized subcommand 'write'`). No applicable AssuranceProfile or repository spec root exists.
+
+## Re-review — implementation commit `a2c40979ca2dd88ea11b80d7d3dbff6958a76a71`
+
+Reviewed the rebased PR against current `origin/main` `ba15dbd102b5ae93a5bd7cd43938712e1e41ae94`, including the removal of copied ix-board schema details and the identifier normalization fix.
+
+**PASS** — no findings remain. The report contract points readers to installed ix-board help/output and implementation-owned contracts. The renderer trims blocker-node, blocker-reference, path, and reconcile identifiers before canonical row indexing. Whitespace-only reconcile identifiers are omitted with an incomplete-source warning. Tests cover padded identifiers colliding with each other and with chain identifiers.
+
+- SWM-106 AC-1: the renderer consumes captured command JSON and reviewer judgments; the skill requires captured output to remain unchanged.
+- SWM-106 AC-2: normalized project names and trimmed issue identifiers produce one canonical row; malformed identifiers are warned or rejected.
+- SWM-106 AC-3: responsive table labels and narrow-screen layout remain covered.
+- `pytest -q tests/test_program_review_report.py`: 11 passed.
+- Quire validation of review artifacts and `git diff --check` passed. Quoin matrix remains unavailable because the repository has no `spec/` root.

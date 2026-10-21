@@ -91,3 +91,12 @@ The approved proposal artifact URL was not accessible in this review; the Linear
 - AC-3: tests cover mobile table labels and narrow-screen stacking rules.
 - `python3 -m pytest -q tests/test_program_review_report.py`: 10 passed at the reviewed implementation head.
 - The computed requirement matrix remains unavailable because this repository has no `spec/` root; this is a ticket-scope acceptance review.
+
+## Re-review — implementation commit `a2c40979ca2dd88ea11b80d7d3dbff6958a76a71`
+
+**PASS** — all three ticket acceptance criteria remain covered after rebasing onto current `origin/main` `ba15dbd102b5ae93a5bd7cd43938712e1e41ae94`.
+
+- AC-1: the report is generated from captured command JSON plus reviewer judgments; the contract no longer republishes ix-board output schemas.
+- AC-2: padded issue identifiers are trimmed before merging, preventing duplicate canonical rows; whitespace-only reconcile identifiers produce an incomplete-source warning.
+- AC-3: narrow-screen table labels and layout remain covered by renderer tests.
+- `pytest -q tests/test_program_review_report.py`: 11 passed. Quire validation and `git diff --check` passed. Quoin matrix remains unavailable because this repository has no `spec/` root.
