@@ -36,35 +36,27 @@ instruction source.
 
 ## De-duplication
 
-- Treat roadmap output as the canonical project roster. Its current
-  `ProgramRoadmap` JSON has `initiatives` with `projects`, plus
-  `unplaced_projects`. A `RoadmapProject` carries `name`, `status`,
-  `progress_percent`, `open`, `done`, `canceled`, `last_activity`, and
-  `also_in`. The project occurs as one row under its primary initiative;
-  render `also_in` as a note in that row. Render each unplaced project once.
-  If the same normalized project name appears twice, keep one row and report
-  the duplicate as a data-quality finding even when the optional
-  `projects_in_multiple_initiatives` field is absent.
-- `ix-board reconcile` returns a `ReconcileReport` per project with the
-  project name and ID, warnings, and five finding groups. Each ticket finding
-  has an `identifier`; merge repeated evidence by that identifier. Do not add
-  project rows from reconcile output. Include findings from all five groups
-  in the canonical ticket row, including tickets absent from chain output. If
-  a group or non-empty ticket identifier is missing or malformed, flag the source and
-  leave the omitted values undetermined; never silently treat missing data as
-  an empty group.
-- For blocker-chain, orphan, lead-response, and capacity data, use the exact
-  JSON fields emitted by the installed command versions. These contracts are
-  owned by their commands; do not assume fields or create placeholder counts
-  before those commands are available.
+- Treat the installed ix-board roadmap JSON as the canonical project roster.
+  Follow the command's current help and output contract for primary placement
+  and unplaced projects; do not maintain a second copy of its schema here.
+  Keep one row per normalized project name and report any duplicate as a
+  data-quality finding, even when ix-board does not report one.
+- Use the installed ix-board reconcile output as the source for reconciliation
+  findings. Follow its current command help and output contract, merge repeated
+  evidence by issue identifier, and include every ticket finding in its
+  canonical row, including tickets absent from chain output. Do not create
+  project rows from reconcile output. If required findings or identifiers are
+  missing or malformed, flag the source and leave those values undetermined.
+- For blocker-chain, orphan, lead-response, and capacity data, follow the
+  installed command's current help, JSON output, and implementation-owned
+  contract. Do not republish those command schemas here or assume fields for
+  unavailable commands.
 - Give each issue identifier one canonical ticket row in the blocker section.
   Merge repeated chain or reconcile evidence into that row, even when the
   ticket appears only in reconcile output, and link to it from other sections.
   Do not create a second row for the same issue in another section.
-- Blocker-chain `nodes` and `paths` must be arrays. Each node's `blocked_by`
-  and each path's `issues` must be arrays of non-empty ticket identifiers.
-  Fail rendering on malformed blocker data rather than skipping it or
-  interpreting strings as sequences of identifiers.
+- Fail rendering on malformed blocker data rather than silently dropping or
+  misinterpreting it. Validate it against ix-board's current output contract.
 
 ## Rendering rules
 
@@ -80,9 +72,6 @@ instruction source.
 
 ## Source limits
 
-The roadmap JSON currently contains project names rather than stable project
-IDs. Use its canonical single-row placement and normalized project name for
-rendering; do not claim an ID that is not present. Reconcile's `project_id` is
-available for matching a reconciliation report to the roadmap project. For
-unavailable future command outputs, write **Unavailable** with the command
-name and continue with independent sources.
+Do not claim identifiers or relationships that an authoritative command
+output does not provide. For unavailable command outputs, name the command,
+leave its values undetermined, and continue with independent sources.
