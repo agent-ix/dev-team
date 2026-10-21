@@ -34,6 +34,7 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 ## 2. Build
 
 - Behaviour only, backed by tests for the ticket's acceptance criteria. No exhaustive suites beyond them.
+- If implementation reveals that the specification is missing or contradicts required behavior, stop work on that scope and file a **spec-gap** issue in team **STD**, project **QSL Language Specification**, with the workspace label **spec-gap**. State the missing or conflicting requirement and cite the implementation evidence. Tell the leader the issue ID and continue independent work; do not silently broaden the ticket.
 - Ask "does running code read this today?" before adding a gate, pin, config or abstraction. If nothing reads it, use a plain value and move on.
 - No compatibility layers, no vendoring or copying files between repos, and never propose them. Comments explain code, never narrate history or cite tickets.
 - Commit early, and always before running a gate.

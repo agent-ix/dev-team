@@ -23,6 +23,7 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | `coder` | Implement an assigned ticket in its worktree and open the PR. |
 | `reviewer` | Run applicable review methods and record findings against a PR and ticket. |
 | `feature-request` | Record a new capability request as a buildable Linear ticket. |
+| `repo-auditor` | Answer a bounded, read-only repository measurement question with cited evidence. |
 | `feature-feedback` | Report observed strengths, friction, and gaps after using a feature. |
 | `feature-check` | Check delivered behavior against each ticket acceptance criterion. |
 | `status-report` | Report program progress, blockers, and next actions from Linear evidence. |

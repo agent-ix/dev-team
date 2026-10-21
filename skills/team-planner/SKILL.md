@@ -47,7 +47,13 @@ Create only the missing records with the installed Linear writer. Link every ite
 
 ## 4. Prepare and hand off execution
 
-Each ticket needs a bounded outcome, acceptance criteria, specification or design link, verification plan, owner, and structured blockers. Check the ready queue before dispatch. Route a multi-ticket program to `/code-lead`; route an isolated ticket to `/coder` only when that coding lane is assigned. Preserve the issue ID and handoff in Linear. `ix-board focus plan-chunk` is a read-only view for an existing focus, not the creation engine.
+Each ticket needs a bounded outcome, acceptance criteria, a relevant specification or design link, verification plan, owner, and structured blockers. Check the ready queue before dispatch. Route a multi-ticket program to `/code-lead`; route an isolated ticket to `/coder` only when that coding lane is assigned. Preserve the issue ID and handoff in Linear. `ix-board focus plan-chunk` is a read-only view for an existing focus, not the creation engine.
+
+Keep ticket content proportional to the work. Link a relevant specification or
+design when one exists, but do not paste a generic required-spec-cycle
+checklist or require a per-ticket reviewed-revision record. Do not create
+tickets solely for pins, SHAs, ledgers, manifests, censuses or provenance
+records.
 
 ## 5. Review the active program
 

@@ -44,6 +44,9 @@ Workaround today: <what you did instead, and its cost. "none" is a valid answer.
 
 ## Rules
 
+- Do not add a generic spec-cycle checklist or a per-ticket reviewed-revision
+  record to the ticket. Do not create tickets solely for pins, SHAs, ledgers,
+  manifests, censuses or provenance records.
 - Acceptance checks are runnable by a different agent with no context from you. Each names an action and an observable result. "Works well" is not a check.
 - Describe the capability, not the design. Suggest an implementation only under a separate "Suggestion" line, and mark it optional.
 - Every check must be something you can test yourself when the feature lands (feature-check will do exactly that).
