@@ -24,6 +24,7 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | `reviewer` | Run applicable review methods and record findings against a PR and ticket. |
 | `feature-request` | Record a new capability request as a buildable Linear ticket. |
 | `repo-auditor` | Answer a bounded, read-only repository measurement question with cited evidence. |
+| `spec-steward` | Own the spec-gap queue, resolve implementation blockers, and cancel ceremony. |
 | `feature-feedback` | Report observed strengths, friction, and gaps after using a feature. |
 | `feature-check` | Check delivered behavior against each ticket acceptance criterion. |
 | `status-report` | Report program progress, blockers, and next actions from Linear evidence. |
