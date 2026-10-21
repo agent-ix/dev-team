@@ -46,12 +46,16 @@ The report input has this shape:
 ```
 
 For each command entry, include its command name, report section (`roadmap`,
-`blockers`, `reconcile`, `allocation`, `leads`, or `linear_changes`), and
+`orphans`, `blockers`, `reconcile`, `allocation`, `leads`, or `linear_changes`), and
 exact parsed JSON output. Confirm command contracts using installed help,
 output, or implementation-owned documentation. Use `linear_changes` only for
 changes confirmed applied after owner approval; unapplied proposals belong in
 `owner_decisions`. See `references/report-contract.md` for rendering and
 de-duplication behavior; do not copy upstream command schemas here.
+
+Capture `orphans` output as a source-only command entry. The renderer does not
+include its raw output in the HTML; interpret relevant findings in
+`program_status` or `owner_decisions` using the captured JSON as evidence.
 
 Run the renderer from this skill directory or provide its absolute path:
 
@@ -78,3 +82,7 @@ publication.
 The HTML contains, in order, verdict, roadmap, per-program status, blockers by owner, lane and server allocation, lead responses, Linear changes made, and decisions needed from the owner. Each section has a one-line description. The source footer lists commands and unavailable sources. Every project has one roadmap row under its primary initiative or once under Unplaced; other memberships appear as notes. Every blocking issue has one canonical row with owner and merged chain evidence. Other sections summarize evidence or link by reference without duplicating project or ticket rows.
 
 For command options and reply schemas, use the checked-in ix-board command contracts, canonical ix-relay FR-056, and installed command help. In particular, do not infer `status-request`, `orphans`, or `chain` options from ticket prose. For report fields, de-duplication, HTML safety, and layout, follow `references/report-contract.md` and `references/report-template.html`.
+
+## Filing convention and read-only findings
+
+For every declared program, each in-scope project has exactly one primary initiative, and every in-scope ticket belongs to a project. Follow the [canonical filing convention and ix-board diagnostics](references/report-contract.md) for scope-file placement, read-only findings, and owner-approved filing batches.

@@ -47,6 +47,31 @@ pull-request claims against live Linear and GitHub results before relying on
 them. If a required command is unavailable, report that source as unavailable
 and continue with independent evidence.
 
+## Filing convention and ix-board evidence
+
+The program convention is one primary initiative per scoped project, every
+project in an initiative, and every in-scope ticket in a project. Linear has no
+primary-initiative flag, so the scope file identifies exactly one primary
+initiative for each scoped project and records any additional initiative
+memberships. That primary determines the project's single roadmap row. Do not
+infer a primary from Linear membership order.
+
+Inspect the current `ix-board roadmap` output for placement gaps between the
+scope file and Linear, and the current `ix-board orphans` output for open and
+completed unprojected tickets in scope teams. Follow installed help and output
+for current JSON fields; do not maintain a second copy of either schema. These
+outputs are evidence to review, not a promise that every diagnostic is printed
+verbatim in the HTML. The renderer currently shows the roadmap roster, an
+available multiple-membership note, and duplicate normalized-name findings. It
+does not render the other roadmap placement diagnostics or orphan findings as
+raw output. Summarize relevant interpreted findings in per-program status or
+owner decisions, sourced from the captured JSON, and keep project and ticket
+rows canonical. The orphan command is read-only, does not audit tickets that
+already have a project, and supplies candidate destinations only; never treat
+suggestions as writes. A bulk filing batch should be accompanied by a project
+update that explains the denominator change if it affects the reported
+progress percent.
+
 ## De-duplication
 
 - Treat the installed ix-board roadmap JSON as the canonical project roster.
