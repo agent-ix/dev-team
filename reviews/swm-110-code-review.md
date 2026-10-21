@@ -40,6 +40,7 @@ Review scope was the two SWM-110 acceptance bullets and the new `Answer a status
 | --- | --- | --- |
 | FND-001 | still-open | The new skill text claims that omitting `--spare-coder-slots` stores JSON null, but ix-relay PR #26's current live head `2759e250dc5d2f754cde208684689a3adfdb8649` still has required `spare_coder_slots: u32` in `crates/agent-msg/src/status_request.rs:35` and stores a required `u16` in `crates/relay-core/src/status.rs:134`. The separate worktree contains uncommitted `Option` changes; they are not part of the live PR head and do not verify the documented behavior. |
 | FND-001 | fixed | `skills/team-minder/SKILL.md` now says to omit `--spare-coder-slots` without a numeric source, submit with unknown capacity, and interpret JSON `null` as unknown. ix-relay PR #26 head `1b21e665673f0213469713a485b01634b597b9ef` makes the CLI field optional and the stored field `Option<u16>`; its `program_review` test asserts omitted capacity serializes as JSON null and explicit `2` remains numeric. |
+| FND-001 | fixed | At PR #14 head `919f178f301b482a0b3f0f0ea2cef1915e8fce9d`, the skill now requires an explicit numeric count from the requesting lead or owner and leaves the response pending if unavailable; this preserves FR-056's required integer field without inventing a value. After excerpt: `If no trusted numeric source exists, ask the current requesting lead or owner in the conversation for the exact count, then submit the reply with that value. Never infer zero, serialize `null`, or report a successful submission without an explicit count. If the count cannot be obtained, tell the requester the reply is pending; do not submit a malformed or false reply.` |
 
 ## Reconciliation with merged ix-relay FR-056
 
@@ -52,3 +53,7 @@ now require an explicit numeric count: when no trusted numeric source exists,
 the minder asks the requesting lead or owner for the exact count and submits
 only after receiving it. If the count cannot be obtained, the reply remains
 pending and no malformed or false-success reply is submitted.
+
+## Disposition round 3
+
+The FND-001 source gap is resolved for the status-reply contract: the fixed-form reply always receives a required integer, and a missing number is requested from the responsible lead/owner rather than inferred or encoded as null. A reply is submitted only after the number is available; until then the documented state is pending, consistent with FR-056 collection exposing nonresponders during partial collection. No code or executable behavior changed.
