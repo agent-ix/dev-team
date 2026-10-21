@@ -47,6 +47,43 @@ pull-request claims against live Linear and GitHub results before relying on
 them. If a required command is unavailable, report that source as unavailable
 and continue with independent evidence.
 
+## Filing convention and ix-board evidence
+
+The program convention is one primary initiative per scoped project, every
+project in an initiative, and every in-scope ticket in a project. Linear has no
+primary-initiative flag, so the scope file `projects[*].primary_initiative`
+sets the primary row and `also_in` records any additional initiative
+memberships. Do not infer a primary from Linear membership order.
+
+Use `ix-board --json roadmap [--scope <file>]` to compare project and
+initiative placement with the scope file. Its verified JSON exposes:
+
+- `unplaced_projects`: scoped projects that have no Linear initiative.
+- `initiatives_without_projects`: selected initiatives with no project row.
+- `projects_in_multiple_initiatives`: projects with multiple Linear memberships;
+  this can be intentional when primary and secondary memberships are recorded
+  consistently in the scope file.
+- `projects_missing_from_scope`: projects in a selected initiative that the
+  scope file does not list.
+- `project_membership_mismatches`: per-project differences between the scope
+  file and Linear. `missing_from_linear` lists scope primary/`also_in`
+  memberships absent from Linear; `missing_from_scope` lists Linear initiative
+  memberships absent from the scope file.
+
+The scope file's `projects[*].primary_initiative` chooses the single primary
+roadmap row. Use `also_in` for its other initiative memberships. Do not infer a
+primary from Linear membership order.
+
+The verified command is `ix-board --json orphans --scope <file>`. It is
+read-only and returns `OrphansReport { scope, open, done, warnings }`. Each
+finding has `identifier`, `title`, `team`, and `suggestions`; each suggestion
+has `project`, `reason`, and `team_mismatch`. Findings are unprojected open or
+completed issues in teams associated with the scoped projects; canceled and
+duplicate issues are excluded. This command does not audit tickets that
+already have a project. Treat suggested destinations as candidates, never as
+writes. A bulk filing batch should be accompanied by a project update that
+explains the denominator change if it affects the reported progress percent.
+
 ## De-duplication
 
 - Treat the installed ix-board roadmap JSON as the canonical project roster.
