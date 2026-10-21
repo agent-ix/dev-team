@@ -167,7 +167,8 @@ class TestProgramReviewReport:
                 "findings": {
                     "merged_pr_open_ticket": [
                         {"identifier": "SWM-888", "title": "Visible finding", "state": "In Progress", "age_days": None, "pull_requests": []},
-                        {"title": "Incomplete record"}
+                        {"title": "Incomplete record"},
+                        {"identifier": "  ", "title": "Blank identifier", "state": "In Progress", "age_days": None, "pull_requests": []}
                     ],
                     "done_without_merged_pr": [],
                     "stale_open_pr": "not-an-array"
@@ -181,7 +182,7 @@ class TestProgramReviewReport:
         assert "missing finding group in_progress_without_pr_or_branch" in result
         assert "missing finding group draft_pr_closed_ticket" in result
         assert "finding group stale_open_pr is not an array" in result
-        assert "ignored finding without a ticket identifier in merged_pr_open_ticket" in result
+        assert "ignored finding with missing or blank ticket identifier in merged_pr_open_ticket" in result
         assert "Missing values remain undetermined." in result
 
     def test_cli_writes_self_contained_html_artifact(self, tmp_path):

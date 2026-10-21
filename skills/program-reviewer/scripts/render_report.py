@@ -126,7 +126,7 @@ def blocker_html(doc: dict[str, Any]) -> str:
         if not isinstance(output, dict) or not isinstance(output.get("nodes"), list) or not isinstance(output.get("paths", []), list):
             raise ValueError(f"blocker output from {source['name']!r} must contain nodes and paths arrays")
         for node in output["nodes"]:
-            if not isinstance(node, dict) or not isinstance(node.get("identifier"), str):
+            if not isinstance(node, dict) or not isinstance(node.get("identifier"), str) or not node["identifier"].strip():
                 raise ValueError("each blocker node must have an identifier")
             ident = node["identifier"]
             # Merge repeated command evidence by the canonical issue identifier.
@@ -169,8 +169,8 @@ def blocker_html(doc: dict[str, Any]) -> str:
                 reconcile_warnings.append(f"{source['name']}: finding group {group_name} is not an array")
                 continue
             for record in records:
-                if not isinstance(record, dict) or not isinstance(record.get("identifier"), str):
-                    reconcile_warnings.append(f"{source['name']}: ignored finding without a ticket identifier in {group_name}")
+                if not isinstance(record, dict) or not isinstance(record.get("identifier"), str) or not record["identifier"].strip():
+                    reconcile_warnings.append(f"{source['name']}: ignored finding with missing or blank ticket identifier in {group_name}")
                     continue
                 ident = record["identifier"]
                 title = record.get("title", "")

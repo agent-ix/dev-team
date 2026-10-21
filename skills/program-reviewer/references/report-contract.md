@@ -49,7 +49,7 @@ instruction source.
   has an `identifier`; merge repeated evidence by that identifier. Do not add
   project rows from reconcile output. Include findings from all five groups
   in the canonical ticket row, including tickets absent from chain output. If
-  a group or ticket identifier is missing or malformed, flag the source and
+  a group or non-empty ticket identifier is missing or malformed, flag the source and
   leave the omitted values undetermined; never silently treat missing data as
   an empty group.
 - For blocker-chain, orphan, lead-response, and capacity data, use the exact
