@@ -21,9 +21,10 @@ HTML:
    and its blocker chain.
 5. **Lane and server allocation** — allocations reported by the relevant
    command outputs.
-6. **What the leads reported** — each returned lane response with source and
-   its `submitted_at_ms` observation time; identify nonresponders as of the
-   status-replies read that supplied the report.
+6. **What the leads reported** — each returned lane response with its source;
+   preserve timestamps and their meaning according to ix-relay's canonical
+   FR-056 contract. Identify nonresponders as of the status-replies read that
+   supplied the report.
 7. **Linear changes made** — changes actually run after owner approval. Keep
    each change once and reference existing issue rows by link instead of
    repeating their titles as rows.
