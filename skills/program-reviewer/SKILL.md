@@ -42,6 +42,7 @@ Create a temporary JSON input with this shape:
   "commands": [
     {"name": "ix-board roadmap --json", "section": "roadmap", "output": {"initiatives": [], "unplaced_projects": []}},
     {"name": "ix-board chain --json", "section": "blockers", "output": {"nodes": [], "paths": []}},
+    {"name": "ix-board reconcile Project --json", "section": "reconcile", "output": {"findings": {}}},
     {"name": "ix-board agents SWM --json", "section": "allocation", "output": {}},
     {"name": "agent-msg status-request --json", "section": "leads", "output": {}}
   ]
@@ -49,7 +50,8 @@ Create a temporary JSON input with this shape:
 ```
 
 Include each source output as parsed JSON without editing its values. Set
-`section` to `roadmap`, `blockers`, `allocation`, `leads`, or `linear_changes`.
+`section` to `roadmap`, `blockers`, `reconcile`, `allocation`, `leads`, or
+`linear_changes`.
 Use `linear_changes` only for commands that actually applied a change; an
 unapplied proposal belongs in `owner_decisions`. One command may have a
 different section when that better describes its evidence. Keep the temporary
@@ -62,8 +64,10 @@ python3 scripts/render_report.py review-input.json --output program-review.html
 ```
 
 The renderer reads command JSON and reviewer judgments, escapes every value,
-deduplicates project names and blocker ticket identifiers, and fails on an
-invalid/missing roadmap, malformed blocker data, or unresolved template token.
+deduplicates project names and blocker ticket identifiers, merges the five
+reconcile finding groups into the canonical ticket rows, and fails on an
+invalid/missing roadmap, malformed blocker/reconcile data, or unresolved
+template token.
 The output is a self-contained HTML artifact suitable for phone-width viewing.
 Review the generated file and publish it only when the caller requests
 publication.

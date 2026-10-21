@@ -17,6 +17,7 @@ from typing import Any
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_PATH = SKILL_ROOT / "references" / "report-template.html"
 PROJECT_NAME = re.compile(r"\s+")
+TEMPLATE_TOKEN = re.compile(r"\{\{[^{}]*\}\}")
 
 
 def h(value: Any) -> str:
@@ -113,10 +114,12 @@ def roadmap_html(doc: dict[str, Any]) -> str:
 
 def blocker_html(doc: dict[str, Any]) -> str:
     sources = command_sources(doc, "blockers")
-    if not sources:
-        return '<p class="empty">Unavailable: no blocker-chain command output was captured.</p>'
+    reconcile_sources = command_sources(doc, "reconcile")
+    if not sources and not reconcile_sources:
+        return '<p class="empty">Unavailable: no blocker-chain or reconcile command output was captured.</p>'
     nodes: OrderedDict[str, dict[str, Any]] = OrderedDict()
     chains: dict[str, set[str]] = {}
+    reconcile_evidence: dict[str, set[str]] = {}
     for source in sources:
         output = source["output"]
         if not isinstance(output, dict) or not isinstance(output.get("nodes"), list) or not isinstance(output.get("paths", []), list):
@@ -140,13 +143,57 @@ def blocker_html(doc: dict[str, Any]) -> str:
                 for ident in path["issues"]:
                     chains.setdefault(str(ident), set()).add(chain)
 
+    ticket_groups = (
+        ("merged PR, ticket remains open", "merged_pr_open_ticket"),
+        ("done without merged PR", "done_without_merged_pr"),
+        ("in progress without PR or branch", "in_progress_without_pr_or_branch"),
+        ("stale open PR", "stale_open_pr"),
+        ("draft PR on closed ticket", "draft_pr_closed_ticket"),
+    )
+    for source in reconcile_sources:
+        output = source["output"]
+        if not isinstance(output, dict) or not isinstance(output.get("findings"), dict):
+            raise ValueError(f"reconcile output from {source['name']!r} must contain a findings object")
+        for label, group_name in ticket_groups:
+            records = output["findings"].get(group_name, [])
+            if not isinstance(records, list):
+                raise ValueError(f"reconcile finding group {group_name!r} must be an array")
+            for record in records:
+                if not isinstance(record, dict) or not isinstance(record.get("identifier"), str):
+                    raise ValueError(f"each {group_name} finding must have a ticket identifier")
+                ident = record["identifier"]
+                title = record.get("title", "")
+                state = record.get("state", "Unavailable")
+                node = nodes.setdefault(ident, {
+                    "identifier": ident, "title": title, "state": state,
+                    "owner_lane": None, "assignee_name": None, "assignee_id": None, "blocked_by": [],
+                    "root_blocker": False, "unowned_root_blocker": False,
+                })
+                if not node.get("title") and title:
+                    node["title"] = title
+                if node.get("state") == "Unavailable" and state:
+                    node["state"] = state
+                detail = label
+                pull_requests = record.get("pull_requests", [])
+                if pull_requests:
+                    detail += ": " + ", ".join(map(str, pull_requests))
+                if record.get("url"):
+                    detail += ": " + str(record["url"])
+                if record.get("age_days") is not None:
+                    detail += f" ({record['age_days']} days)"
+                reconcile_evidence.setdefault(ident, set()).add(detail)
+
     rows = []
     for ident, node in nodes.items():
         blockers = node.get("blocked_by", [])
-        if not blockers and not node.get("root_blocker") and not node.get("unowned_root_blocker"):
+        if not blockers and not node.get("root_blocker") and not node.get("unowned_root_blocker") and not reconcile_evidence.get(ident):
             continue
-        owner = node.get("owner_lane") or node.get("assignee_name") or "Unassigned"
+        owner = node.get("owner_lane") or node.get("assignee_name")
+        if not owner:
+            owner = "Unassigned" if "assignee_id" in node and node.get("assignee_id") is None else "Owner unavailable"
         chain_text = "<br>".join(h(chain) for chain in sorted(chains.get(ident, set()))) or "Unavailable"
+        if reconcile_evidence.get(ident):
+            chain_text += "<br><span class=\"meta\">Reconcile: " + "; ".join(h(item) for item in sorted(reconcile_evidence[ident])) + "</span>"
         if blockers:
             chain_text += "<br><span class=\"meta\">Blocked by: " + h(", ".join(map(str, blockers))) + "</span>"
         if node.get("unowned_root_blocker"):
@@ -210,13 +257,14 @@ def render(doc: dict[str, Any]) -> str:
         "{{unavailable_sources_html}}": h("; ".join(unavailable) or "None reported"),
     }
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
-    for token, value in replacements.items():
-        if token not in template:
-            raise ValueError(f"template is missing required token {token}")
-        template = template.replace(token, value)
-    if "{{" in template or "}}" in template:
+    template_tokens = set(TEMPLATE_TOKEN.findall(template))
+    missing = set(replacements) - template_tokens
+    if missing:
+        raise ValueError("template is missing required token(s): " + ", ".join(sorted(missing)))
+    unresolved = template_tokens - set(replacements)
+    if unresolved or "{{" in TEMPLATE_TOKEN.sub("", template) or "}}" in TEMPLATE_TOKEN.sub("", template):
         raise ValueError("template contains an unresolved token")
-    return template
+    return TEMPLATE_TOKEN.sub(lambda match: replacements[match.group(0)], template)
 
 
 def main() -> int:

@@ -80,6 +80,69 @@ class TestProgramReviewReport:
         with pytest.raises(ValueError, match="initiatives and unplaced_projects"):
             render(document)
 
+    def test_reconcile_findings_appear_once_in_canonical_ticket_rows(self):
+        """
+        Description:
+            Merge reconcile-only tickets and repeated findings into blocker rows.
+        Assumptions:
+            Reconcile output uses ix-board's ReconcileReport and ReconcileFindings fields.
+        Criteria:
+            A ticket absent from chain nodes appears once, and repeated reconcile evidence
+            is merged into the same canonical row.
+
+        Trace: SWM-106-AC-1, SWM-106-AC-2
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        document["commands"].append({
+            "name": "ix-board reconcile Project --json",
+            "section": "reconcile",
+            "output": {
+                "project": "Review Project",
+                "project_id": "project-1",
+                "stale_days": 14,
+                "searched_repositories": [],
+                "warnings": [],
+                "findings": {
+                    "merged_pr_open_ticket": [{"identifier": "SWM-999", "title": "Reconcile only", "state": "In Progress", "age_days": None, "pull_requests": ["https://github.com/example/repo/pull/99"]}],
+                    "done_without_merged_pr": [{"identifier": "SWM-999", "title": "Reconcile only", "state": "Done", "age_days": None, "pull_requests": []}],
+                    "in_progress_without_pr_or_branch": [],
+                    "stale_open_pr": [],
+                    "draft_pr_closed_ticket": []
+                }
+            }
+        })
+
+        result = render(document)
+
+        assert result.count('data-label="Ticket">SWM-999') == 1
+        assert "Owner unavailable" in result
+        assert "merged PR, ticket remains open" in result
+        assert "done without merged PR" in result
+        assert "https://github.com/example/repo/pull/99" in result
+
+    def test_source_project_name_matching_template_token_is_not_replaced(self):
+        """
+        Description:
+            Preserve template-like braces inside an escaped roadmap project name.
+        Assumptions:
+            The source value exactly matches another template interpolation token.
+        Criteria:
+            Source text stays literal while the real allocation token is independently rendered.
+
+        Trace: SWM-106-AC-1, SWM-106-AC-2
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        document["commands"][0]["output"]["unplaced_projects"].append({
+            "name": "{{allocation_html}}", "status": "Planned", "progress_percent": 0,
+            "open": 1, "done": 0, "canceled": 0, "last_activity": None
+        })
+
+        result = render(document)
+
+        assert '<td data-label="Project">{{allocation_html}}</td>' in result
+        assert result.count("<details><summary>ix-board agents SWM --json</summary>") == 1
+        assert "<pre>{" in result
+
     def test_cli_writes_self_contained_html_artifact(self, tmp_path):
         """
         Description:

@@ -47,15 +47,16 @@ instruction source.
 - `ix-board reconcile` returns a `ReconcileReport` per project with the
   project name and ID, warnings, and five finding groups. Each ticket finding
   has an `identifier`; merge repeated evidence by that identifier. Do not add
-  project rows from reconcile output.
+  project rows from reconcile output. Include findings from all five groups
+  in the canonical ticket row, including tickets absent from chain output.
 - For blocker-chain, orphan, lead-response, and capacity data, use the exact
   JSON fields emitted by the installed command versions. These contracts are
   owned by their commands; do not assume fields or create placeholder counts
   before those commands are available.
 - Give each issue identifier one canonical ticket row in the blocker section.
-  Merge repeated chain or reconcile evidence into that row and link to it from
-  other sections. Do not create a second row for the same issue in another
-  section.
+  Merge repeated chain or reconcile evidence into that row, even when the
+  ticket appears only in reconcile output, and link to it from other sections.
+  Do not create a second row for the same issue in another section.
 
 ## Rendering rules
 
