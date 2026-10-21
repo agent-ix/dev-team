@@ -67,6 +67,9 @@ The renderer reads command JSON and reviewer judgments, escapes every value,
 deduplicates project names and blocker ticket identifiers, merges the five
 reconcile finding groups into the canonical ticket rows, and fails on an
 invalid/missing roadmap, malformed blocker data, or unresolved template token.
+Duplicate normalized project names are reported as a data-quality finding even
+when ix-board's optional duplicate-membership field is absent. Blocker node and
+path identifiers must have the JSON array shapes emitted by ix-board.
 If reconcile groups or identifiers are missing or malformed, the report marks
 that source incomplete and leaves those values undetermined while retaining
 valid findings from the other groups.

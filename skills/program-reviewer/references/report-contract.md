@@ -43,7 +43,8 @@ instruction source.
   `also_in`. The project occurs as one row under its primary initiative;
   render `also_in` as a note in that row. Render each unplaced project once.
   If the same normalized project name appears twice, keep one row and report
-  the duplicate as a data-quality finding.
+  the duplicate as a data-quality finding even when the optional
+  `projects_in_multiple_initiatives` field is absent.
 - `ix-board reconcile` returns a `ReconcileReport` per project with the
   project name and ID, warnings, and five finding groups. Each ticket finding
   has an `identifier`; merge repeated evidence by that identifier. Do not add
@@ -60,6 +61,10 @@ instruction source.
   Merge repeated chain or reconcile evidence into that row, even when the
   ticket appears only in reconcile output, and link to it from other sections.
   Do not create a second row for the same issue in another section.
+- Blocker-chain `nodes` and `paths` must be arrays. Each node's `blocked_by`
+  and each path's `issues` must be arrays of non-empty ticket identifiers.
+  Fail rendering on malformed blocker data rather than skipping it or
+  interpreting strings as sequences of identifiers.
 
 ## Rendering rules
 

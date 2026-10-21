@@ -80,6 +80,28 @@ class TestProgramReviewReport:
         with pytest.raises(ValueError, match="initiatives and unplaced_projects"):
             render(document)
 
+    def test_reports_duplicate_normalized_project_names_without_source_finding(self):
+        """
+        Description:
+            Detect duplicate normalized project rows directly from the roadmap source.
+        Assumptions:
+            Two entries normalize to the same project name and the optional duplicate
+            membership field is absent.
+        Criteria:
+            The project appears once and the duplicate is identified as a data-quality finding.
+
+        Trace: SWM-106-AC-2
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        roadmap = document["commands"][0]["output"]
+        roadmap.pop("projects_in_multiple_initiatives")
+
+        result = render(document)
+
+        assert result.count('data-label="Project">Repeatable Program Review') == 1
+        assert "Data-quality finding: duplicate normalized project name(s) in roadmap" in result
+        assert "repeatable   program review" in result
+
     def test_reconcile_findings_appear_once_in_canonical_ticket_rows(self):
         """
         Description:
@@ -184,6 +206,42 @@ class TestProgramReviewReport:
         assert "finding group stale_open_pr is not an array" in result
         assert "ignored finding with missing or blank ticket identifier in merged_pr_open_ticket" in result
         assert "Missing values remain undetermined." in result
+
+    def test_blocker_path_issues_must_be_ticket_identifier_array(self):
+        """
+        Description:
+            Reject a blocker path whose issue chain is encoded as a string.
+        Assumptions:
+            ix-board ChainPath.issues is an array of issue identifiers.
+        Criteria:
+            Malformed path data fails rendering instead of being silently omitted.
+
+        Trace: SWM-106-AC-1
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        blocker = next(item for item in document["commands"] if item["section"] == "blockers")
+        blocker["output"]["paths"][0]["issues"] = "SWM-102"
+
+        with pytest.raises(ValueError, match="blocker path issues field must be an array"):
+            render(document)
+
+    def test_blocked_by_must_be_ticket_identifier_array(self):
+        """
+        Description:
+            Reject a blocker node whose blockers are encoded as a string.
+        Assumptions:
+            ix-board ChainNode.blocked_by is an array of issue identifiers.
+        Criteria:
+            A malformed string is not interpreted as one ID per character.
+
+        Trace: SWM-106-AC-1
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        blocker = next(item for item in document["commands"] if item["section"] == "blockers")
+        blocker["output"]["nodes"][0]["blocked_by"] = "SWM-104"
+
+        with pytest.raises(ValueError, match="blocked_by field must be an array"):
+            render(document)
 
     def test_cli_writes_self_contained_html_artifact(self, tmp_path):
         """

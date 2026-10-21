@@ -75,6 +75,7 @@ def roadmap_html(doc: dict[str, Any]) -> str:
         raise ValueError("roadmap output must contain initiatives and unplaced_projects arrays")
 
     seen: set[str] = set()
+    duplicate_names: OrderedDict[str, str] = OrderedDict()
     rows: list[list[str]] = []
 
     def add(project: Any, initiative: str) -> None:
@@ -83,6 +84,7 @@ def roadmap_html(doc: dict[str, Any]) -> str:
         name = project["name"]
         key = PROJECT_NAME.sub(" ", name.strip()).casefold()
         if key in seen:
+            duplicate_names.setdefault(key, name)
             return
         seen.add(key)
         also_in = project.get("also_in", [])
@@ -109,6 +111,8 @@ def roadmap_html(doc: dict[str, Any]) -> str:
     finding = ""
     if output.get("projects_in_multiple_initiatives"):
         finding += "<p class=\"meta\">Multiple initiative membership reported for: " + h(", ".join(map(str, output["projects_in_multiple_initiatives"]))) + ". Primary placement remains the canonical row.</p>"
+    if duplicate_names:
+        finding += "<p class=\"incomplete\" role=\"status\">Data-quality finding: duplicate normalized project name(s) in roadmap: " + h(", ".join(duplicate_names.values())) + ". Each is shown once under its first placement.</p>"
     return finding + table(["Primary initiative", "Project", "Status", "Progress %", "Open", "Done", "Canceled", "Last activity"], rows)
 
 
@@ -123,11 +127,13 @@ def blocker_html(doc: dict[str, Any]) -> str:
     reconcile_warnings: list[str] = []
     for source in sources:
         output = source["output"]
-        if not isinstance(output, dict) or not isinstance(output.get("nodes"), list) or not isinstance(output.get("paths", []), list):
+        if not isinstance(output, dict) or not isinstance(output.get("nodes"), list) or not isinstance(output.get("paths"), list):
             raise ValueError(f"blocker output from {source['name']!r} must contain nodes and paths arrays")
         for node in output["nodes"]:
             if not isinstance(node, dict) or not isinstance(node.get("identifier"), str) or not node["identifier"].strip():
                 raise ValueError("each blocker node must have an identifier")
+            if not isinstance(node.get("blocked_by"), list) or any(not isinstance(ident, str) or not ident.strip() for ident in node["blocked_by"]):
+                raise ValueError("each blocker node blocked_by field must be an array of non-empty ticket identifiers")
             ident = node["identifier"]
             # Merge repeated command evidence by the canonical issue identifier.
             prior = nodes.setdefault(ident, node.copy())
@@ -138,11 +144,14 @@ def blocker_html(doc: dict[str, Any]) -> str:
                 for key in ("owner_lane", "assignee_name", "state", "title"):
                     if not prior.get(key) and node.get(key):
                         prior[key] = node[key]
-        for path in output.get("paths", []):
-            if isinstance(path, dict) and isinstance(path.get("issues"), list):
-                chain = " → ".join(map(str, path["issues"]))
-                for ident in path["issues"]:
-                    chains.setdefault(str(ident), set()).add(chain)
+        for path in output["paths"]:
+            if not isinstance(path, dict) or not isinstance(path.get("issues"), list):
+                raise ValueError("each blocker path issues field must be an array of ticket identifiers")
+            if any(not isinstance(ident, str) or not ident.strip() for ident in path["issues"]):
+                raise ValueError("each blocker path issues field must contain non-empty ticket identifiers")
+            chain = " → ".join(path["issues"])
+            for ident in path["issues"]:
+                chains.setdefault(ident, set()).add(chain)
 
     ticket_groups = (
         ("merged PR, ticket remains open", "merged_pr_open_ticket"),
