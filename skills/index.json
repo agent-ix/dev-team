@@ -46,7 +46,8 @@
       "files": [
         "SKILL.md",
         "references/report-contract.md",
-        "references/report-template.html"
+        "references/report-template.html",
+        "scripts/render_report.py"
       ]
     },
     {
@@ -68,16 +69,6 @@
       "version": "0.1.0",
       "files": [
         "SKILL.md"
-      ]
-    },
-    {
-      "name": "program-reviewer",
-      "version": "0.1.0",
-      "files": [
-        "SKILL.md",
-        "references/report-contract.md",
-        "references/report-template.html",
-        "scripts/render_report.py"
       ]
     },
     {
