@@ -60,6 +60,10 @@ initiative placement with the scope file. Its verified JSON exposes:
 
 - `unplaced_projects`: scoped projects that have no Linear initiative.
 - `initiatives_without_projects`: selected initiatives with no project row.
+- `missing_scope_initiatives`: initiatives declared by the scope file that are
+  absent from Linear.
+- `missing_scope_projects`: projects declared by the scope file that are
+  absent from Linear.
 - `projects_in_multiple_initiatives`: projects with multiple Linear memberships;
   this can be intentional when primary and secondary memberships are recorded
   consistently in the scope file.
