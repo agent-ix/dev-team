@@ -125,8 +125,11 @@ class TestProgramReviewReport:
                 "searched_repositories": [],
                 "warnings": [],
                 "findings": {
-                    "merged_pr_open_ticket": [{"identifier": "SWM-999", "title": "Reconcile only", "state": "In Progress", "age_days": None, "pull_requests": ["https://github.com/example/repo/pull/99"]}],
-                    "done_without_merged_pr": [{"identifier": "SWM-999", "title": "Reconcile only", "state": "Done", "age_days": None, "pull_requests": []}],
+                    "merged_pr_open_ticket": [{"identifier": " SWM-999 ", "title": "Reconcile only", "state": "In Progress", "age_days": None, "pull_requests": ["https://github.com/example/repo/pull/99"]}],
+                    "done_without_merged_pr": [
+                        {"identifier": "SWM-999", "title": "Reconcile only", "state": "Done", "age_days": None, "pull_requests": []},
+                        {"identifier": " SWM-102 ", "title": "Padded duplicate of chain ticket", "state": "Blocked", "age_days": None, "pull_requests": []}
+                    ],
                     "in_progress_without_pr_or_branch": [],
                     "stale_open_pr": [],
                     "draft_pr_closed_ticket": []
@@ -137,6 +140,8 @@ class TestProgramReviewReport:
         result = render(document)
 
         assert result.count('data-label="Ticket">SWM-999') == 1
+        assert result.count('data-label="Ticket">SWM-102') == 1
+        assert 'data-label="Ticket"> SWM-102' not in result
         assert "Owner unavailable" in result
         assert "merged PR, ticket remains open" in result
         assert "done without merged PR" in result
@@ -205,7 +210,39 @@ class TestProgramReviewReport:
         assert "missing finding group draft_pr_closed_ticket" in result
         assert "finding group stale_open_pr is not an array" in result
         assert "ignored finding with missing or blank ticket identifier in merged_pr_open_ticket" in result
+        assert 'data-label="Ticket">  ' not in result
         assert "Missing values remain undetermined." in result
+
+    def test_whitespace_only_reconcile_identifier_is_incomplete_evidence(self):
+        """
+        Description:
+            Mark a whitespace-only issue identifier as incomplete reconcile evidence.
+        Assumptions:
+            The reconcile source otherwise contains all expected finding groups.
+        Criteria:
+            No blank ticket row is rendered and the report names the omitted identifier.
+
+        Trace: SWM-106-AC-1, SWM-106-AC-2
+        """
+        document = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        document["commands"].append({
+            "name": "ix-board reconcile Whitespace Project --json",
+            "section": "reconcile",
+            "output": {
+                "findings": {
+                    "merged_pr_open_ticket": [{"identifier": " \t ", "title": "No ticket ID"}],
+                    "done_without_merged_pr": [],
+                    "in_progress_without_pr_or_branch": [],
+                    "stale_open_pr": [],
+                    "draft_pr_closed_ticket": []
+                }
+            }
+        })
+
+        result = render(document)
+
+        assert "ignored finding with missing or blank ticket identifier" in result
+        assert 'data-label="Ticket"> \t ' not in result
 
     def test_blocker_path_issues_must_be_ticket_identifier_array(self):
         """

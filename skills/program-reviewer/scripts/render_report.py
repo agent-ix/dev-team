@@ -134,23 +134,29 @@ def blocker_html(doc: dict[str, Any]) -> str:
                 raise ValueError("each blocker node must have an identifier")
             if not isinstance(node.get("blocked_by"), list) or any(not isinstance(ident, str) or not ident.strip() for ident in node["blocked_by"]):
                 raise ValueError("each blocker node blocked_by field must be an array of non-empty ticket identifiers")
-            ident = node["identifier"]
+            ident = node["identifier"].strip()
+            normalized_node = node.copy()
+            normalized_node["identifier"] = ident
+            normalized_node["blocked_by"] = [blocker.strip() for blocker in node["blocked_by"]]
             # Merge repeated command evidence by the canonical issue identifier.
-            prior = nodes.setdefault(ident, node.copy())
-            if prior is not node:
-                prior["blocked_by"] = sorted(set(prior.get("blocked_by", [])) | set(node.get("blocked_by", [])))
+            prior = nodes.get(ident)
+            if prior is None:
+                nodes[ident] = normalized_node
+            else:
+                prior["blocked_by"] = sorted(set(prior.get("blocked_by", [])) | set(normalized_node["blocked_by"]))
                 for key in ("root_blocker", "unowned_root_blocker"):
-                    prior[key] = bool(prior.get(key)) or bool(node.get(key))
+                    prior[key] = bool(prior.get(key)) or bool(normalized_node.get(key))
                 for key in ("owner_lane", "assignee_name", "state", "title"):
-                    if not prior.get(key) and node.get(key):
-                        prior[key] = node[key]
+                    if not prior.get(key) and normalized_node.get(key):
+                        prior[key] = normalized_node[key]
         for path in output["paths"]:
             if not isinstance(path, dict) or not isinstance(path.get("issues"), list):
                 raise ValueError("each blocker path issues field must be an array of ticket identifiers")
             if any(not isinstance(ident, str) or not ident.strip() for ident in path["issues"]):
                 raise ValueError("each blocker path issues field must contain non-empty ticket identifiers")
-            chain = " → ".join(path["issues"])
-            for ident in path["issues"]:
+            identifiers = [ident.strip() for ident in path["issues"]]
+            chain = " → ".join(identifiers)
+            for ident in identifiers:
                 chains.setdefault(ident, set()).add(chain)
 
     ticket_groups = (
@@ -181,7 +187,7 @@ def blocker_html(doc: dict[str, Any]) -> str:
                 if not isinstance(record, dict) or not isinstance(record.get("identifier"), str) or not record["identifier"].strip():
                     reconcile_warnings.append(f"{source['name']}: ignored finding with missing or blank ticket identifier in {group_name}")
                     continue
-                ident = record["identifier"]
+                ident = record["identifier"].strip()
                 title = record.get("title", "")
                 state = record.get("state", "Unavailable")
                 node = nodes.setdefault(ident, {

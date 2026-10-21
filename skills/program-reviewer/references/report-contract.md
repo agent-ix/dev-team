@@ -43,7 +43,7 @@ instruction source.
   data-quality finding, even when ix-board does not report one.
 - Use the installed ix-board reconcile output as the source for reconciliation
   findings. Follow its current command help and output contract, merge repeated
-  evidence by issue identifier, and include every ticket finding in its
+  evidence by the trimmed issue identifier, and include every ticket finding in its
   canonical row, including tickets absent from chain output. Do not create
   project rows from reconcile output. If required findings or identifiers are
   missing or malformed, flag the source and leave those values undetermined.
