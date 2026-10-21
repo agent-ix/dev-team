@@ -62,6 +62,16 @@
       ]
     },
     {
+      "name": "program-reviewer",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md",
+        "references/report-contract.md",
+        "references/report-template.html",
+        "scripts/render_report.py"
+      ]
+    },
+    {
       "name": "status-report",
       "version": "0.1.0",
       "files": [

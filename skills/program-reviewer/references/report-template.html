@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{report_title}}</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      line-height: 1.55;
+      --surface: Canvas;
+      --text: CanvasText;
+      --muted: color-mix(in srgb, CanvasText 70%, Canvas);
+      --line: color-mix(in srgb, CanvasText 18%, Canvas);
+      --accent: #5064c8;
+      --card: color-mix(in srgb, CanvasText 4%, Canvas);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0 auto;
+      max-width: 76rem;
+      padding: clamp(1rem, 4vw, 2.5rem);
+      background: var(--surface);
+      color: var(--text);
+    }
+    header { border-bottom: 2px solid var(--accent); margin-bottom: 1.5rem; padding-bottom: 1rem; }
+    h1 { font-size: clamp(1.7rem, 5vw, 2.5rem); line-height: 1.15; margin: 0 0 .5rem; }
+    h2 { font-size: 1.3rem; margin: 0; }
+    h3 { font-size: 1.05rem; margin: 1rem 0 .4rem; }
+    p { margin: .45rem 0; }
+    a { color: var(--accent); overflow-wrap: anywhere; }
+    .meta, .description { color: var(--muted); }
+    .verdict { border-left: .3rem solid var(--accent); padding: .8rem 1rem; background: var(--card); }
+    section { margin: 1.5rem 0; scroll-margin-top: 1rem; }
+    section > header { border: 0; margin: 0 0 .7rem; padding: 0; }
+    .description { font-size: .95rem; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid var(--line); padding: .65rem .7rem; text-align: left; vertical-align: top; }
+    th { font-size: .9rem; }
+    .status { font-weight: 650; }
+    .incomplete { border-left: .25rem solid #bd7900; margin: .6rem 0; padding: .4rem .7rem; }
+    .empty { color: var(--muted); font-style: italic; }
+    .source { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; margin-top: 2rem; padding-top: .8rem; }
+
+    @media (max-width: 42rem) {
+      body { padding: 1rem; }
+      .table-wrap { overflow: visible; }
+      table, tbody, tr, td { display: block; width: 100%; }
+      thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+      tbody tr { background: var(--card); border: 1px solid var(--line); border-radius: .65rem; margin: .7rem 0; padding: .35rem .7rem; }
+      td { border: 0; display: grid; gap: .25rem; grid-template-columns: minmax(6.5rem, 34%) minmax(0, 1fr); padding: .4rem 0; }
+      td::before { color: var(--muted); content: attr(data-label); font-size: .82rem; font-weight: 650; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{report_title}}</h1>
+    <p class="meta">Observed <time datetime="{{observed_at_iso}}">{{observed_at}}</time> · Scope: {{scope_name}}</p>
+  </header>
+
+  <section id="verdict" class="verdict">
+    <header><h2>Verdict</h2><p class="description">The reviewer's assessment at the stated observation cutoff.</p></header>
+    {{verdict_html}}
+  </section>
+
+  <section id="roadmap">
+    <header><h2>Roadmap</h2><p class="description">Each project appears once under its primary initiative.</p></header>
+    {{roadmap_html}}
+  </section>
+
+  <section id="program-status">
+    <header><h2>Per-program status</h2><p class="description">Review judgments summarize the roadmap and source evidence without repeating project rows.</p></header>
+    {{program_status_html}}
+  </section>
+
+  <section id="blockers">
+    <header><h2>Blockers by owner</h2><p class="description">Unique blocking tickets and their verified dependency chains.</p></header>
+    {{blockers_html}}
+  </section>
+
+  <section id="allocation">
+    <header><h2>Lane and server allocation</h2><p class="description">Current allocations from command output and structured lane responses.</p></header>
+    {{allocation_html}}
+  </section>
+
+  <section id="lead-reports">
+    <header><h2>What the leads reported</h2><p class="description">Structured replies attributed to the lane and observation time.</p></header>
+    {{lead_reports_html}}
+  </section>
+
+  <section id="linear-changes">
+    <header><h2>Linear changes made</h2><p class="description">Only owner-approved changes that were actually applied.</p></header>
+    {{linear_changes_html}}
+  </section>
+
+  <section id="owner-decisions">
+    <header><h2>Decisions needed from the owner</h2><p class="description">Open decisions with evidence and clear options.</p></header>
+    {{owner_decisions_html}}
+  </section>
+
+  <footer class="source">
+    <p>Sources: {{source_commands_html}}</p>
+    <p>Unavailable sources: {{unavailable_sources_html}}</p>
+  </footer>
+</body>
+</html>
