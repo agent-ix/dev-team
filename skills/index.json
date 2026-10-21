@@ -48,6 +48,13 @@
       ]
     },
     {
+      "name": "repo-auditor",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "status-report",
       "version": "0.1.0",
       "files": [

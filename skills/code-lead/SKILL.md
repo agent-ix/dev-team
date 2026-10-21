@@ -148,6 +148,16 @@ re-spec specced work. A spec-only ticket is done when its spec PR merges.
 Layered spec waves are planned by `/team-planner`; see
 [workflows.md](references/workflows.md).
 
+## Spec-gap handoff
+
+When implementation reveals behavior that the specification omits or
+contradicts, have the coder file a **spec-gap** issue in team **STD**, project
+**QSL Language Specification**, with the workspace label **spec-gap**. The
+issue states the missing or conflicting requirement and cites the code or
+acceptance evidence. Link the issue from the affected program ticket and keep
+it visible in the shared `Spec gaps` view; do not expand the implementation
+ticket silently.
+
 ## Per-ticket loop
 
 1. **Worktree** off fresh main, one per ticket:
