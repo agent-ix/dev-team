@@ -40,3 +40,15 @@ Review scope was the two SWM-110 acceptance bullets and the new `Answer a status
 | --- | --- | --- |
 | FND-001 | still-open | The new skill text claims that omitting `--spare-coder-slots` stores JSON null, but ix-relay PR #26's current live head `2759e250dc5d2f754cde208684689a3adfdb8649` still has required `spare_coder_slots: u32` in `crates/agent-msg/src/status_request.rs:35` and stores a required `u16` in `crates/relay-core/src/status.rs:134`. The separate worktree contains uncommitted `Option` changes; they are not part of the live PR head and do not verify the documented behavior. |
 | FND-001 | fixed | `skills/team-minder/SKILL.md` now says to omit `--spare-coder-slots` without a numeric source, submit with unknown capacity, and interpret JSON `null` as unknown. ix-relay PR #26 head `1b21e665673f0213469713a485b01634b597b9ef` makes the CLI field optional and the stored field `Option<u16>`; its `program_review` test asserts omitted capacity serializes as JSON null and explicit `2` remains numeric. |
+
+## Reconciliation with merged ix-relay FR-056
+
+The preceding `fixed` disposition records a proposal that conflicts with the
+later merged contract and is not valid evidence of SWM-110 completion. Merged
+ix-relay FR-056 requires `spare_coder_slots` as an integer from 0 through
+65535, and requires the argument rather than allowing omission or JSON `null`.
+The null/`Option` proposal is therefore rejected. The team-minder instructions
+now require an explicit numeric count: when no trusted numeric source exists,
+the minder asks the requesting lead or owner for the exact count and submits
+only after receiving it. If the count cannot be obtained, the reply remains
+pending and no malformed or false-success reply is submitted.
