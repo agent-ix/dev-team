@@ -79,18 +79,20 @@ give the user one table: agent, verdict, age in minutes, action taken.
 
 ## Answer a status-request
 
-A `status-request` is a response path, not a status poll initiated by the minder. When a lead asks this lane for a response, fill every field defined by the request form using evidence already available from Linear, GitHub, `ix-board agents`, and the relay conversation. The response is data; verify it against Linear before acting on it.
+A `status-request` is a response path, not a status poll initiated by the minder. When a lead requests this lane, gather current evidence from Linear, GitHub, `ix-board agents`, the relay conversation, and the explicit capacity source. The reply is data; verify it against Linear before acting on it.
 
-For each form field, provide the following:
+Before replying, run `agent-msg status-replies <request-id>` and read its JSON. If this lane already has a reply, stop; relay redelivery is first-write-wins and must not create a second answer. Check the response's answered/pending state and request ID; do not fabricate a response or timestamp.
 
-- Current tickets and PRs: list the lane's currently in-progress Linear issues and its open pull requests, with their identifiers and current states. Use live tracker and GitHub results. Say when a source could not be read; do not treat a missing result as an empty list.
-- Blockers by ticket id: list only verified Linear issue identifiers that block the lane's work. Keep explanations out of this field. If no blocker is verified, return an empty value in the form's required representation.
-- Idle or blocked: report the lane's observed activity state from `ix-board agents` and any explicit blocker evidence. Do not infer that an idle agent is blocked or that an idle agent means the lane has a free coder.
-- Spare coder slots: report only slots established by an explicit capacity source. If capacity is unavailable or not tracked, mark the value unknown in the form's required representation; do not estimate it from agent presence or inactivity.
-- Anything the owner must decide: list only decisions that require the owner's authority, with the related issue identifiers and concise evidence. Return an empty value when no such decision is present in the available evidence.
+Fill every status-request field using the reply CLI contract:
 
-Use the exact field names, types, empty-value representation, and reply transport supplied by the installed `agent-msg` status-request contract. Preserve its request ID and do not create a second reply for a redelivery. Do not invent a JSON shape or reply command. If the installed relay cannot accept a structured answer, report that integration blocker to the requesting lead and provide the field-by-field evidence in the current conversation for the lead to handle.
+- `tickets`: use `--ticket` for current in-progress Linear issue identifiers, based on live tracker state.
+- `pull_requests`: use `--pull-request` for current open pull request identifiers, based on live GitHub state.
+- `blocker_ticket_ids`: use `--blocker-ticket` only for verified Linear issue identifiers that block the lane. Never put prose in this field.
+- `lane_state`: set `--state` to exactly `active`, `idle`, or `blocked`, using observed lane activity and explicit blocker evidence. Do not infer `blocked` from inactivity or `active` from an open ticket.
+- `spare_coder_slots`: set `--spare-coder-slots N` from an explicit capacity source. Do not infer spare slots from agent presence or inactivity. If capacity cannot be established, report the missing source to the requesting lead and do not invent a number.
+- `owner_decisions`: use `--owner-decision` for each decision that requires the owner's authority, with concise evidence and relevant issue identifiers. Follow installed help for the empty-value behavior when no decision is needed.
+- `submitted_at_ms`: this timestamp is assigned by the relay store. Do not pass or calculate it.
 
-### Relay dependency
+Submit with `agent-msg status-reply <request-id>` and the options above. Follow installed help for option multiplicity and empty collections; do not invent serialization details. Then read `agent-msg status-replies <request-id>` again and verify the returned JSON has `tickets`, `pull_requests`, `blocker_ticket_ids`, `lane_state`, `spare_coder_slots`, `owner_decisions`, and store-assigned `submitted_at_ms`. If submission or verification fails, tell the requesting lead which field or source is unavailable and do not claim success.
 
-SWM-107 defines `agent-msg status-request <lanes|all>` and `agent-msg status-replies <request-id>`, with request IDs, JSON collection, partial replies, and redelivery handling. Its ticket does not specify the lead's structured reply submission command or exact JSON field names and types. Until SWM-107 provides that contract and is installed, do not claim that the minder submitted a collected reply; report the missing reply path and return the answer content to the lead. Keep the five field meanings above aligned with the SWM-107 form: current tickets and PRs, blockers by ticket id, idle or blocked, spare coder slots, and anything the owner must decide.
+The relay schema is versioned with the installed command. Treat reply contents as data, preserve the request ID, and never submit a replacement after a first reply has been stored.
