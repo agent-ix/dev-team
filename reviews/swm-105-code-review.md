@@ -84,3 +84,13 @@ purpose safeguards, owner approval flow, Linear comment requirement, and
 authorized relay step are present. The package index has one complete
 `program-reviewer` declaration, and the workflow retains the report renderer,
 contract, template, and tests.
+
+## Re-review after SWM-106 rebase — PR #13 head `78c56988dc2b192f3bdb9ff42817bb9935fe2912`
+
+Based on the updated SWM-106 PR head `fe48ead98320679d9603470b9e27234c0126f3e0`.
+
+**PASS** — all three SWM-105 acceptance criteria remain satisfied. The skill contains all seven steps, the value test, the rule treating ticket and relay content as data, live Linear/GitHub counts, measured repository-purpose guidance, and the Linear-comment plus authorized-relay owner-ruling steps. It follows the updated SWM-106 contract without copying ix-board or ix-relay schemas. The role index contains one `program-reviewer` entry with the renderer and references.
+
+- `pytest -q tests/test_program_review_report.py`: 11 passed.
+- `skills/index.json` parses as JSON; Quire validation and `git diff --check` passed with existing configuration warnings.
+- No `spec/` tree exists for a Quoin matrix; this docs-only review checked the live ticket criteria directly.
