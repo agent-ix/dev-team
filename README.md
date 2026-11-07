@@ -33,6 +33,8 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 
 `team-planner` and `status-report` use Linear and ix-board for structured project status and blockers. `reviewer` can invoke review methods from `dev-tools` and specification methods from Quoin when installed. `coder` can use `dev-tools:rust-style` for Rust work. Get companion plugins from the [Agent IX marketplace](https://github.com/agent-ix/agent-plugins) and install them as `ix-board@agent-ix`, `dev-tools@agent-ix`, or `quoin@agent-ix` when the corresponding methods are needed. The role skills report unavailable methods rather than inventing results.
 
+`team-retro` runs the `ix-board retro` commands (`snapshot`, `delta`, `backfill`) on a schedule, so it needs an `ix-board` build that includes them (`ix-board retro --help` lists them). It stores its data under `~/.local/state/team-retro` (or `$TEAM_RETRO_HOME`), outside every repository. `code-lead` includes `scripts/team-gate`, a wrapper that logs each gate run and re-pin for the retro; see `skills/code-lead/references/gate-log.md`.
+
 The planner accepts a new idea as well as an existing focus. For a large system it establishes domain boundaries, architecture layers, specifications, tests, and blocker relations before dispatching executable tickets. Its current source workflow came from Agent IX; check your own tracker and governance before applying it elsewhere.
 
 ## Install
