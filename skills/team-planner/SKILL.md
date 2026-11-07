@@ -30,6 +30,8 @@ Plan and coordinate work. Do not implement it. Linear is the issue tracker; GitH
 
 ## 2. Design the program at the right scale
 
+When a project holds more open tickets than one lead can track, or `team-retro` reports work that is busy but not landing, apply [backlog-to-waves](references/backlog-to-waves.md) before dispatching.
+
 - For a small change, define an acceptance criterion and a single owned issue when that is sufficient.
 - For a large system, map the domain, bounded contexts, invariants, owner interfaces, important change scenarios, failure modes, and measurable quality goals before implementation tickets.
 - Establish a reviewed architecture in layers. Specify the whole-system boundaries first, then plan a specification wave before each implementation wave. Identify the contract and evidence required to advance from one layer to the next.

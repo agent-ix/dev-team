@@ -54,6 +54,8 @@ owner. Do not use a fixed throughput threshold across projects.
   record those two times in its report. Count re-pin edits and
   ruling messages from the state record and linked Linear or leader messages.
 
+An independent `/team-retro` runs the same measures on a schedule from stored snapshots, with a baseline; use its findings as input to this retrospective.
+
 ## Respond to a repeating loop
 
 1. Stop new dispatches into that loop. Name the repeated step, what triggers
