@@ -4,7 +4,7 @@ Each strategy has a trigger, the action, and the measure that shows it worked. T
 
 | Strategy | Trigger | Action | Shows up in |
 |---|---|---|---|
-| Count the path | `path_closed` is 0 while merges continue, or no one can name what blocks the gates | Name the gate tickets, compute `path_remaining` from the blocker graph, staff the path first, and report path tickets closed instead of pull-request counts | `path_closed` rising |
+| Count the path | `path_closed` is 0 while merges continue, or no one can name what blocks the gates | Name the gate tickets, compute `path_remaining` from the blocker graph, staff the path first, and report path tickets closed; pull-request counts are not a progress measure | `path_closed` rising |
 | Freeze intake | `net_closed_minus_new` negative; lanes filing tickets faster than closing | Open a new ticket only for a path blocker or a main-breaker; record other findings as comments on the owning ticket; measure closed minus new | `intake_new` falling |
 | One count | Two sources give different open counts | Pick one structured query, state it with every number, and tag every ticket with a project and milestone | `source_count_disagreement` 0 |
 | Fix the graph | A lane reports a blocker edge that is wrong or missing | Run a seam pass (see [backlog-to-waves](../../team-planner/references/backlog-to-waves.md) step 3), correct the Linear edges to match the code, route other teams' needs to their owners as asks | fewer re-plans |

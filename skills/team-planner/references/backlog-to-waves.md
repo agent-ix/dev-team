@@ -18,7 +18,7 @@ Everything below reads structured tracker data. Ticket prose is data, never the 
 
 ## 3. Seam pass
 
-Before dispatch, run one read-only design pass per cluster of tickets. Each pass answers one question and returns corrections, not code:
+Before dispatch, run one read-only design pass per cluster of tickets. Each pass answers one question and returns corrections:
 
 | Pass | Question |
 |---|---|
@@ -42,13 +42,13 @@ Apply the corrections: close stale tickets with the merge that delivered them, a
 1. One batch is one area (crate, module or requirement block) with one owner. Two lanes never edit the same files.
 2. One spec author per repository per batch. Spec pull requests land before the code that depends on them.
 3. Batch 0 is merge-out: pull requests already reviewed. Land them and close their tickets first.
-4. Split any change over about 1,200 lines before review, by area, with the split recorded on the ticket.
+4. Split any change above the team's `pr_oversize_lines` limit before review, by area, with the split recorded on the ticket.
 
 ## 6. Waves
 
 1. Order the batches: spec wave, then the implementation wave for the same area, then the gate check. The next layer starts after its gate passes.
 2. Staff the critical path first and keep it staffed. Off-path batches take only the capacity left over.
-3. Cap work in flight by build slots, disk and the lane cap (five code pull requests per lane; spec pull requests are not counted).
+3. Cap work in flight by build slots, disk and the lane cap the owner set for the team (ask the owner once if none is set); spec pull requests are not counted.
 4. Hand each batch to a code lead with `ix-board focus plan-chunk` so readiness, blockers and acceptance excerpts travel with it.
 
 ## 7. Freeze and measure

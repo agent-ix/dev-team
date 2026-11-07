@@ -15,9 +15,11 @@ All retro data lives under `$TEAM_RETRO_HOME/<team>/` (default `~/.local/state/t
 ```markdown
 # Retro <team> <YYYY-MM-DD>
 
+Snapshot taken_at <UTC> · window <duration> · baseline <taken_at, kind> · lane cap <N, stated by the user>
+
 ## Measures
 | Metric | Value | Δ last | Δ baseline | Flag |
-(one row per metric; carry `unavailable` and `query_changed` as written)
+(one row per metric; carry `unavailable` and `query_changed` as written; a baseline column that is `unavailable` because the baseline is a backfill stays `unavailable`)
 
 ## Scores
 | Role | Check | Score | Evidence |
@@ -35,7 +37,7 @@ All retro data lives under `$TEAM_RETRO_HOME/<team>/` (default `~/.local/state/t
 ## Action line
 
 ```json
-{"id":"2026-11-07-1","opened":"2026-11-07","owner":"code-lead","action":"split PR over limit","status":"open","closed":null,"evidence":null}
+{"id":"2026-11-07-1","opened":"2026-11-07","owner":"code-lead","action":"split PR over limit","due":"next tick","status":"open","closed":null,"evidence":null}
 ```
 
 `status` is `open`, `done`, `dropped` or `escalated`. Close an action only with evidence that the condition no longer holds in the next snapshot. An action open for three ticks with no change becomes `escalated` and goes to the user as a decision with a recommendation.

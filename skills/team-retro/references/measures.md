@@ -20,20 +20,32 @@ Raise a flag only on the stated condition. The owner is the recipient.
 
 | Flag | Condition | Owner |
 |---|---|---|
-| Busy, not landing | `path_closed` is 0 and `prs_merged_per_hour` is above 0 in two consecutive snapshots | planner |
-| Intake outruns closure | `net_closed_minus_new` is negative in two consecutive snapshots | planner |
+| Busy without landing | `path_closed` is 0 and `prs_merged_per_hour` is above 0 in two consecutive ticks | planner |
+| Intake outruns closure | `net_closed_minus_new` is negative in two consecutive ticks | planner |
 | Uncountable plan | `issues_without_milestone` above 0 or `source_count_disagreement` above 0 | planner |
 | False done | `path_closed_unverified` above 0 or `done_reopened` above 0 | code lead |
-| Stalled review queue | `prs_ready_unmerged` above 0 in two consecutive snapshots | code lead |
+| Stalled review queue | `prs_ready_unmerged` above 0 in two consecutive ticks | code lead |
 | Idle or oversize pull requests | `prs_idle` or `prs_oversize` above 0 and increasing | code lead |
 | Main broken | `main_red_minutes` above 0 and rising | code lead |
-| Undelivered messages | `messages_undelivered` above 0 | the sender's lead |
-| Idle agents | `agents_working_share` falling for two snapshots | run `/team-minder`'s check, then the code lead |
+| Undelivered messages | `messages_undelivered` above 0 | code lead |
+| Idle agents | `agents_working_share` falling for two ticks | code lead |
 | Waiting decisions | `decisions_open` above 0 with `decision_oldest_hours` rising | the user |
-| Regressing metric | `delta` reports `regressing` for any metric | the owner of that family |
-| Data gap | a metric `unavailable` for three snapshots | the user (a configuration field is missing) |
+| Regressing metric | `delta` reports `regressing` for any metric | the family's owner from the table above |
+| Data gap | a metric `unavailable` with reason `not configured` for three snapshots | the user (a configuration field is missing) |
 
-A flag whose condition holds for the next tick is not sent again unless the numbers worsened.
+A flag whose condition holds for the next tick is not sent again unless the numbers worsened. A tick is one scheduled run; two snapshots taken minutes apart count as one. A metric that is `unavailable` with reason `herdr unavailable` or `empty population` is not a data gap: the first is an outage to mention once, the second is a valid result.
+
+## Owners
+
+| Family | Owner |
+|---|---|
+| progress, scope | planner |
+| flow, rework, stability, utilization, resource | code lead |
+| a decision waiting on the owner | user |
+
+## Reading `delta`
+
+`since_previous` and `since_baseline` carry a `state`: `changed` (with `change`, which is 0 when the value did not move), `unavailable`, or `query_changed` (with both queries). `regressing` is true only after the metric moved against its direction in each of the latest two comparisons, which needs three snapshots with comparable queries; backfilled records never count toward it.
 
 ## Subjective scores
 
@@ -41,7 +53,7 @@ The rubrics score what counters cannot: 2 = meets the stated anchor with cited e
 
 ## Baseline
 
-The first record in the store is the baseline unless the configuration names `baseline_taken_at`. Give a team a baseline from its past window with `ix-board retro backfill --config <file> --since <date> --until <date>`, once, using the same `--window` as every later snapshot; a comparison between records taken with different windows or thresholds is reported as `query_changed`, not as a change.
+The first record in the store is the baseline unless the configuration names `baseline_taken_at`. Give a team a baseline from its past window with `ix-board retro backfill --config <file> --since <date> --until <date>`, once, using the same `--window` as every later snapshot; a comparison between records taken with different windows or thresholds is reported as `query_changed` and carries no change value.
 
 Backfill reconstructs `prs_merged_per_hour`, `pr_cycle_median_hours`, `pr_cycle_p90_hours`, `path_closed`, `intake_new`, `net_closed_minus_new` and `done_reopened`. The Linear metrics use today's path set and project membership, because the past blocker graph is not recorded. Every other metric is `unavailable` in a backfilled record, so changes since the baseline exist for those seven only until the team has a baseline snapshot of its own. Backfill refuses a range that contains a snapshot and skips days it already wrote.
 

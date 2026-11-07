@@ -9,7 +9,10 @@
         "references/churn.md",
         "references/harness.md",
         "references/never.md",
-        "references/workflows.md"
+        "references/workflows.md",
+        "references/gate-log.md",
+        "scripts/team-gate",
+        "tests/team-gate-test.sh"
       ]
     },
     {
