@@ -18,7 +18,7 @@
 #
 # The gate command's exit status is returned unchanged. The log is never written
 # inside a git work tree, and no directory is created there. TERM is forwarded
-# to the gate command.
+# to the gate command, and the gate command keeps the wrapper's standard input.
 set -u
 
 usage() { echo "usage: team-gate gate --pr <N> -- <command> [args...] | team-gate repin --pr <N>" >&2; exit 2; }
@@ -86,9 +86,9 @@ trap '[ -z "$child" ] || kill -TERM "$child" 2>/dev/null' INT TERM
 inner='mark=$1; shift; date -u +%Y-%m-%dT%H:%M:%SZ > "$mark"; exec "$@"'
 if [ -n "${TEAM_GATE_LOCK:-}" ]; then
   # shellcheck disable=SC2086
-  $TEAM_GATE_LOCK sh -c "$inner" team-gate "$mark" "$@" &
+  $TEAM_GATE_LOCK sh -c "$inner" team-gate "$mark" "$@" <&0 &
 else
-  sh -c "$inner" team-gate "$mark" "$@" &
+  sh -c "$inner" team-gate "$mark" "$@" <&0 &
 fi
 child=$!
 wait "$child"

@@ -49,6 +49,8 @@ mkdir -p "$root/outside" && ln -s "$root/repo/f.jsonl" "$root/outside/g.jsonl"
 TEAM_GATE_LOG=$root/outside/g.jsonl "$gate" repin --pr 1 2>/dev/null; expect "symlinked log file refused" 2 $?
 [ ! -e "$root/repo/f.jsonl" ]; expect "nothing written through the symlink" 0 $?
 
+out=$(echo hello | "$gate" gate --pr 12 -- cat); expect "gate command keeps standard input" hello "$out"
+
 # bad TMPDIR does not stop the gate
 TMPDIR=$root/missing "$gate" gate --pr 9 -- true; expect "missing TMPDIR falls back" 0 $?
 
