@@ -41,4 +41,8 @@ The rubrics score what counters cannot: 2 = meets the stated anchor with cited e
 
 ## Baseline
 
-The first snapshot is the baseline unless `baseline_taken_at` names another. Run `ix-board retro backfill --config <file> --since <date>` once to give a team a baseline from its past window; the backfill reconstructs flow, `path_closed`, `intake_new`, `net_closed_minus_new` and `done_reopened` only. A target is a range the team sets after at least one full retro, per project.
+The first record in the store is the baseline unless the configuration names `baseline_taken_at`. Give a team a baseline from its past window with `ix-board retro backfill --config <file> --since <date> --until <date>`, once, using the same `--window` as every later snapshot; a comparison between records taken with different windows or thresholds is reported as `query_changed`, not as a change.
+
+Backfill reconstructs `prs_merged_per_hour`, `pr_cycle_median_hours`, `pr_cycle_p90_hours`, `path_closed`, `intake_new`, `net_closed_minus_new` and `done_reopened`. The Linear metrics use today's path set and project membership, because the past blocker graph is not recorded. Every other metric is `unavailable` in a backfilled record, so changes since the baseline exist for those seven only until the team has a baseline snapshot of its own. Backfill refuses a range that contains a snapshot and skips days it already wrote.
+
+A target is a range the team sets after at least one full retro, per project.

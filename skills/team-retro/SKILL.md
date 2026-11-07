@@ -11,7 +11,7 @@ The retro answers one question: is the team's work landing on its gate tickets, 
 
 ## Invocation
 
-`/team-retro <team> [--ticket <ID>] [interval]`, default interval 3h. `<team>` names the retro configuration file `$TEAM_RETRO_HOME/<team>/config.json` (default root `~/.local/state/team-retro`), whose fields are the `ix-board retro` configuration. `--ticket` names the Linear issue that receives the summary of each full retro; without it the summary goes to the user only. If the configuration file does not exist, stop and ask the user for the team's gate tickets, projects and repositories; do not guess them.
+`/team-retro <team> [--ticket <ID>] [interval]`, default interval 3h. `<team>` names the retro configuration file `$TEAM_RETRO_HOME/<team>/config.json` (default root `~/.local/state/team-retro`), whose fields are the `ix-board retro` configuration (`ix-board retro snapshot --help`; the field table is in the ix-board `docs/retro.md`). `--ticket` names the Linear issue that receives the summary of each full retro; without it the summary goes to the user only. If the configuration file does not exist, stop and ask the user for the team's gate tickets, projects and repositories; do not guess them.
 
 ## Communication
 
@@ -35,7 +35,7 @@ A session's crons expire. At every start, if CronList shows no loop for this tea
 ## Each tick
 
 1. Read the last retro in `$TEAM_RETRO_HOME/<team>/retros/` and `actions.jsonl`. Re-check every open action first; close it with evidence or carry it forward.
-2. Run `ix-board retro snapshot --config <file> --json` with the configuration's default window. Every tick uses the same window so deltas compare like with like.
+2. Run `ix-board retro snapshot --config <file> --json` with the default window (24h). Every tick, and any backfill, uses the same window so deltas compare like with like. `ix-board retro snapshot` also reads herdr, which can take up to 25 seconds when a machine is unreachable; the affected metrics are `unavailable`, not zero.
 3. Run `ix-board retro delta --config <file> --json`.
 4. Choose the tier. Run the **full retro** when no full retro exists today, when a gate ticket completed since the last full retro, or when the user asks. Otherwise run the **light tick**.
 
