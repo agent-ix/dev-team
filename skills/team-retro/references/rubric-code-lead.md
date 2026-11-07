@@ -9,7 +9,7 @@ Score each row 0, 1 or 2 and cite the evidence. The code lead dispatches, verifi
 | Work in flight | `prs_open` at or below the lane cap and `prs_idle` is 0 | One idle pull request with a reason | Several idle, or no cap | `snapshot` |
 | Pull-request size | `prs_oversize` is 0 | 1 with a split plan | More than 1 | `snapshot` |
 | Fix rounds | `fix_rounds_max` is 2 or less | 3 or 4 | 5 or more | `snapshot` |
-| Rework | `head_shas_per_pr_max` is 3 or less and `full_gates_max` is 2 or less | One exceeds | Both exceed | `snapshot` |
+| Rework | `head_force_pushes_max` is 1 or less and `full_gates_max` is 2 or less | One exceeds | Both exceed | `snapshot` |
 | Main health | `main_red_incidents` is 0 | 1 incident fixed inside the window | More than 1, or red longer than a gate cycle | `snapshot` |
 | Merge safety | Every merge in the window was at the reviewed head | One mismatch, corrected | Merged at an unseen head | `gh pr view`, merge records |
 | One directory per ticket | One worktree or clone per ticket, shared by coder, reviewer and gate | One duplicate, removed | Separate review clones | `worktrees_prunable`, `local_paths` listing |

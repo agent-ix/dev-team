@@ -8,7 +8,7 @@
 |---|---|---|
 | progress | `path_remaining`, `path_closed`, `intake_new`, `net_closed_minus_new`, `gates_remaining`, `path_closed_unverified` | Whether the work that unblocks the gate tickets is finishing faster than new work arrives. The headline pair is `path_closed` and `net_closed_minus_new`. |
 | flow | `prs_merged_per_hour`, `pr_cycle_median_hours`, `pr_cycle_p90_hours`, `prs_open`, `prs_idle`, `prs_oversize`, `prs_ready_unmerged` | How fast pull requests move. Read next to progress: high flow with no `path_closed` is activity that does not reach the gates. |
-| rework | `fix_rounds_max`, `fix_rounds_total`, `head_shas_per_pr_max`, `done_reopened`, `full_gates_max`, `repins_total` | Work done twice: review rounds, rewritten heads, reopened tickets, repeated gates and re-pins. |
+| rework | `fix_rounds_max`, `fix_rounds_total`, `head_force_pushes_max`, `done_reopened`, `full_gates_max`, `repins_total` | Work done twice: review rounds, force-pushed heads, reopened tickets, repeated gates and re-pins. |
 | stability | `main_red_incidents`, `main_red_minutes` | How often and how long the default branch was broken. |
 | scope | `issues_without_project`, `issues_without_milestone`, `in_progress_stale`, `source_count_disagreement`, `decisions_open`, `decision_oldest_hours` | Whether the plan is countable, owned and decided. |
 | utilization | `agents_working_share`, `agents_idle_minutes_max`, `messages_undelivered` | Whether agents are working and whether messages reach them. |
