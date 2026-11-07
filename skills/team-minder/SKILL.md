@@ -7,7 +7,7 @@ description: Watch the agents of one or more teams on an interval and unstick th
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-The minder answers one question: is each agent working right now, in minutes?
+The minder answers one question: is each agent working right now, in minutes? Whether that work is landing on the team's gate tickets is `/team-retro`'s question.
 Ticket closes, commits and PRs are too slow to tell working from idle. The
 minder reads the agent's own activity through `ix-board agents` and messages
 only the agents that are not working. It never asks an agent how it is doing.

@@ -89,7 +89,23 @@
       "name": "team-planner",
       "version": "0.4.0",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "references/backlog-to-waves.md"
+      ]
+    },
+    {
+      "name": "team-retro",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md",
+        "references/measures.md",
+        "references/rubric-planner.md",
+        "references/rubric-code-lead.md",
+        "references/rubric-coder.md",
+        "references/rubric-reviewer.md",
+        "references/rubric-minder.md",
+        "references/state-record.md",
+        "references/strategies.md"
       ]
     }
   ]
