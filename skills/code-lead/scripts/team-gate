@@ -17,11 +17,13 @@
 #                   slot is free (for example `lockf /tmp/build.lock`)
 #
 # The gate command's exit status is returned unchanged. The log is never written
-# inside a git work tree.
+# inside a git work tree, and no directory is created there. TERM is forwarded
+# to the gate command.
 set -u
 
 usage() { echo "usage: team-gate gate --pr <N> -- <command> [args...] | team-gate repin --pr <N>" >&2; exit 2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+refuse() { echo "team-gate: refusing to write the gate log inside a git work tree: $1" >&2; exit 2; }
 
 kind=${1:-}; [ -n "$kind" ] || usage; shift
 pr=
@@ -45,20 +47,27 @@ else
   [ -n "${TEAM:-}" ] || { echo "team-gate: set TEAM or TEAM_GATE_LOG" >&2; exit 2; }
   log=${TEAM_RETRO_HOME:-$HOME/.local/state/team-retro}/$TEAM/gate.jsonl
 fi
+[ ! -L "$log" ] || { echo "team-gate: the gate log path is a symbolic link: $log" >&2; exit 2; }
 
+# Resolve the nearest existing ancestor of the log directory and check it, and
+# every directory above it, for a .git entry before anything is created.
 dir=$(dirname "$log")
-mkdir -p "$dir" || exit 2
-real=$(cd "$dir" && pwd -P) || exit 2
-probe=$real
-while :; do
-  if [ -e "$probe/.git" ]; then
-    echo "team-gate: refusing to write the gate log inside a git work tree: $real" >&2
-    exit 2
-  fi
-  [ "$probe" = "/" ] && break
+tail=
+probe=$dir
+while [ ! -d "$probe" ]; do
+  tail=$(basename "$probe")${tail:+/$tail}
   probe=$(dirname "$probe")
 done
-log=$real/$(basename "$log")
+real=$(cd "$probe" && pwd -P) || exit 2
+check=$real
+while :; do
+  [ ! -e "$check/.git" ] || refuse "$real${tail:+/$tail}"
+  [ "$check" = "/" ] && break
+  check=$(dirname "$check")
+done
+target=$real${tail:+/$tail}
+mkdir -p "$target" || exit 2
+log=$target/$(basename "$log")
 
 if [ "$kind" = repin ]; then
   t=$(now)
@@ -67,20 +76,33 @@ if [ "$kind" = repin ]; then
   exit 0
 fi
 
+tmp=${TMPDIR:-/tmp}
+[ -d "$tmp" ] || tmp=/tmp
 requested=$(now)
-mark=$(mktemp "${TMPDIR:-/tmp}/team-gate.XXXXXX") || exit 2
-trap 'rm -f "$mark"' EXIT INT TERM
+mark=$(mktemp "$tmp/team-gate.XXXXXX") || exit 2
+child=
+trap 'rm -f "$mark"' EXIT
+trap '[ -z "$child" ] || kill -TERM "$child" 2>/dev/null' INT TERM
 inner='mark=$1; shift; date -u +%Y-%m-%dT%H:%M:%SZ > "$mark"; exec "$@"'
 if [ -n "${TEAM_GATE_LOCK:-}" ]; then
   # shellcheck disable=SC2086
-  $TEAM_GATE_LOCK sh -c "$inner" team-gate "$mark" "$@"
+  $TEAM_GATE_LOCK sh -c "$inner" team-gate "$mark" "$@" &
 else
-  sh -c "$inner" team-gate "$mark" "$@"
+  sh -c "$inner" team-gate "$mark" "$@" &
 fi
+child=$!
+wait "$child"
 rc=$?
+if kill -0 "$child" 2>/dev/null; then
+  wait "$child"
+  rc=$?
+fi
 finished=$(now)
 acquired=$(cat "$mark" 2>/dev/null)
-[ -n "$acquired" ] || acquired=$requested
+if [ -z "$acquired" ]; then
+  echo "team-gate: the lock command ended before the gate command started; nothing logged" >&2
+  exit "$rc"
+fi
 printf '{"pr":%s,"kind":"gate","requested_lock_at":"%s","acquired_lock_at":"%s","started_at":"%s","finished_at":"%s"}\n' \
   "$pr" "$requested" "$acquired" "$acquired" "$finished" >> "$log"
 exit "$rc"

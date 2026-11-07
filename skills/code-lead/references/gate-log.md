@@ -20,3 +20,5 @@ is zero. The wrapper returns the gate command's exit status unchanged.
 The log is `$TEAM_RETRO_HOME/$TEAM/gate.jsonl` (default root
 `~/.local/state/team-retro`), or the path in `TEAM_GATE_LOG`. The wrapper
 refuses to write inside a git work tree. Never commit the log.
+
+If the lock command ends before the gate command starts, nothing is logged and the lock command's status is returned. TERM sent to the wrapper is forwarded to the gate command. Tests: `sh skills/code-lead/tests/team-gate-test.sh`.
