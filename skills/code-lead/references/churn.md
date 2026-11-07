@@ -48,7 +48,8 @@ owner. Do not use a fixed throughput threshold across projects.
 - Use `linear issue comment list <TICKET> --json` for the `/reviewer` and
   `reviewer-dispositions` markers. Their PR and round identify the real review
   sequence. GitHub review counts are not the source of record.
-- Read each lane's gate log and the build-lock log for timestamps and result.
+- Read each lane's gate log and the build-lock log for timestamps and result. Gates run through
+  `scripts/team-gate` write that log; see [gate-log.md](gate-log.md).
   If the lock script does not record request/acquisition times, have the coder
   record those two times in its report. Count re-pin edits and
   ruling messages from the state record and linked Linear or leader messages.
