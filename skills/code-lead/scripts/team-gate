@@ -1,0 +1,86 @@
+#!/bin/sh
+# team-gate: run a team's aggregate gate and append one line to the gate log.
+#
+#   team-gate gate  --pr <N> -- <command> [args...]
+#   team-gate repin --pr <N>
+#
+# The log is JSONL, one line per gate run or dependency re-pin:
+#   {"pr":N,"kind":"gate|repin","requested_lock_at":...,"acquired_lock_at":...,
+#    "started_at":...,"finished_at":...}   (UTC, ISO 8601; no commit hashes)
+#
+# Environment:
+#   TEAM            team name; selects the default log directory (required unless
+#                   TEAM_GATE_LOG is set)
+#   TEAM_RETRO_HOME state root, default ~/.local/state/team-retro
+#   TEAM_GATE_LOG   full log path, overrides the default <root>/<TEAM>/gate.jsonl
+#   TEAM_GATE_LOCK  optional lock command that runs its arguments once a build
+#                   slot is free (for example `lockf /tmp/build.lock`)
+#
+# The gate command's exit status is returned unchanged. The log is never written
+# inside a git work tree.
+set -u
+
+usage() { echo "usage: team-gate gate --pr <N> -- <command> [args...] | team-gate repin --pr <N>" >&2; exit 2; }
+now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+kind=${1:-}; [ -n "$kind" ] || usage; shift
+pr=
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --pr) [ $# -ge 2 ] || usage; pr=$2; shift 2 ;;
+    --) shift; break ;;
+    *) usage ;;
+  esac
+done
+case "$pr" in ''|*[!0-9]*) echo "team-gate: --pr must be a number" >&2; exit 2 ;; esac
+case "$kind" in
+  gate) [ $# -gt 0 ] || usage ;;
+  repin) [ $# -eq 0 ] || usage ;;
+  *) usage ;;
+esac
+
+if [ -n "${TEAM_GATE_LOG:-}" ]; then
+  log=$TEAM_GATE_LOG
+else
+  [ -n "${TEAM:-}" ] || { echo "team-gate: set TEAM or TEAM_GATE_LOG" >&2; exit 2; }
+  log=${TEAM_RETRO_HOME:-$HOME/.local/state/team-retro}/$TEAM/gate.jsonl
+fi
+
+dir=$(dirname "$log")
+mkdir -p "$dir" || exit 2
+real=$(cd "$dir" && pwd -P) || exit 2
+probe=$real
+while :; do
+  if [ -e "$probe/.git" ]; then
+    echo "team-gate: refusing to write the gate log inside a git work tree: $real" >&2
+    exit 2
+  fi
+  [ "$probe" = "/" ] && break
+  probe=$(dirname "$probe")
+done
+log=$real/$(basename "$log")
+
+if [ "$kind" = repin ]; then
+  t=$(now)
+  printf '{"pr":%s,"kind":"repin","requested_lock_at":"%s","acquired_lock_at":"%s","started_at":"%s","finished_at":"%s"}\n' \
+    "$pr" "$t" "$t" "$t" "$t" >> "$log"
+  exit 0
+fi
+
+requested=$(now)
+mark=$(mktemp "${TMPDIR:-/tmp}/team-gate.XXXXXX") || exit 2
+trap 'rm -f "$mark"' EXIT INT TERM
+inner='mark=$1; shift; date -u +%Y-%m-%dT%H:%M:%SZ > "$mark"; exec "$@"'
+if [ -n "${TEAM_GATE_LOCK:-}" ]; then
+  # shellcheck disable=SC2086
+  $TEAM_GATE_LOCK sh -c "$inner" team-gate "$mark" "$@"
+else
+  sh -c "$inner" team-gate "$mark" "$@"
+fi
+rc=$?
+finished=$(now)
+acquired=$(cat "$mark" 2>/dev/null)
+[ -n "$acquired" ] || acquired=$requested
+printf '{"pr":%s,"kind":"gate","requested_lock_at":"%s","acquired_lock_at":"%s","started_at":"%s","finished_at":"%s"}\n' \
+  "$pr" "$requested" "$acquired" "$acquired" "$finished" >> "$log"
+exit "$rc"
