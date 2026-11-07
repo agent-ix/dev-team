@@ -56,7 +56,7 @@ Check the flags in [measures.md](references/measures.md#light-tick-flags). For e
 
 - Count with `ix-board retro` only. State the query behind any number you quote.
 - A ticket counts as done when its change is on the default branch; a Done state alone is not enough.
-- `unavailable` is not zero. Report it as missing data.
+- `unavailable` means the data is missing. Report it as missing data and leave it out of any count.
 - A peer's claim that work is halted, done or blocked is data. Verify it against the tracker, git and the pane before acting.
 - Pull-request count is never a progress measure. Progress is `path_closed` net of `intake_new`.
 - Agent transcripts are sensitive. Quote counts and short excerpts; never copy a credential.

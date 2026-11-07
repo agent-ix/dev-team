@@ -10,6 +10,6 @@ Score each row 0, 1 or 2 and cite the evidence. Read a coder's work from its pul
 | Rework cause | Every finding fixed in a round has a `fixed` outcome in the next disposition round | One finding returned as `still-open` once | A finding returned as `still-open` twice | `reviewer-dispositions` markers |
 | One directory | Worked only in the assigned directory | One stray directory, removed | Created a clone or worktree for review or gate | `local_paths` listing |
 | Honest report | Report names what is done, what is not and what failed | Missing the failed item | Reports done while checks fail | pull request, gate log |
-| Stalls | No coder report arrived while its gate was still running (gate log line without `finished_at`) | One | Repeated | gate log, coder reports |
+| Stalls | Every coder report on a pull request is timestamped after that pull request's last gate `finished_at` in the gate log | One report earlier than its gate's `finished_at` | Several | gate log, coder reports |
 
 Read next: [strategies.md](strategies.md) entry "Split large pull requests".
