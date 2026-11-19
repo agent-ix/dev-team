@@ -5,13 +5,14 @@ gate run or dependency re-pin. The retro tooling (`ix-board retro snapshot`)
 reads that log for full gates per PR, re-pins and build-lock wait, so run every
 gate through it.
 
-Run from the repository root after configuring `TEAM`, `PR_NUMBER` and
-`TEAM_GATE_LOCK` for this lane's current admission policy.
+Run in the target repository after setting `DEV_TEAM_ROOT` to this plugin's
+resolved installation directory and configuring `TEAM`, `PR_NUMBER` and
+`TEAM_GATE_LOCK` for the lane's current admission policy.
 
 ```bash
 TEAM="$TEAM" TEAM_GATE_LOCK="$TEAM_GATE_LOCK" \
-  skills/code-lead/scripts/team-gate gate --pr "$PR_NUMBER" -- make ci
-TEAM="$TEAM" skills/code-lead/scripts/team-gate repin --pr "$PR_NUMBER"
+  "$DEV_TEAM_ROOT/skills/code-lead/scripts/team-gate" gate --pr "$PR_NUMBER" -- make ci
+TEAM="$TEAM" "$DEV_TEAM_ROOT/skills/code-lead/scripts/team-gate" repin --pr "$PR_NUMBER"
 ```
 
 Each line carries `pr`, `kind` (`gate` or `repin`), `requested_lock_at`,
