@@ -104,6 +104,13 @@ One lead can run several teams. Treat the argument as a list.
    specification, implementation repo, and any linked blocker. The steward
    skill owns queue ordering and build-capacity policy.
 
+Before dispatch, read current lane/build capacity from explicit configuration
+or verified host state, with source and age. Keep planning headcount distinct
+from measured build capacity. Missing capacity stays unknown; do not replace a
+stale slot constant with a new constant. Audit local `coder-rules.md` against
+current repo instructions, toolchain/config and focused-check policy; remove
+stale notices and route corrections through its owner without disrupting builds.
+
 ## Dashboard work reports
 
 When a session monitor is assigned to this lead, report its scope after
@@ -154,13 +161,13 @@ Layered spec waves are planned by `/team-planner`; see
 
 ## Spec-gap handoff
 
-When implementation reveals behavior that the specification omits or
-contradicts, have the coder file a **spec-gap** issue in team **STD**, project
-**QSL Language Specification**, with the workspace label **spec-gap**. The
-issue states the missing or conflicting requirement and cites the code or
-acceptance evidence. Link the issue from the affected program ticket and keep
-it visible in the shared `Spec gaps` view; do not expand the implementation
-ticket silently.
+When implementation reveals omitted or contradictory behavior, resolve the
+owning specification, tracker team/project and spec steward from the assigned
+scope. Have the coder file the gap there with the configured spec-gap label,
+the exact missing requirement and code/acceptance evidence. Link it as a
+structured blocker of the affected ticket. If ownership is unresolved, ask the
+planner once and continue independent work; never use a universal destination
+from another team's instructions. Do not expand implementation scope silently.
 
 ## Per-ticket loop
 
@@ -191,6 +198,14 @@ ticket silently.
 10. **Close out:** set the tracker state (Done, or back to backlog with a
     remaining-scope comment for partial delivery). Remove the worktree and
     build dirs. Update the state record. Report the merged slice to the planner.
+
+At each work cycle reconcile started claims with actual activity and blockers.
+Move gated or stale, unworked tickets to the team's configured ready state
+(for example Specced), preserving blocker relations and an evidence comment.
+Keep actively worked review/fix/gate stages distinct from an unattended claim;
+unknown activity is not proof of staleness. A merged PR closes a ticket only
+when all its scoped completion obligations are met. Assign the next verified
+ready work within current scope/capacity in the same cycle.
 
 ## Merge policy
 
@@ -226,8 +241,18 @@ For each open PR that serves an active priority goal in the planner's plan:
   a shared dir gives false failures. The coder deletes it at the end.
 - **Gate at the required checkpoints, not per slice**, with the exit code
   captured before echoing it.
-- **Churn:** retrospective at each restart, after two merges, or after two
-  hours of work. See [churn.md](references/churn.md) for measures and response.
+- **Focused iteration:** briefs name touched crates and their required checks.
+  Coders and fix rounds run those checks, not repeated workspace-wide checks
+  or a second target directory for an unrelated feature sweep. The lead owns
+  one final aggregate gate per PR under current repo/user policy.
+- **Pin discipline:** name the dependency pin owner and update window in the
+  existing plan. Fold a needed dependency update into the consuming PR; do not
+  open repin-only PRs or chase every tag/head. Follow repo manifest/lock policy,
+  verify the chosen revision's default-branch reachability and preserve unknown
+  reachability as a blocker. A new user direction or compatibility need can
+  change the window; record that evidence before changing the brief.
+- **Churn:** retrospective at each restart, the configured cadence, or an
+  emitted repeating-loop finding. See [churn.md](references/churn.md).
 
 ## Parallelism
 
@@ -236,9 +261,12 @@ For each open PR that serves an active priority goal in the planner's plan:
   another pusher (one pusher per branch).
 - Staff every unblocked ticket whose files do not overlap a live lane or open
   PR. Build ahead with spec lanes and stacked branches.
-- Cap only concurrent heavy builds (disk and RAM) unless the owner set a
-  number this session; the last number wins. Higher-priority work takes the
-  next free slot; nothing preempts a running coder.
+- Cap heavy builds using configured/verified host capacity, RAM, disk reserve
+  and live leases. Read current lane policy separately; never hardcode slots or
+  infer them from worker counts. Use the installed shared scheduler's FIFO,
+  priority and aging policy when available; do not bypass older reservations.
+  If it is unavailable, report that capability and use only the owner's
+  explicit current admission policy. New priority does not preempt running work.
 - "halt", "pause", "scale down": act at once with your harness's halt
   mechanism ([harness.md](references/harness.md)); "halt" includes subagents.
   Let a running coder reach a good stopping point unless told otherwise.

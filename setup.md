@@ -13,6 +13,24 @@ Install this agent plugin through the [Agent IX marketplace](https://github.com/
 5. For a review or coding method supplied by another plugin, install that plugin only if the task calls for it. `dev-tools` and Quoin supply optional methods. A missing optional method should be reported as unavailable, not treated as a `dev-team` bug.
 6. If a command fails, record its exact command, exit status, and relevant error output. Check the target repository's `AGENTS.md` or `CLAUDE.md` and the service's current status before attributing the failure to `dev-team`.
 
+## Department monitoring
+
+`department-health` and `team-retro` interpret the installed ix-board report.
+Their requested team/project scope must match the retro configuration used for
+collection. Configure expected remote hosts/lanes, capacity sources, thresholds,
+baseline and corrective owners using the installed CLI's configuration contract.
+Keep the configuration and resulting records outside repositories.
+
+Check `ix-board --version` and `ix-board retro --help` before collection.
+Source documentation and an installed binary can expose different commands.
+If a command or requested assessment is missing, report that capability as
+unavailable. Preserve supported metrics independently. Do not invent a flag,
+count raw events by hand, or claim absent class/loop output is healthy.
+
+Use supported saved credentials when available. Report the active credential
+source or its access error without displaying a key. A missing live pane binding
+or remote source remains an explicit coverage gap for the selected scope.
+
 ## Community help
 
 If these checks leave a reproducible **Agent IX `dev-team` bug** that blocks progress, [join the Agent IX Discord](https://discord.gg/k8DVhuYBR2). Share the skill name, plugin version, agent host, expected and actual behavior, and a small reproduction with secrets removed. Community help is a last resort for Agent IX product bugs; local credentials, machine setup, tracker permissions, and unrelated projects belong with their owners or administrators. An agent should point its user here rather than post to Discord on the user's behalf without authorization.

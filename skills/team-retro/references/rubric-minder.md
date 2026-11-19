@@ -1,19 +1,23 @@
 # Minder rubric
 
-Score each row 0, 1 or 2 and cite the evidence. This scores `team-minder`.
+Score 2/1/0 with cited judgment. Deterministic measurements come from ix-board;
+missing or partial evidence scores `n/a` under Data quality.
 
 | Check | 2 | 1 | 0 | Evidence |
 |---|---|---|---|---|
-| Loop alive | A minder loop exists for the team (scheduler listing; `n/a` when the harness has none) and a minder message or a clean tick is visible in the last interval | Ticked late | No loop, or it stopped without the user's word | scheduler listing, `agent-msg log --since 24h` |
-| No unauthorised stop | The loop was cancelled only on the user's word | Paused with a recorded reason | Cancelled on a peer's claim | transcript |
-| Idle recovery | Each confirmed idle agent messaged once; resumed within one interval | Resumed after a second interval | Stayed idle after a message | Complete `ix-board agents` evidence, relay log |
-| Waiting and recent activity | `WAITING` and `RECENT` observed without nudges; unknown evidence reported | One unnecessary nudge, corrected | Repeated nudges or unknown treated as idle | Agent verdicts, source availability, relay log |
-| Delivery checked | Messages were confirmed queued and the agent resumed | Delivered, resumption not checked | A failed delivery read as success | relay log |
-| Message hygiene | Only done, blocked, decision or handoff messages sent | Occasional status message | Repeated polls or progress messages | relay log |
-| Scope | Reported only on its own team's agents | One out-of-scope message | Reported on other teams | relay log |
+| Loop alive | Scheduled observation confirmed | Late tick has remedy | Loop stopped without user direction | Scheduler evidence |
+| Scope coverage | Every configured host/lane accounted for | Gap explicitly routed | Omitted remote lanes treated healthy | Configured scope and source coverage |
+| Liveness | Pane lifecycle reconciled with movement/tokens | Conflict kept unknown | Legacy counts or relay seen treated as work | Verified pane/PR/worktree/token observations |
+| Waiting/recent | Observed without nudges | Incorrect nudge corrected | Repeated nudge or unknown treated idle | Lifecycle provenance and actions |
+| Login blocker | Verified auth screen routed this tick | Owner remedy pending | Login screen reported working | Verified pane and owned blocker |
+| Overdue order | Configured deadline breach escalated this tick | Escalation lacks route, reported | Known overdue order ignored | Emitted overdue assessment and action |
+| Confirmation | Actual pane/PR-head/SHA cited | Explicitly unconfirmed with owner | Enqueued/delivered claimed as acted on | Order confirmation record |
+| Message hygiene | One actionable batch, no blind retry | Excess corrected | Repeated polls or duplicate sends | Attributed comms assessment |
 
-Read next: [strategies.md](strategies.md) entry "Verify delivery".
+Never infer zero from a missing worker field or recover a partial `IDLE` /
+`WAITING-STUCK` row. Preserve the
+[minder's lifecycle rollout contract](../../team-minder/SKILL.md#reading-worker-counts-during-rollout).
+An unconfirmed order does not justify a blind resend or authentication approval.
+Use configured acknowledgement policy; an absent policy remains unavailable.
 
-Score recovery only with complete relevant evidence. Legacy verdicts require
-the [minder's rollout checks](../../team-minder/SKILL.md#reading-worker-counts-during-rollout).
-Unavailable evidence scores `n/a` and belongs under Data quality.
+Read next: [strategies](strategies.md).

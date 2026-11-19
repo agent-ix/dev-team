@@ -34,13 +34,26 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 ## 2. Build
 
 - Behaviour only, backed by tests for the ticket's acceptance criteria. No exhaustive suites beyond them.
-- If implementation reveals that the specification is missing or contradicts required behavior, stop work on that scope and file a **spec-gap** issue in team **STD**, project **QSL Language Specification**, with the workspace label **spec-gap**. State the missing or conflicting requirement and cite the implementation evidence. Tell the leader the issue ID and continue independent work; do not silently broaden the ticket.
+- If required behavior is missing or contradictory in the spec, stop that scope
+  and file a spec-gap in the owning specification's configured team/project,
+  with requirement and code/acceptance evidence. Get that route from the brief
+  or lead; unresolved ownership goes to the lead once. Do not copy another
+  team's tracker destination. Link the affected ticket and continue independent
+  work; do not silently broaden scope.
 - Ask "does running code read this today?" before adding a gate, pin, config or abstraction. If nothing reads it, use a plain value and move on.
 - No compatibility layers, no vendoring or copying files between repos, and never propose them. Comments explain code, never narrate history or cite tickets.
 - Commit early, and always before running a gate.
 - Cheap tier first, in this order: batch the related code and test edits together, run format, lint and compile, then the focused red/green tests. Do not start an expensive environment (disposable database, external service) until this tier is clean.
 - Each new failing test must fail for the intended reason: its assertion names the targeted behaviour, not a setup error or compile error. Where cheap, revert the code under test to confirm red on the old behaviour and green on the fix.
 - While iterating, run only the tests and lint the change touches.
+- For Rust, name touched crates and use their focused check/lint/test targets.
+  Do not add workspace-wide feature sweeps or duplicate target directories to
+  the brief by habit. The lead runs one final aggregate gate after review.
+- Read build admission/capacity from the brief's current config or verified
+  host source. Never embed a slot count or infer spare slots from agents.
+  Report missing capacity or a stale coder-rule/toolchain notice to the lead;
+  do not change other lanes' active builds. Fold necessary pins into this
+  consuming PR under the assigned pin owner/window; no repin-only PRs.
 
 ## 3. Focused checks before review
 

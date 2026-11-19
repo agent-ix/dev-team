@@ -3,7 +3,10 @@
 [![Agent IX Plugins](https://github.com/agent-ix/agent-plugins/raw/refs/heads/main/assets/agent-ix-plugins.svg)](https://github.com/agent-ix/agent-plugins)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](https://discord.gg/k8DVhuYBR2)
 
-Team planning, leadership, coding and review roles, feature coordination, and program status skills.
+dev-team is a set of engineering role and monitoring skills for coding agents.
+
+Plan work, run coding and review lanes, and inspect department bottlenecks with
+evidence, owners and next actions.
 
 ## Setup
 
@@ -21,6 +24,7 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | `code-lead` | Run a team's coding lane through specs, coding, review, and merge. |
 | `team-minder` | Watch a team's agents on an interval and unstick idle or blocked ones by message. |
 | `team-retro` | Measure on a schedule whether a team's work is landing on its gate tickets, score each role, and name the repeating loops. |
+| `department-health` | Inspect planning, flow, churn and capacity across selected teams or projects. |
 | `coder` | Implement an assigned ticket in its worktree and open the PR. |
 | `reviewer` | Run applicable review methods and record findings against a PR and ticket. |
 | `feature-request` | Record a new capability request as a buildable Linear ticket. |
@@ -34,6 +38,11 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 `team-planner` and `status-report` use Linear and ix-board for structured project status and blockers. `reviewer` can invoke review methods from `dev-tools` and specification methods from Quoin when installed. `coder` can use `dev-tools:rust-style` for Rust work. Get companion plugins from the [Agent IX marketplace](https://github.com/agent-ix/agent-plugins) and install them as `ix-board@agent-ix`, `dev-tools@agent-ix`, or `quoin@agent-ix` when the corresponding methods are needed. The role skills report unavailable methods rather than inventing results.
 
 `team-retro` runs the `ix-board retro` commands (`snapshot`, `delta`, `backfill`) on a schedule, so it needs an `ix-board` build that includes them (`ix-board retro --help` lists them). It stores its data under `~/.local/state/team-retro` (or `$TEAM_RETRO_HOME`), outside every repository. `code-lead` includes `scripts/team-gate`, a wrapper that logs each gate run and re-pin for the retro; see `skills/code-lead/references/gate-log.md`.
+
+`department-health` reads the same snapshots and deltas for selected scopes.
+It shows supported class assessments, trends, evidence and corrective owners.
+Check the installed command surface and configuration in the
+[setup guide](setup.md); missing metrics remain explicitly unavailable.
 
 The planner accepts a new idea as well as an existing focus. For a large system it establishes domain boundaries, architecture layers, specifications, tests, and blocker relations before dispatching executable tickets. Its current source workflow came from Agent IX; check your own tracker and governance before applying it elsewhere.
 
