@@ -37,6 +37,8 @@ The ix-board retro collector SHALL compute each measure in the
 | FR-002-AC-4 | Missing state history, truncated relations, unknown message classification and an unavailable remote host make the corresponding metrics unavailable without lowering counts or denominators. | Test |
 | FR-002-AC-5 | Previous/baseline comparisons include absolute changes and direction; incompatible query/config/catalog identity emits query_changed. Empty and singleton duration populations follow the catalog rules. | Test |
 | FR-002-AC-6 | A department scorecard lists all ten problem classes, source age, available trend, threshold and one configured owner/action for each red; missing owner configuration is visible as unrouted rather than guessed. | Test |
+| FR-002-AC-7 | A newly started claim without movement is excluded from claims_without_movement until its latest start/claim age exceeds the configured stale interval. An older claim without subsequent movement counts; recent movement or a restarted claim excludes it; missing claim history makes the metric unavailable. | Test |
+| FR-002-AC-8 | Required metric mixes red+unknown and amber+unknown produce red and amber with complete=false and missing IDs; green+unknown produces unknown; all-green produces green with complete=true; an empty required set produces unknown. Optional metric statuses do not alter these results. | Test |
 
 ## Dependencies
 

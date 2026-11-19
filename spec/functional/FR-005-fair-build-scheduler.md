@@ -26,15 +26,24 @@ crash is failed. Every transition emits a stable event ID and timestamps.
 
 The effective priority is `base_priority + floor(wait/aging_interval)`, with
 lower enqueue sequence breaking ties. Base priorities lie in configured finite
-range `[0,P]`; aging interval is configured positive. Once the oldest eligible
-request reaches `(P+1)*aging_interval`, it becomes the reserved next request:
-newer work cannot consume capacity it needs. Running leases are not preempted
-for priority. With finite hold limits and sufficient host capacity, the reserved
-request starts after existing leases release. Requests larger than maximum host
-capacity fail admission; they do not block the queue indefinitely.
+range `[0,P]`; aging interval is configured positive. Reservation eligibility
+means the request fits the host's total current configured/verified capacity,
+regardless of how much capacity is currently free. Once the oldest such queued
+request reaches `(P+1)*aging_interval`, it becomes the reserved next request.
+Until it starts, newer requests cannot consume freed units on that host: released
+units accumulate until the reservation's full resource request is available.
+Running leases are not preempted for priority. With finite hold limits and
+sufficient total host capacity, the reserved request starts after existing leases
+release. Requests larger than the configured maximum host capacity fail
+admission; they do not block the queue indefinitely. A temporary capacity shrink
+below a reserved request's size suspends its reservation with a capacity-blocked
+reason; restoring sufficient total capacity restores eligibility with its
+original enqueue time and age.
 
 Capacity shrink prevents new grants until capacity is sufficient; it does not
-kill running work. Missing/stale capacity or disk below configured reserve
+kill running work. Existing occupancy above the reduced capacity is reported as
+overcommit; no new grant can exceed current capacity or duplicate leased units.
+Missing/stale capacity or disk below configured reserve
 blocks admission with reason. A configured hold deadline sends termination to
 the scheduler-owned child process group, then forced termination after a
 configured grace period; a lease is not reissued until child exit is verified.
@@ -52,12 +61,13 @@ contention and a running child's outcome are separate events.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-005-AC-1 | Equal-priority eligible requests run in enqueue order; repeated high-priority arrivals cannot pass an eligible request after its configured reservation threshold. A deterministic-clock test proves this under sustained arrivals. | Test |
-| FR-005-AC-2 | Higher-priority waiting work gets the next available capacity before aging reservation, while an already running child continues; capacity is never granted twice or exceeded. | Test |
+| FR-005-AC-2 | Higher-priority waiting work gets the next available capacity before aging reservation, while an already running child continues; no new grant exceeds current capacity or duplicates leased units. If capacity shrinks from two units to one while two units are running, both continue, overcommit is reported, and new admission waits for sufficient release. | Test |
 | FR-005-AC-3 | Capacity shrink/growth, unavailable/stale host telemetry, insufficient disk reserve and oversized requests follow the defined admission behavior without a hardcoded slot count. | Test |
 | FR-005-AC-4 | Timeout, cancellation, child crash, scheduler restart, stale heartbeat and PID-reuse fixtures reclaim leases only after verified termination of the owned child group; unrelated children are never terminated. | Test |
 | FR-005-AC-5 | Each queued/running request exposes wait/hold age, owner, resource units, host capacity and termination reason through JSON events consumed by ix-board; enqueue/start/end calculations match the actual transitions. | Test |
 | FR-005-AC-6 | Logic is Rust in a shared tool with a thin Make invocation; consumers migrate from project wrappers rather than copying shell/Python arbitration into Rust repositories. | Inspection |
 | FR-005-AC-7 | A child returning 75 is invoked once and its status is propagated; a signaled child returns non-success. Neither outcome re-enters acquisition contention or silently reruns the build. | Test |
+| FR-005-AC-8 | On a host with total capacity two units, a queued two-unit request reaches the reservation threshold while one-unit jobs keep arriving. The request is reservation-eligible even with fewer than two free units; no newer job consumes subsequently released units, and the reserved request starts after both units are free. | Test |
 
 ## Dependencies
 

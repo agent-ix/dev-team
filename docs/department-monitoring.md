@@ -64,6 +64,17 @@ unit, comparator, thresholds, freshness/window and owner/action route. Validate
 threshold ordering against direction and reject invalid configuration. No
 numeric threshold or host slot count is embedded in reusable skill prose.
 
+Class aggregation uses the required metric IDs declared in configuration. A
+required metric is unknown when its value, freshness, comparison policy or
+threshold configuration is unavailable. An empty required set is unknown. A class
+is red if any required metric is red; otherwise amber if any is amber; otherwise
+unknown if any required metric is unknown; otherwise green. Thus a known breach
+remains visible when other evidence is missing. Independently, `complete` is true
+only when all required metrics are assessable, and the report lists unknown IDs
+and reasons even for red/amber classes. Optional metrics do not change class
+severity or completeness. Department rollup uses the same precedence across all
+ten required classes and preserves their individual completeness diagnostics.
+
 ## Metric catalog
 
 Names below are proposed new IDs unless marked **existing**. Implementation
@@ -72,7 +83,7 @@ Every row inherits the evidence, time, assessment and unknown rules above.
 
 | Class | Measures and counting rule | Sources; additional unavailable condition | Owner and normal action |
 |---|---|---|---|
-| Flow/WIP | `wip_active`: started scoped issues at end; `wip_capacity_ratio`: wip_active / configured lane work capacity, distinct from host build slots; `in_progress_stale` **existing**, preserving its formula; `claims_without_movement`: started issues with no linked PR-head, commit or worktree evidence since configured stale cutoff; `merged_open`: nonterminal issues with merged attached PR and all configured completion obligations met; `idle_with_ready`: verified idle scoped lanes having at least one structured ready issue | Tracker states, full PR attachments, source movement and lane config; absent completion obligations make merged_open unavailable rather than auto-close | Planner/lead: reconcile stale/gated state to configured ready state, close completed scope, assign next ready batch within authorized lane |
+| Flow/WIP | `wip_active`: started scoped issues at end; `wip_capacity_ratio`: wip_active / configured lane work capacity, distinct from host build slots; `in_progress_stale` **existing**, preserving its formula; `claims_without_movement`: started issues whose latest started/claim timestamp is strictly before end minus configured stale interval and whose linked PR-head, commit and worktree evidence shows no movement after that cutoff; a fresh/restarted claim is excluded, and an unknown claim timestamp/history makes the metric unavailable; `merged_open`: nonterminal issues with merged attached PR and all configured completion obligations met; `idle_with_ready`: verified idle scoped lanes having at least one structured ready issue | Tracker states, full PR attachments, source movement and lane config; absent completion obligations make merged_open unavailable rather than auto-close | Planner/lead: reconcile stale/gated state to configured ready state, close completed scope, assign next ready batch within authorized lane |
 | Flow/WIP | `state_cycle_hours`: residence duration per configured state for intervals exited in window, distribution by state; `pr_without_reviewer_age_hours`: open non-draft PRs with no assigned reviewer and no qualifying review, age since review-ready time | Complete state/review histories; missing review-ready time unavailable | Lead: assign reviewer and correct state claims |
 | Serial dependency | `open_chain_length`: maximum edge count over open blocker chains reaching configured gates; `oldest_gated_hours`: age since latest entry to blocked condition; `lane_fanin`: number of distinct open dependent issues immediately waiting on each owning lane | Complete structured blocker graph, state/blocker history and explicit lane assignment; cycles are surfaced as graph cycles rather than arbitrarily finite chains | Planner: staff critical chain, split or reorder within mandate |
 | Pin/version churn | `crate_revision_count`: count distinct resolved revisions per dependency crate across scoped repo heads at end; `pins_off_main`: resolved pins not ancestors of dependency default-branch head; `repin_only_prs`: merged/window or open PRs whose substantive diff changes dependency revisions/lock resolution only; `tag_repin_events`: repin event for same dependency within configured interval after tag event | Resolved lock/manifests, PR diffs, tag/main reachability; missing dependency repo or force-pushed-away commit unknown; generated formatting alone is ignored by versioned diff classifier | Pin owner: schedule pin window; fold necessary pins into consuming feature PR |
