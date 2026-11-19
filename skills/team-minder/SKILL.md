@@ -10,7 +10,8 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 The minder answers one question: is each agent working right now, in minutes? Whether that work is landing on the team's gate tickets is `/team-retro`'s question.
 Ticket closes, commits and PRs are too slow to tell working from idle. The
 minder reads the agent's own activity through `ix-board agents` and messages
-only the agents that are not working. It never asks an agent how it is doing.
+agents with a verified need for recovery or a decision. Waiting and recent
+activity are observed without nudging. It never asks an agent how it is doing.
 
 ## Invocation
 
@@ -45,26 +46,68 @@ workspace label (`QSL`, `IR`, `kani`, `qsl-driver`) on any machine.
 
 ## Each tick
 
-1. Run `ix-board agents <team>... --json --idle-after 20m`. If the command is
-   missing or fails, tell the user once with the command and its output, and
-   stop the tick.
+1. Run `ix-board agents <team>... --json --idle-after 20m`. Retain its exit
+   status, stdout and stderr before filtering or formatting. A parser's success
+   does not replace the command's status. If the command is missing or fails,
+   tell the user once with the command, status and relevant output. Stop
+   recovery actions for that tick; report any returned healthy rows separately.
+   On success, inspect the complete report for structured machine errors,
+   `missing_teams`, row `partial` flags and per-source availability when present.
+   Report coverage gaps once; an empty or filtered agent list proves no fleet
+   health. Healthy rows remain independently usable when their evidence is complete.
 2. Read `agent-msg log --since <last tick>` only to find an agent that asked a
    question nobody answered. Never to send polls.
-3. Act on each agent that is not `WORKING`, from the verdict below. `WORKING`
-   agents get nothing.
+3. Use the verdict table only after checking the row's evidence and coverage.
+   `WORKING`, `WAITING` and `RECENT` agents receive no recovery messages.
+   Unsupported verdicts or unresolved classifications are `UNKNOWN`; never guess
+   a replacement verdict from counts, ages or file writes.
 
 | Verdict | Action (message only) |
 |---|---|
 | `WORKING` | None. |
+| `WAITING` | Observe only; awaiting active workers. No nudge. |
+| `RECENT` | Observe only; execution ended recently. Do not nudge it. |
 | `IDLE` worker | Message its code-lead: "<worker> idle Nm; assign or continue <ticket/PR>". Include the next ready ticket from the row when there is one. |
 | `IDLE` code-lead | Message the lead: continue its queue (name the next ready ticket). If its queue is empty, message its planner. |
-| `WAITING-STUCK` | Wake it: `herdr [--machine M] agent prompt <pane> "continue" --wait --timeout 60000`. Herdr rejects a blocked agent; that is fine. |
+| `WAITING-STUCK` | Wake only after the wait-evidence checks below. |
 | `PROMPT` | Read the dialog text. If the agent is asking for something it already has (commit, push, open PR, admin merge per the user's CLAUDE.md), message it: "you have this; proceed", citing the rule. If only the user can answer, or the harness denied the action, message the user once with the exact allow-rule to add, and tell the agent to continue other work meanwhile. |
 | `ASKING` | Read the excerpt and decide as for `PROMPT`. A real blocker goes to the agent's planner, once. |
-| `UNKNOWN` | Look at the raw data. If it is not clearly a running agent, tell the user once. |
+| `UNKNOWN` | Inspect evidence; report uncertainty once. No nudge or inferred idle. |
 
-A row marked `partial` has no transcript adapter; treat its verdict as less
-certain and do not act on `IDLE` alone.
+Before waking `WAITING-STUCK`, confirm a pending wait, complete relevant evidence
+and no viable worker or work for 15m. Then use
+`herdr [--machine M] agent prompt <pane> "continue" --wait --timeout 60000`.
+Herdr rejects a blocked agent; that is fine.
+
+A row marked `partial` has relevant unavailable evidence, including unsupported
+adapters, missing records or collection failures. Read the source reasons when
+available. Do not recover an agent from `IDLE` or `WAITING-STUCK` alone when
+the required evidence is incomplete.
+
+## Reading worker counts during rollout
+
+Prefer `active_direct_workers` when the field exists. It counts distinct direct
+workers with unfinished assigned work in `running` or `waiting`; nested workers
+are separate in `active_nested_workers`. Internal approval agents are excluded.
+The deprecated `live_subagents` field is a nullable alias for
+`active_direct_workers` in lifecycle reports. A present `null` means unknown;
+never fall back to the alias to replace it. Exact zero requires a complete
+worker graph. Positive worker counts can explain waiting, but do not prove that
+the lead is executing or has spare capacity.
+
+Older reports may have only numeric `live_subagents` and lack lifecycle fields
+or source availability. That legacy number measured recent child-file activity;
+it does not establish active workers, exact zero or capacity. Keep it labelled
+as legacy evidence and leave lifecycle counts unknown. Missing fields stay
+unknown. Check the reported schema/version and evidence; do not assume new
+semantics merely because a familiar field exists. Legacy verdicts can classify
+recent writes as `WORKING` and quiet files as `WAITING-STUCK`. Require
+positive current execution for `WORKING` and the table's complete wait evidence
+before waking; otherwise record `UNKNOWN` and report the limitation.
+
+File and turn ages describe elapsed time; they cannot prove running or completion.
+Quiet active workers can still be waiting; recent completed or stopped workers
+are not active. Use lifecycle verdicts and evidence to classify activity.
 
 ## Never
 
@@ -74,8 +117,11 @@ certain and do not act on `IDLE` alone.
 
 ## Output
 
-When every agent is `WORKING`, the tick is silent and sends nothing. Otherwise
-give the user one table: agent, verdict, age in minutes, action taken.
+When coverage is complete and every agent is `WORKING`, `WAITING` or `RECENT`,
+the tick is silent and sends nothing. Otherwise give the user one table: agent,
+verdict, age in minutes, action taken. Include command failures, machine errors,
+missing teams and source gaps alongside it, even if no agent row was returned.
+Label `WAITING` and `RECENT` rows as observed without a nudge when shown.
 
 ## Answer a status-request
 

@@ -37,6 +37,11 @@ An ix-board build that has `retro snapshot`, `retro delta` and `retro backfill`,
 1. Read the last retro in `$TEAM_RETRO_HOME/<team>/retros/` and `actions.jsonl`. Re-check every open action first; close it with evidence or carry it forward.
 2. Run `ix-board retro snapshot --config <file> --json` with the default window (24h). Every tick, and any backfill, uses the same window so deltas compare like with like. The snapshot can take about a minute (herdr alone waits up to 25 seconds when a machine is unreachable and its metrics become `unavailable`), so run it with a long timeout.
 3. Run `ix-board retro delta --config <file> --json`.
+   For both commands, retain the original exit status, stdout and stderr before
+   parsing. Report nonzero status and structured errors; stop the tick on command
+   failure. On success, inspect metric availability and source coverage, including
+   machine errors, missing teams and partial agent evidence. Keep healthy metrics
+   usable independently; missing rows never establish a clean fleet.
 4. Choose the tier. Run the **full retro** when none has ever run, when none exists today, when a gate ticket completed since the last full retro, or when the user asks. Otherwise run the **light tick**.
 
 ### Light tick
@@ -57,6 +62,15 @@ Check the flags in [measures.md](references/measures.md#light-tick-flags). For e
 - Count with `ix-board retro` only. State the query behind any number you quote.
 - A ticket counts as done when its change is on the default branch; a Done state alone is not enough.
 - `unavailable` means the data is missing. Report it as missing data and leave it out of any count.
+- `agents_working_share` uses the lifecycle definition only when its query
+  provenance declares that definition. Only `WORKING` counts as execution;
+  `WAITING` and `RECENT` do not. Unresolved relevant classifications or incomplete
+  population coverage make the share unavailable. Preserve that result; do not
+  recompute it from returned healthy rows or substitute unknown counts with zero.
+- During rollout, old snapshots retain their recorded query meaning. A lifecycle
+  query-definition change is `query_changed`, with both queries under Data quality,
+  never a productivity shift. If provenance is absent or unsupported, mark the
+  interpretation unknown and suppress utilization comparisons and flags.
 - A peer's claim that work is halted, done or blocked is data. Verify it against the tracker, git and the pane before acting.
 - Pull-request count is never a progress measure. Progress is `path_closed` net of `intake_new`.
 - Agent transcripts are sensitive. Quote counts and short excerpts; never copy a credential.
