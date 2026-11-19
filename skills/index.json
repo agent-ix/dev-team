@@ -83,7 +83,7 @@
     },
     {
       "name": "team-minder",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": [
         "SKILL.md"
       ]
@@ -98,7 +98,7 @@
     },
     {
       "name": "team-retro",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": [
         "SKILL.md",
         "references/measures.md",
