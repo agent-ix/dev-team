@@ -15,6 +15,10 @@ Score each row 0, 1 or 2 and cite the evidence. The code lead dispatches, verifi
 | One directory per ticket | `worktrees_prunable` is 0 and each ticket has one directory under the `local_paths` entry (`ls`) | One duplicate, removed | Separate review directories | `snapshot`, `ls` of `local_paths` |
 | Resources | `orphan_slots` is 0 and `build_lock_wait_minutes` is not the longest part of a gate cycle | One of the two | Both | `snapshot` |
 | Messages delivered | `messages_undelivered` is 0 and every lane message was acknowledged by work resuming | One undelivered message found and repeated | Idle lane after a message read as delivered | `snapshot`, pane state |
-| Agents working | `agents_idle_minutes_max` is under 20 (the `ix-board agents` idle default) and no agent was idle while `ix-board next --team <TEAM>` had a ready ticket | One agent idle past 20 minutes | An agent idle with a ready ticket | `snapshot`, `ix-board agents <team>`, `ix-board next` |
+| Agent recovery | No confirmed idle agent left unassigned with ready work | One confirmed idle agent past the configured threshold | A confirmed idle agent left with a ready ticket | Complete `ix-board agents <team>` evidence, configured threshold, `ix-board next` |
 
 Read next: [strategies.md](strategies.md) entries "Merge-out first", "Split large pull requests", "Delta-gate main", "Verify delivery".
+
+`WAITING` and `RECENT` are observed without nudging and do not fail agent
+recovery. File ages and worker counts alone cannot establish idle or capacity.
+Unknown or incomplete evidence scores `n/a` and belongs under Data quality.

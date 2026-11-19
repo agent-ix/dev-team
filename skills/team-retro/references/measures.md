@@ -28,12 +28,26 @@ Raise a flag only on the stated condition. The owner is the recipient.
 | Idle or oversize pull requests | `prs_idle` or `prs_oversize` above 0 and increasing | code lead |
 | Main broken | `main_red_minutes` above 0 and rising | code lead |
 | Undelivered messages | `messages_undelivered` above 0 | code lead |
-| Idle agents | `agents_working_share` falling for two ticks | code lead |
+| Execution share falling | Comparable lifecycle `agents_working_share` falling for two ticks; inspect verdicts before proposing recovery | code lead |
 | Waiting decisions | `decisions_open` above 0 with `decision_oldest_hours` rising | the user |
 | Regressing metric | `delta` reports `regressing` for any metric | the family's owner from the table above |
 | Data gap | a metric `unavailable` with reason `not configured` for three snapshots | the user (a configuration field is missing) |
 
 A flag whose condition holds for the next tick is not sent again unless the numbers worsened. A tick is one scheduled run; two snapshots taken minutes apart count as one. A metric that is `unavailable` with reason `herdr unavailable` or `empty population` is not a data gap: the first is an outage to mention once, the second is a valid result.
+
+`agents_working_share` is the share of reported agents classified `WORKING`
+under the lifecycle query definition. `WAITING` and `RECENT` remain separate
+states and contribute no execution to the numerator. A lower share can reflect
+valid waiting or completed work; it does not establish idle agents or lower
+productivity. Observe those states without nudging. Unknown classifications,
+missing teams or relevant unavailable sources make the share unavailable.
+Preserve the metric's availability and query; never reconstruct a share from
+partial rows, worker counts or file ages.
+
+Use the [minder's count contract](../../team-minder/SKILL.md#reading-worker-counts-during-rollout)
+when inspecting agent rows. Nullable worker counts stay unknown and do not
+measure execution or spare slots. Older reports' numeric `live_subagents`
+measures legacy recent-file evidence; its lifecycle count remains unknown.
 
 ## Owners
 
@@ -46,6 +60,13 @@ A flag whose condition holds for the next tick is not sent again unless the numb
 ## Reading `delta`
 
 `since_previous` and `since_baseline` carry a `state`: `changed` (with `change`, which is 0 when the value did not move), `unavailable`, or `query_changed` (with both queries). `regressing` is true only after the metric moved against its direction in each of the latest two comparisons, which needs three snapshots with comparable queries; backfilled records never count toward it.
+
+The lifecycle execution-share query is versioned separately from the old
+activity heuristic. A transition between them is `query_changed`, even with
+identical windows and thresholds. Show both queries under Data quality and
+suppress trend, regression and utilization flags across that boundary. Missing
+or unsupported query provenance leaves the interpretation unknown. Keep old
+records as recorded; do not relabel their values with the new definition.
 
 ## Subjective scores
 

@@ -28,7 +28,7 @@ Snapshot taken_at <UTC> · window <duration> · baseline <taken_at, kind> · lan
 - <step> — trigger <what> — blocks <work> — strategy <entry> — owner <role> — action <text>
 
 ## Data quality
-- <snapshot gaps, query_changed metrics, unavailable streaks>
+- <command status/errors, missing teams/source coverage, snapshot gaps, query_changed metrics with both queries, unavailable streaks>
 
 ## Actions
 - <id> <owner> <action> <due tick>
