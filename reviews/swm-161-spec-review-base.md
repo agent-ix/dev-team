@@ -240,3 +240,45 @@ scope:
 No applicable AssuranceProfile exists in the reviewed spec tree; direct review applies. User-directed pin/version telemetry and attributable evidence are requested behavior, not unasked-for file tracking. No desktop implementation, lifecycle replacement, test implementation or private transcript copy is claimed.
 
 Checks: spec validation and EARS summary exit 0 (9/9 grammar-clean); git diff --check exit 0. quire matrix --strict exits 1 for preimplementation coverage (23 untagged criteria and 6 design gaps), expected in this spec-only stage. Its NFR template/extractor mismatch is reported separately; no implementation gap is inferred here. Risk-complexity, evidence-standard recommendation, object review and criterion-strength/Jev are outside this bounded selected review set. Runtime model identifier is unavailable to this harness; marker records unavailable instead of inventing an exact model.
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, 84265cd: The linked counting rule now requires latest started/claim time strictly before the stale cutoff, excludes fresh/restarted claims, and reports unknown history unavailable. |
+| FND-002 | fixed | Round 1, 84265cd: The linked design now specifies red then amber then unknown then green precedence, explicit required populations, completeness and missing-policy behavior. |
+
+### Round 1 evidence
+
+```yaml
+dispositions:
+- fnd: FND-001
+  outcome: fixed
+  after_excerpt: '`claims_without_movement`: started issues whose latest started/claim timestamp is strictly before
+    end minus configured stale interval and whose linked PR-head, commit and worktree evidence shows no movement
+    after that cutoff; a fresh/restarted claim is excluded, and an unknown claim timestamp/history makes the metric
+    unavailable'
+  path: docs/department-monitoring.md
+  reason: The linked counting rule now requires latest started/claim time strictly before the stale cutoff, excludes
+    fresh/restarted claims, and reports unknown history unavailable.
+- fnd: FND-002
+  outcome: fixed
+  after_excerpt: 'A class
+
+    is red if any required metric is red; otherwise amber if any is amber; otherwise
+
+    unknown if any required metric is unknown; otherwise green. Thus a known breach
+
+    remains visible when other evidence is missing. Independently, `complete` is true
+
+    only when all required metrics are assessable, and the report lists unknown IDs
+
+    and reasons even for red/amber classes.'
+  path: docs/department-monitoring.md
+  reason: The linked design now specifies red then amber then unknown then green precedence, explicit required populations,
+    completeness and missing-policy behavior.
+```
+
+## Disposition Verdict
+
+**PASS** at 84265cd. Every original finding in this artifact is fixed. No new findings from the confined fix review. Original findings and initial verdict remain the historical review record.

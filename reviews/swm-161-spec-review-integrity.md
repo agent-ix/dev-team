@@ -142,3 +142,25 @@ scope:
 No applicable AssuranceProfile exists in the reviewed spec tree; direct review applies. User-directed pin/version telemetry and attributable evidence are requested behavior, not unasked-for file tracking. No desktop implementation, lifecycle replacement, test implementation or private transcript copy is claimed.
 
 Checks: spec validation and EARS summary exit 0 (9/9 grammar-clean); git diff --check exit 0. quire matrix --strict exits 1 for preimplementation coverage (23 untagged criteria and 6 design gaps), expected in this spec-only stage. Its NFR template/extractor mismatch is reported separately; no implementation gap is inferred here. Risk-complexity, evidence-standard recommendation, object review and criterion-strength/Jev are outside this bounded selected review set. Runtime model identifier is unavailable to this harness; marker records unavailable instead of inventing an exact model.
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, 84265cd: New grants cannot exceed capacity; running work survives a two-to-one shrink with overcommit reported and admission held. |
+
+### Round 1 evidence
+
+```yaml
+dispositions:
+- fnd: FND-001
+  outcome: fixed
+  after_excerpt: Test |
+  path: spec/functional/FR-005-fair-build-scheduler.md
+  reason: New grants cannot exceed capacity; running work survives a two-to-one shrink with overcommit reported
+    and admission held.
+```
+
+## Disposition Verdict
+
+**PASS** at 84265cd. Every original finding in this artifact is fixed. No new findings from the confined fix review. Original findings and initial verdict remain the historical review record.

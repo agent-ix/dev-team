@@ -107,3 +107,37 @@ scope:
 No applicable AssuranceProfile exists in the reviewed spec tree; direct review applies. User-directed pin/version telemetry and attributable evidence are requested behavior, not unasked-for file tracking. No desktop implementation, lifecycle replacement, test implementation or private transcript copy is claimed.
 
 Checks: spec validation and EARS summary exit 0 (9/9 grammar-clean); git diff --check exit 0. quire matrix --strict exits 1 for preimplementation coverage (23 untagged criteria and 6 design gaps), expected in this spec-only stage. Its NFR template/extractor mismatch is reported separately; no implementation gap is inferred here. Risk-complexity, evidence-standard recommendation, object review and criterion-strength/Jev are outside this bounded selected review set. Runtime model identifier is unavailable to this harness; marker records unavailable instead of inventing an exact model.
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, 84265cd: Reservation eligibility uses total current capacity rather than free units; released units accumulate and AC-8 explicitly exercises the two-unit starvation counterexample. |
+
+### Round 1 evidence
+
+```yaml
+dispositions:
+- fnd: FND-001
+  outcome: fixed
+  after_excerpt: 'Reservation eligibility
+
+    means the request fits the host''s total current configured/verified capacity,
+
+    regardless of how much capacity is currently free. Once the oldest such queued
+
+    request reaches `(P+1)*aging_interval`, it becomes the reserved next request.
+
+    Until it starts, newer requests cannot consume freed units on that host: released
+
+    units accumulate until the reservation''s full resource request is available.'
+  path: spec/functional/FR-005-fair-build-scheduler.md
+  reason: Reservation eligibility uses total current capacity rather than free units; released units accumulate
+    and AC-8 explicitly exercises the two-unit starvation counterexample.
+```
+
+## Disposition Verdict
+
+**PASS** at 84265cd. Every original finding in this artifact is fixed. No new findings from the confined fix review. Original findings and initial verdict remain the historical review record.
+
+Newly examined FR-005-AC-8: Test |
