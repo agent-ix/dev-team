@@ -142,8 +142,14 @@ Jev client), record the skip in the SR artifact and continue with the rest.
 Allocate one SR id per applicable method, from the range the brief gives, in
 order, with no padding for methods that do not run.
 
-If Quoin is unavailable, perform a manual acceptance-criteria-to-tests check,
-state that the Quoin method was unavailable, and record the manual check separately.
+`quoin:gap-analysis` is an agent skill, not the shell command `quoin gap-analysis`.
+Load its instructions and execute its matrix, reverse-gap, stub, and artifact
+procedures. An unknown shell subcommand does not establish skill unavailability.
+Distinguish a missing skill from a missing CLI executable or one failed command;
+use the skill's documented fallbacks and continue independent inspection.
+Only if the skill itself cannot be loaded, perform and separately label a manual
+acceptance-criteria-to-tests check. Record exactly what was unavailable and which
+audit steps remain incomplete; do not represent that fallback as a full gap audit.
 Do not invoke the deprecated `implementation-gap-analysis` skill.
 
 ## 3. One artifact per method — allocate or reuse its id
