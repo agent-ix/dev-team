@@ -48,7 +48,11 @@ Apply the corrections: close stale tickets with the merge that delivered them, a
 
 1. Order the batches: spec wave, then the implementation wave for the same area, then the gate check. The next layer starts after its gate passes.
 2. Staff the critical path first and keep it staffed. Off-path batches take only the capacity left over.
-3. Cap work in flight by build slots, disk and the lane cap the owner set for the team (ask the owner once if none is set); spec pull requests are not counted.
+3. Use current configured lane capacity and verified build leases, RAM and disk
+   reserve to admit work. Keep lane headcount distinct from build slots; no
+   hardcoded slot count or inference from `live_subagents`. Missing capacity
+   goes to its owner once. Spec PRs still consume workers even when they need
+   no heavy build, so preserve honest staffing and build counts separately.
 4. Hand each batch to a code lead with `ix-board focus plan-chunk` so readiness, blockers and acceptance excerpts travel with it.
 
 ## 7. Freeze and measure

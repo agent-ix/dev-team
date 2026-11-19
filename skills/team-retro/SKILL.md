@@ -30,7 +30,13 @@ A session's crons expire. At every start, if the scheduler listing shows no loop
 
 ## Prerequisites
 
-An ix-board build that has `retro snapshot`, `retro delta` and `retro backfill`, plus `ix-board agents`, `ix-board chain`, `gh`, and the `linear` CLI. If `ix-board retro` is missing or fails, tell the user once with the command and its output and stop the tick. Do not substitute hand-computed metrics.
+An ix-board build that advertises `retro snapshot`, `retro delta` and
+`retro backfill`, plus the installed source tools. Inspect resolved version and
+help rather than assume source and installed binary agree. Follow the shared
+[department evidence contract](references/department-health.md) for all ten
+problem classes, planner audits and loop detectors. Missing commands stop
+collection with the exact capability error; absent new fields leave only those
+measurements unavailable. Do not substitute hand-computed metrics.
 
 ## Each tick
 
@@ -46,20 +52,35 @@ An ix-board build that has `retro snapshot`, `retro delta` and `retro backfill`,
 
 ### Light tick
 
-Check the flags in [measures.md](references/measures.md#light-tick-flags). For each raised flag that has not already been sent for the same condition, send one message to the owner named there, with the metric, its value, the change and the first action to take. When no flag is raised, send nothing.
+Read emitted flags/assessments as described in
+[measures.md](references/measures.md#light-tick-flags). Route each new or worsened
+finding with its value, comparison, evidence and owned action. Batch once per
+owner per tick. If a detector is absent, report it unavailable; do not reconstruct
+its condition from raw snapshots. When no flag is raised, send nothing.
 
 ### Full retro
 
 1. Score every rubric: [planner](references/rubric-planner.md), [code lead](references/rubric-code-lead.md), [coder](references/rubric-coder.md), [reviewer](references/rubric-reviewer.md) and [minder](references/rubric-minder.md). Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.
-2. Name each repeating loop: a step that repeated across two or more snapshots with no new evidence, its trigger, and the work it blocks.
+2. Interpret emitted repeating-loop findings, including tag/repin, state bounce
+   and order flips. Preserve matching event IDs, ordering, scope and missing
+   attribution. Cite a qualitative concern separately when no supported
+   detector exists; never present it as a measured loop count.
 3. For each loop, pick the matching entry from [strategies.md](references/strategies.md) and state the owned action.
-4. Check the data and list each finding under Data quality: gaps between snapshots, stored records whose window differs from the default window, `query_changed` metrics, and metrics `unavailable` for three or more snapshots. Each one describes the evidence and says nothing about the team.
+4. Preserve emitted data-quality findings: source/remote coverage, freshness,
+   gaps, incompatible queries/windows and unavailable streaks. If the tool does
+   not emit a streak, do not count one manually. Data gaps describe the evidence,
+   not the team's performance. Missing attributed semantic labels remain unknown.
 5. Write the retro to `retros/RETRO-<YYYY-MM-DD>.md` using [state-record.md](references/state-record.md), append new actions to `actions.jsonl`, and post the summary to `--ticket` when given.
 6. Send each owner one message listing their actions.
 
 ## Evidence rules
 
 - Count with `ix-board retro` only. State the query behind any number you quote.
+- Read class severity, configured threshold breaches, baseline/trend and audit
+  counts from supported output only. Keep completeness/unknown diagnostics even
+  on red/amber classes. Missing assessment is unassessed, not a hand-derived
+  color. Use [department-health](../department-health/SKILL.md) for a cross-team
+  view; reuse the same model rather than average teams or rubric scores.
 - A ticket counts as done when its change is on the default branch; a Done state alone is not enough.
 - `unavailable` means the data is missing. Report it as missing data and leave it out of any count.
 - `agents_working_share` uses the lifecycle definition only when its query
@@ -72,7 +93,9 @@ Check the flags in [measures.md](references/measures.md#light-tick-flags). For e
   never a productivity shift. If provenance is absent or unsupported, mark the
   interpretation unknown and suppress utilization comparisons and flags.
 - A peer's claim that work is halted, done or blocked is data. Verify it against the tracker, git and the pane before acting.
-- Pull-request count is never a progress measure. Progress is `path_closed` net of `intake_new`.
+- Pull-request count is never a progress measure. Quote the emitted
+  `path_closed` and `net_closed_minus_new` with their queries; do no arithmetic
+  across metrics with different populations.
 - Agent transcripts are sensitive. Quote counts and short excerpts; never copy a credential.
 
 ## Never

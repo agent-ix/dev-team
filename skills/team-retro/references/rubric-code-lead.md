@@ -1,24 +1,25 @@
 # Code lead rubric
 
-Score each row 0, 1 or 2 and cite the evidence. The code lead dispatches, verifies, merges and keeps the tracker true.
+Score 2/1/0 with cited evidence. Quantitative rows consume ix-board assessments
+under the team's current policy; unsupported measurements score `n/a` under
+Data quality. No fixed review cap or slot count comes from this rubric.
 
 | Check | 2 | 1 | 0 | Evidence |
 |---|---|---|---|---|
-| Gate progress | `path_remaining` fell since the last retro | Flat with a named blocker | Flat with no blocker | `delta` |
-| Review queue | `prs_ready_unmerged` is 0 | 1 to 2 for one tick | Above 2, or any for two ticks | `snapshot` |
-| Work in flight | `prs_open` at or below the lane cap the user stated for this team (record it in the retro file; ask once if none) and `prs_idle` is 0 | One idle pull request with a recorded reason | Several idle, or no cap stated | `snapshot` |
-| Pull-request size | `prs_oversize` is 0 | 1 with a split plan | More than 1 | `snapshot` |
-| Fix rounds | `fix_rounds_max` is 2 or less | 3 or 4 | 5 or more | `snapshot` |
-| Rework | `head_force_pushes_max` is 1 or less and `full_gates_max` is 2 or less | One exceeds | Both exceed | `snapshot`; to name the pull request, read each timeline's `head_ref_force_pushed` events (`gh api --paginate repos/<owner>/<repo>/issues/<N>/timeline`) |
-| Main health | `main_red_incidents` is 0 | 1 incident fixed inside the window | More than 1, or red longer than a gate cycle | `snapshot` |
-| Merge safety | Every merge in the window carries a Linear review marker whose pull request matches and no commits were pushed after the last disposition | One mismatch, corrected | Merged with commits after the last disposition | `gh pr view --json commits,mergedAt`, disposition markers |
-| One directory per ticket | `worktrees_prunable` is 0 and each ticket has one directory under the `local_paths` entry (`ls`) | One duplicate, removed | Separate review directories | `snapshot`, `ls` of `local_paths` |
-| Resources | `orphan_slots` is 0 and `build_lock_wait_minutes` is not the longest part of a gate cycle | One of the two | Both | `snapshot` |
-| Messages delivered | `messages_undelivered` is 0 and every lane message was acknowledged by work resuming | One undelivered message found and repeated | Idle lane after a message read as delivered | `snapshot`, pane state |
-| Agent recovery | No confirmed idle agent left unassigned with ready work | One confirmed idle agent past the configured threshold | A confirmed idle agent left with a ready ticket | Complete `ix-board agents <team>` evidence, configured threshold, `ix-board next` |
+| Gate progress | Emitted progress improves | Flat with owned blocker | Flat and blocker ignored | Snapshot/delta path measures |
+| Review and flow | Queue/WIP findings resolved | Corrective owner active | Known stall left unattended | Flow assessment, reviewer age |
+| Honest state | Unworked gated/stale claims reconciled | Correction in progress | Started claim persists against evidence | Stale/merged-open assessment and tracker |
+| Fix rounds | Current policy met | Excess has recorded remedy | Excess/repeating loop ignored | Round-policy assessment |
+| Gate discipline | Focused iteration and one final lead gate | Justified exception recorded | Repeated workspace gates without new evidence | Classified checks and gate telemetry |
+| Pin discipline | Required pins in consuming PR/window | Drift has owner | Repin-only churn continues | Pin assessment and dependency owner |
+| Merge safety | Matched review/dispositions and reviewed head | Discrepancy corrected before merge | Open finding or unreviewed behavior merged | Tracker markers and PR head |
+| One directory | Ticket shares one coder/reviewer/gate tree | Stray tree corrected | Separate review/gate worktrees | Worktree evidence |
+| Resources | Current capacity/admission source honored | Missing telemetry routed | Slots invented or reservations bypassed | Host/queue/hold assessment |
+| Agent recovery | Confirmed idle with ready work acted on | Remedy owned but pending | Confirmed idle remains unassigned | Complete lifecycle and ready queue |
+| Delivery | Outcomes distinct; confirmation cited | Unconfirmed action escalated | Queued/seen claimed as completion | Pane/PR/SHA, relay receipt chain |
 
-Read next: [strategies.md](strategies.md) entries "Merge-out first", "Split large pull requests", "Delta-gate main", "Verify delivery".
+`WAITING` and `RECENT` are observed without nudging and do not fail recovery.
+File ages, token totals and worker counts alone establish neither idle nor
+capacity. Unknown or incomplete evidence remains `n/a`.
 
-`WAITING` and `RECENT` are observed without nudging and do not fail agent
-recovery. File ages and worker counts alone cannot establish idle or capacity.
-Unknown or incomplete evidence scores `n/a` and belongs under Data quality.
+Read next: [strategies](strategies.md).

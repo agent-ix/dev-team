@@ -8,15 +8,17 @@ description: Watch the agents of one or more teams on an interval and unstick th
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
 The minder answers one question: is each agent working right now, in minutes? Whether that work is landing on the team's gate tickets is `/team-retro`'s question.
-Ticket closes, commits and PRs are too slow to tell working from idle. The
-minder reads the agent's own activity through `ix-board agents` and messages
+The minder reads the agent's own lifecycle through `ix-board agents`, reconciles
+it with verified pane agent state, PR-head/worktree movement and available token
+telemetry, and messages
 agents with a verified need for recovery or a decision. Waiting and recent
 activity are observed without nudging. It never asks an agent how it is doing.
 
 ## Invocation
 
 `/team-minder <team(s)> [interval]`, default interval 30m. A team is a herdr
-workspace label (`QSL`, `IR`, `kani`, `qsl-driver`) on any machine.
+workspace label on any configured machine. Resolve the expected host/lane set
+from the assigned scope; a local result is not an inventory of the whole fleet.
 
 ## Communication
 
@@ -55,9 +57,22 @@ workspace label (`QSL`, `IR`, `kani`, `qsl-driver`) on any machine.
    `missing_teams`, row `partial` flags and per-source availability when present.
    Report coverage gaps once; an empty or filtered agent list proves no fleet
    health. Healthy rows remain independently usable when their evidence is complete.
-2. Read `agent-msg log --since <last tick>` only to find an agent that asked a
-   question nobody answered. Never to send polls.
-3. Use the verdict table only after checking the row's evidence and coverage.
+2. Reconcile returned rows with every configured host/lane, including remote
+   machines. For missing lanes, inspect their verified remote pane agent list
+   with the installed Herdr read commands; retain errors and identity ambiguity.
+   Check PR head/worktree movement and available token observations for the
+   matching session. None alone proves acceptance or completion. Conflicting or
+   incomplete evidence stays unknown; never guess the focused pane/session.
+3. Read `agent-msg log --since <last tick>` for unanswered questions and
+   actionable orders. Preserve queued, delivered and acknowledged outcomes
+   separately. An order past its configured acknowledgement deadline gets an
+   owned escalation in this tick, even if it was queued or seen. Do not blindly
+   resend; verify log/receipt evidence before any retry. Missing deadline or
+   timing instrumentation is unavailable, not proof of on-time delivery.
+4. Inspect verified pane evidence for a login/authentication screen. Route the
+   authentication blocker to its owner this tick; do not approve a prompt,
+   fabricate recovery or treat a login pane as working.
+5. Use the verdict table only after checking the row's evidence and coverage.
    `WORKING`, `WAITING` and `RECENT` agents receive no recovery messages.
    Unsupported verdicts or unresolved classifications are `UNKNOWN`; never guess
    a replacement verdict from counts, ages or file writes.
@@ -108,6 +123,7 @@ before waking; otherwise record `UNKNOWN` and report the limitation.
 File and turn ages describe elapsed time; they cannot prove running or completion.
 Quiet active workers can still be waiting; recent completed or stopped workers
 are not active. Use lifecycle verdicts and evidence to classify activity.
+Relay `seen`, successful enqueue and tokens alone are not liveness proof.
 
 ## Never
 
@@ -119,7 +135,10 @@ are not active. Use lifecycle verdicts and evidence to classify activity.
 
 When coverage is complete and every agent is `WORKING`, `WAITING` or `RECENT`,
 the tick is silent and sends nothing. Otherwise give the user one table: agent,
-verdict, age in minutes, action taken. Include command failures, machine errors,
+verdict, observed age, action taken, and order confirmation. For each actionable
+order record `confirmed by <pane|PR head|SHA>` with the actual source reference,
+or `unconfirmed` and the missing observation. A queued send is not confirmation
+that the order was acted on. Include command failures, machine errors,
 missing teams and source gaps alongside it, even if no agent row was returned.
 Label `WAITING` and `RECENT` rows as observed without a nudge when shown.
 

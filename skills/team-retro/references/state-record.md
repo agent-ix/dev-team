@@ -15,7 +15,7 @@ All retro data lives under `$TEAM_RETRO_HOME/<team>/` (default `~/.local/state/t
 ```markdown
 # Retro <team> <YYYY-MM-DD>
 
-Snapshot taken_at <UTC> · window <duration> · baseline <taken_at, kind> · lane cap <N, stated by the user>
+Snapshot taken_at <UTC> · scope <teams/projects> · window <duration> · baseline <taken_at, kind> · capacity <configured/live source and age, or unavailable>
 
 ## Measures
 | Metric | Value | Δ last | Δ baseline | Flag |
@@ -23,6 +23,10 @@ Snapshot taken_at <UTC> · window <duration> · baseline <taken_at, kind> · lan
 
 ## Scores
 | Role | Check | Score | Evidence |
+
+## Department classes
+| Class | Emitted severity/completeness | Trend | Evidence | Owner/action |
+(all ten classes; absent assessments remain unavailable, unknown required metrics stay visible)
 
 ## Repeating loops
 - <step> — trigger <what> — blocks <work> — strategy <entry> — owner <role> — action <text>

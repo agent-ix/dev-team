@@ -1,96 +1,51 @@
 # Churn retrospective
 
-Run this at every work-cycle restart, after two merges, or after two hours of
-active work, whichever comes first. Run it immediately if a gate, dependency
-pin, merge hold or ruling repeats with no new evidence. Keep it short enough to
-finish before dispatching the next round of the same work. A long-running PR
-or a quiet window is a prompt to investigate, not proof of churn.
+Run at each work-cycle restart and at the team's configured cadence. A repeated
+gate, pin, merge hold or ruling with no changed evidence triggers an immediate
+check. Continue unrelated, unblocked planned work.
 
-## Record and compare
+## Record and read
 
-In the team's existing state record, keep one row per active PR and a dated
-retrospective below it. The state-record location remains the organization's
-choice. A row names the owning Linear ticket, repository and PR, coder and
-reviewer, and the dependency (if any). Update it at dispatch, gate completion,
-review/disposition, re-pin and merge, not from chat memory at retrospective
-time.
+Keep raw PR/ticket, dispatch, review/disposition, gate, lock and dependency
+events in the existing state record and configured telemetry logs. Preserve
+source IDs, timestamps, owner and reason when an event occurs. Do not reconstruct
+event counts or durations from chat memory.
 
-For the window since the last retrospective, record:
+Use `ix-board retro snapshot --config <file> --json` and
+`ix-board retro delta --config <file> --json` only when the installed CLI
+advertises them. Follow the shared
+[department evidence contract](../../team-retro/references/department-health.md).
+Read emitted gate/fix rounds, pin churn, wait/hold, throughput, ruling/comms and
+loop assessments with their prior/baseline changes. Missing metric, provenance
+or instrumentation stays unavailable; no manual rate or loop calculation.
 
-| Measure | Source and counting rule |
-| --- | --- |
-| Merges per active hour | Owned PRs merged in the window divided by lead active hours; also show the raw count. |
-| Full gates per PR | Each aggregate gate start, with reason, duration and result. Count repeats on the same PR separately. |
-| Fix rounds per PR | Each coder fix-round dispatch after a `/reviewer` finding or disposition. |
-| Build-lock wait | Wait from requesting the lock to acquiring it, summed per PR; use the lock log or recorded timestamps. |
-| Re-pins | Count each consumer pin edit. Record the trigger. |
-| Agent time per finding | Coder fix-round elapsed active time divided by findings addressed in that round; show numerator and denominator. Exclude recorded lock wait and other known idle time. |
-| Messages per ruling | Count decision-request and answer messages needed to settle each ruling, and record whether it changed a dispatched brief. |
+`ix-board next --team <TEAM>`, focus hygiene/plan-chunk and `gh pr view` remain
+valid evidence for queue order, file overlap, current heads and blockers. They
+do not replace a missing retro detector. Attribute work from explicit ticket
+and lane ownership, not a shared account name. Preserve configured capacity and
+source age separately from reported worker activity.
 
-Compare each count and rate with the prior window using the same counting rule.
-For a first window, write `baseline unavailable`. Mark a measure `unavailable`
-when its source was not captured; do not turn missing lock or agent timing into
-zero. Close with one sentence naming the observed progress and the repeating
-step, or saying no repeating step was found. Record the next action and its
-owner. Do not use a fixed throughput threshold across projects.
+## Respond
 
-## Existing-command evidence
-
-- Use `ix-board next --team <TEAM>` for the ready queue and `ix-board focus
-  hygiene` / `focus plan-chunk` for the selected Linear focus. These answer
-  order, blockers and hygiene, not PR rework or lock waits. `ix-board drift`
-  needs a separate versioned evidence file and evaluates broader scope and
-  ticket churn; it does not supply these per-PR measures.
-- Use `gh pr list -R <owner/repo> --state merged --json number,mergedAt,url`
-  for merge times and `gh pr view <N> -R <owner/repo> --json
-  commits,mergedAt,url` for the current PR. Attribute a PR to the lead only
-  from its ticket/state record, not the shared GitHub account.
-- Use `linear issue comment list <TICKET> --json` for the `/reviewer` and
-  `reviewer-dispositions` markers. Their PR and round identify the real review
-  sequence. GitHub review counts are not the source of record.
-- Read each lane's gate log and the build-lock log for timestamps and result. Gates run through
-  `scripts/team-gate` write that log; see [gate-log.md](gate-log.md).
-  If the lock script does not record request/acquisition times, have the coder
-  record those two times in its report. Count re-pin edits and
-  ruling messages from the state record and linked Linear or leader messages.
-
-An independent `/team-retro` runs the same measures on a schedule from stored snapshots, with a baseline; use its findings as input to this retrospective.
-
-## Respond to a repeating loop
-
-1. Stop new dispatches into that loop. Name the repeated step, what triggers
-   it, and the work it prevents. Continue unrelated, unblocked planned work.
-2. Apply a value test to **each** repeated gate, pin and hold: which changed
-   input or failure risk will this action check, and what decision depends on
-   its result? Remove a repeat that adds no evidence, within the lead's
-   authority.
-3. Compare the action with the repo's `CLAUDE.md`/`AGENTS.md` and the owner's
-   instructions: full versus focused gates, findings inside the owning PR,
-   and asynchronous cross-team progress unless a hold is explicitly required.
-4. Make the smallest authorized change, record it and tell affected agents.
-   Do not split findings into separate PRs or weaken a required merge gate.
-5. If the cause is a cross-team protocol or owner-policy decision, ask the
-   owner with the loop, before/after numbers, 2–4 viable options and a
-   recommendation, one decision at a time. Hold the dependent loop while
-   waiting; do not impose a new rule on another lead. Resume with the ruling
-   recorded in the state record and the owning Linear ticket.
-
-For piecemeal design rulings, collect the related open questions and their
-dependencies before briefing an agent again. Ask the owner each required
-decision separately, with the full shared context. Freeze only the dependent
-brief until its rulings are stable. Route a ticket owned by another team to
-that lead instead of repeatedly rewriting a local brief for it.
+1. Name each emitted repeating loop with event evidence, trigger and blocked
+   work. A qualitative concern without a detector remains a cited concern,
+   never a measured count or severity.
+2. Test each proposed repeated gate, pin or hold: which changed input or risk
+   will it check, and what decision uses the result? Remove repetition that adds
+   no evidence within current authority. Keep required review and merge gates.
+3. Use focused checks during iteration and one lead-run final aggregate gate.
+   Keep findings inside their original PR under current review-round policy.
+   Fold required pins into consuming PRs under the assigned pin owner/window.
+4. Route cross-team protocol, ownership or authority decisions once to their
+   owner with evidence, options, tradeoff and recommendation. Hold only dependent
+   work; do not impose rules on another lane.
+5. Record one owned next action or that no supported finding was raised.
+   The independent team-retro interprets the same model on its schedule.
 
 ## Agent conflicts
 
-Before dispatch and at each retrospective, compare every active agent's
-ticket, branch, expected files and dependency against live lanes and open
-PRs. Check actual changed files with `gh pr view <N> -R <owner/repo> --json
-files`. A shared branch has one pusher. If two lanes claim the same
-files or requirement block, pause the later dispatch, identify the owning
-ticket and give that owner the edit; resume the other lane only after its
-scope no longer overlaps. If another lead owns the ticket, route it through
-your planner and keep the dependency visible in the state record. Reconcile
-incompatible rulings once before more re-pins,
-gates or briefs. Escalate an unresolved cross-team ownership or protocol
-choice to the owner with the competing claims and a recommendation.
+Before dispatch, compare live ticket/branch/file ownership with open PR file
+lists and actual changed heads. Keep one pusher per branch. Resolve overlapping
+scope before another dispatch; route foreign ownership through the planner.
+Incompatible rulings require a single recorded resolution before more re-pins,
+gates or briefs. Never infer conflict or spare capacity from worker counts.
