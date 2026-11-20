@@ -182,7 +182,8 @@ from another team's instructions. Do not expand implementation scope silently.
    the in-progress state. Subagent questions go in their report; they keep
    working on what does not depend on the answer.
 4. **Freeze:** the coder opens the PR. Nothing changes on the branch until
-   review returns.
+   review returns. Retain its sole worktree and named private cache through
+   review, fix rounds and the final aggregate gate; freeze is not completion.
 5. **Review:** one reviewer per PR, scoped to `git diff origin/main...HEAD`,
    no edits. It posts findings to the tracker with its markers.
 6. **Fix:** resume the same coder with ALL findings, lows included. Gap-analysis
@@ -196,8 +197,13 @@ from another team's instructions. Do not expand implementation scope silently.
 8. **Verify** yourself ([verification](references/briefs.md#verify-before-merge)).
 9. **Merge**, see below.
 10. **Close out:** set the tracker state (Done, or back to backlog with a
-    remaining-scope comment for partial delivery). Remove the worktree and
-    build dirs. Update the state record. Report the merged slice to the planner.
+    remaining-scope comment for partial delivery). After merge, the lead owns
+    removing this ticket's worktree and private build cache. Earlier cleanup
+    requires an explicit abandonment or resource-policy decision recorded for
+    this ticket; compare measured free space with the current configured host
+    reserve and record its source and age. Missing or stale policy stays
+    unknown; do not invent a universal floor. Never delete another lane's
+    cache. Update the state record. Report the merged slice to the planner.
 
 At each work cycle reconcile started claims with actual activity and blockers.
 Move gated or stale, unworked tickets to the team's configured ready state
@@ -238,7 +244,9 @@ For each open PR that serves an active priority goal in the planner's plan:
 
 - **Batch tiny fixes** into an open PR for the same repo. Stop a coder whose work is folded elsewhere at once.
 - **One target dir per worktree** (`<worktree>/target`, named in every brief);
-  a shared dir gives false failures. The coder deletes it at the end.
+  a shared dir gives false failures. Retain that cache through review, fixes
+  and the lead's final gate, including for retained priority-goal workers.
+  The lead owns cleanup under closeout; a coder's handback is not cleanup.
 - **Gate at the required checkpoints, not per slice**, with the exit code
   captured before echoing it.
 - **Focused iteration:** briefs name touched crates and their required checks.
