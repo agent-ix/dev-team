@@ -29,7 +29,13 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 2. Use the repo's own conventions first (`CLAUDE.md`, `AGENTS.md`, existing code). They outrank this skill.
 3. Load the language's guide skills before designing and keep them in context for idioms and smells. For Rust, that is `/rust-review` and `/rust-style` (`/rust-style` is the default when the repo documents no idioms of its own). Other languages: the matching review or style skill, if one exists. They guide your work and do not replace the independent review.
 4. Give the worktree its own build dir, never a shared one (Rust: `CARGO_TARGET_DIR=<worktree>/target`, covered by `.gitignore`). A gate log built on a shared build dir is not evidence.
-5. Check free disk (`df -h /`) before the gate. Under 20G, clean your own leftovers first and tell the leader.
+5. Before build admission, measure free space on the build dir's filesystem
+   (`df -h <worktree>`) and compare it with the current configured host disk
+   reserve. Record the measurement and policy source and age from the brief or
+   verified host config. Missing or stale reserve policy stays unknown: report
+   it to the leader; do not invent a universal floor or assume admission. If
+   space is below reserve, tell the leader for an explicit cleanup/admission
+   decision. Never delete another lane's cache.
 
 ## 2. Build
 
@@ -68,9 +74,16 @@ Report at PR open, when a fix round is done, or when blocked. Nothing between.
 
 1. After focused tests, lint, and compile pass, push the branch and open the PR (`gh pr create --head <branch>`). Never run the aggregate gate before review and never merge.
 2. Stop changing the branch. This frozen diff is what the one reviewer reviews.
-3. Delete your build dirs (`target/`, `*-target/`, `node_modules/`). Leave the worktree for the leader.
+3. Retain the worktree and its named private build cache (`target/`,
+   `*-target/`, or `node_modules/`) through review, fix rounds and the leader's
+   final aggregate gate. PR freeze and review handback are not ticket
+   completion. Reuse this one cache; do not create another target directory.
+   The leader owns cleanup after merge, or after an explicit abandonment or
+   resource-policy decision recorded for this ticket. Never delete another
+   lane's cache.
 4. Report:
    - PR number
+   - Retained worktree and private build-cache path (or no cache needed)
    - Focused check commands, log path, and exit code; note that the code lead owns the final aggregate gate
    - Done, found, left undone
    - Decisions the leader or owner must make
@@ -87,6 +100,8 @@ The leader resumes you with the reviewer's findings. The reviewer's findings are
 - A gap-analysis gap gets a real test.
 - Copy each reviewer SR file, from the scratchpad path in the message, over the matching file under `reviews/` in your fix commit. Never write or edit an SR file yourself.
 - Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change. The code lead runs it once before merge, subject to explicit repo or org rules.
+- Reuse the retained private cache in the same worktree. Freeze and report
+  again after the fix; leave cleanup to the leader under step 4.
 
 ## Output
 
