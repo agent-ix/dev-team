@@ -67,6 +67,17 @@ records.
 
 ## 5. Review the active program
 
+Keep the operational team's assigned initiative/project/ticket scope explicit
+in the handoff. A Linear team key and a Herdr workspace are separate selectors,
+and one lead can cover several scopes. Ask the lead to publish scope revisions
+and assignment stage transitions through its dashboard work reports. Remove,
+cancel, park and split decisions remain distinct from verified delivery.
+
+An explicit pause/resume of the whole assigned scope is an activity-intent
+correction, not a conclusion drawn from quiet sessions or a blocked queue.
+Preserve that decision in the handoff so the lead can report it through
+`agent-msg work pause` or `agent-msg work resume` when supported.
+
 At each layer gate and on the agreed cadence (proposed default: every two weeks), compare planned versus landed capabilities, open blockers, requirement and test evidence, design defects, change cost across boundaries, and performance against stated budgets. Revisit architecture after a material boundary or quality-goal change. Invoke Quoin's architecture evaluation when available. Convert findings into owned corrective work, adjust downstream blocker edges, and record the decision in the program. Do not invent a numeric health score.
 
 ## 6. Protect priority goals from crowding

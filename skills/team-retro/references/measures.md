@@ -70,6 +70,19 @@ records as recorded; do not relabel their values with the new definition.
 
 ## Subjective scores
 
+The optional ix-board team exporter serves the same retro calculations to
+Grafana, with separate reported stage residence and observed execution time.
+Use its stable operational team/scope IDs rather than assuming a Linear team,
+Herdr workspace and planner mandate are identical. Overlapping scopes are not
+additive department totals.
+
+Read delivery beside intake, added/removed scope, cancellations and reopened
+work. Reported `running` assignments, tokens and host CPU do not prove ticket
+acceptance. Read effort ratios with source/attribution coverage and sample
+counts; unavailable history, explicit pauses and quiet assigned work retain
+their separate meanings. Rolling 24-hour counts are gauges, not event counters.
+Use the exporter/Grafana values; do not calculate replacement metrics in prose.
+
 The rubrics reserve 2/1/0 for cited judgment against their anchors. Quantitative
 rows consume deterministic ix-board measurements/assessments, never transcript
 counts or model arithmetic. Missing or unsupported evidence is `n/a` under Data
