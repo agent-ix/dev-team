@@ -261,6 +261,17 @@ For each open PR that serves an active priority goal in the planner's plan:
   change the window; record that evidence before changing the brief.
 - **Churn:** retrospective at each restart, the configured cadence, or an
   emitted repeating-loop finding. See [churn.md](references/churn.md).
+- **Subagent triage, every work cycle:** list your local subagents and stop
+  every one that is finished or stale and has no review, fix round or
+  disposition pass pending. A `completed` status is not proof it is gone: an
+  agent can show `completed` while it still waits on its own background shells
+  (check the harness's task list for "waiting on N shells", not only the agent
+  list). Stop it with the harness halt mechanism
+  ([harness.md](references/harness.md)), remove its dashboard entry
+  (`agent-msg work remove <id>`), and report the count stopped and kept. Keep
+  only a coder or reviewer with a pending task. A resumed reviewer or coder
+  that goes idle is stopped again at the next cycle. Never tell the owner
+  subagents are not stale from the agent list alone.
 
 ## Parallelism
 
