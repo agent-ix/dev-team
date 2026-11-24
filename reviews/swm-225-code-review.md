@@ -192,3 +192,29 @@ scope:
 
     [![Agent IX Plugins](https://github.com/agent-ix/agent-plugins/raw/refs/heads/main/assets/agent-ix-plugins.svg)](https://github.com/agent-ix/agent-plugins)'
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-013 | low | Every step-2 condition starts a ladder keyed by lane, class and ticket, but source defects, empty_fleet and the per-tick interim_mode defect have no lane: rung 1 (worker) and rung 2 (lead) have no recipient, and rung 3 re-sends to the orchestrator what step 2 already routes every tick. interim_mode never clears until SWM-255/256/258 ship, so its ladder never ends. State that lane-less defects are routed each tick by step 2 and climb no ladder. | skills/team-minder/SKILL.md:102 |
+| FND-014 | low | SO-03's tracker condition asks for a recorded review 'for that head SHA', but reviewer and reviewer-dispositions markers carry no head SHA, and after a fix round the merge head differs from the reviewed head. As written the condition almost never matches, so SO-03 escalates instead of answering (safe, but it disables the order). Match on a review whose latest dispositions leave no still-open finding, or on the has-review label plus a PR head equal to the --match-head-commit SHA. | skills/team-minder/references/standing-orders.md:11 |
+
+## Dispositions
+
+Round 1, fix head efda94de5ed4eacf713a3b783163ca25fd1be7f8 (commit efda94d). Re-validated: `quire validate --module <spec-artifacts-process origin/main 80d25b6>` passes for spec/roles/minder.md, spec/rubrics/rubric-minder.md and reviews/swm-225-*.md.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |
+| FND-008 | fixed | - |
+| FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | fixed | - |
+| FND-012 | fixed | - |

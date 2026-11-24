@@ -128,3 +128,14 @@ scope:
     `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality.
     Do not average scores into one number.'
 ```
+
+## Dispositions
+
+Round 1, fix head efda94de5ed4eacf713a3b783163ca25fd1be7f8 (commit efda94d). Re-validated: `quire validate --module <spec-artifacts-process origin/main 80d25b6>` passes for spec/roles/minder.md, spec/rubrics/rubric-minder.md and reviews/swm-225-*.md.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |

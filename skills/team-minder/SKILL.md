@@ -99,7 +99,7 @@ A row with a class missing from this table, or `UNKNOWN`, is undetermined and is
 
 ### 6. Escalation ladder
 
-Every condition from steps 2 to 5 starts a ladder in the tick it is first found. Key it by lane, class and ticket, and keep its start time in `~/.local/state/team-minder/ladder.json` until the SWM-255 ledger holds the action id and rungs (an `interim_mode` gap, step 2).
+Only a lane condition from steps 2 to 5 starts a ladder, in the tick it is first found. A condition with no lane (a source or host defect, `empty_fleet`, `interim_mode`) is routed by step 2 every tick it persists and climbs no ladder (MIND-R02). Key a lane condition by lane, class and ticket, and keep its start time in `~/.local/state/team-minder/ladder.json` until the SWM-255 ledger holds the action id and rungs (an `interim_mode` gap, step 2).
 
 | Rung | When | Recipient |
 |---|---|---|
