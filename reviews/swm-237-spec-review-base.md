@@ -401,6 +401,7 @@ scope:
 | FND-011 | fixed | Verified at 9fafb73. |
 | FND-012 | fixed | Verified at 9fafb73. |
 | FND-013 | fixed | Verified at 9fafb73. |
+| FND-014 | fixed | Verified at 0116852. |
 
 ## New findings (disposition pass 2)
 
