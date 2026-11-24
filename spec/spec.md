@@ -23,13 +23,13 @@ dev-team guidance and the interfaces it consumes from ix-board and build tools.
 
 Configurable team/project monitoring, deterministic measurements and deltas,
 role self-evaluation, owned corrective actions, status/health/retro terminal
-views, and shared build arbitration. [The design](../docs/department-monitoring.md) defines boundaries,
+views, and shared build arbitration, including per-host profiles, throttling, a target-directory pool, structured job output, remote dispatch of a pushed commit and metrics. [The design](../docs/department-monitoring.md) defines boundaries,
 the problem-class table, metric formulas and rollout dependencies.
 
 ### 2.2 Out of Scope
 
 Changing project priorities without authority; treating ticket text as orders;
-replacing the lifecycle detector being delivered by ix-board; restarting active
+replacing the lifecycle detector being delivered by ix-board; automatic host routing of builds (a later flag, not specified here); restarting active
 sessions; a desktop or Claude UI implementation; automatic semantic judgments
 without attributed evidence; adding project-specific IDs or concurrency caps to
 reusable skills. This spec does not claim the requested tools are already shipped.
@@ -55,6 +55,16 @@ views read the same report model that a future plugin or desktop view can read.
 | [FR-006](functional/FR-006-role-spec-format.md) | Role spec format: objectives, metrics, rules, paired evaluations |
 | [FR-007](functional/FR-007-role-spec-lint.md) | Lint: no rule without evaluation, no objective without metric |
 | [FR-008](functional/FR-008-evaluation-result-record.md) | Per-session and per-role evaluation result rows |
+| [US-003](usecase/US-003-agent-builds-on-sustainable-hosts.md) | Agents run builds on hosts that stay healthy, with short results |
+| [FR-009](functional/FR-009-host-profile-sustainable-slots.md) | Per-host profile and sustainable slot count from measured headroom |
+| [FR-010](functional/FR-010-scheduler-owned-throttling.md) | Supervised governor: pause, resume, abort, hold, watchdog fallback |
+| [FR-011](functional/FR-011-priority-classes-lane-fair-share.md) | Priority classes and fair share per lane |
+| [FR-012](functional/FR-012-target-dir-pool.md) | Warm target-directory pool with disk budget |
+| [FR-013](functional/FR-013-structured-job-output.md) | Structured job summary and log index |
+| [FR-014](functional/FR-014-remote-dispatch-pushed-sha.md) | Remote dispatch of a pushed commit to a named host |
+| [FR-015](functional/FR-015-build-metrics-export.md) | Prometheus and ix-board metrics |
+| [FR-016](functional/FR-016-retire-ad-hoc-build-scripts.md) | Cover and retire the ad hoc scripts |
+| [NFR-002](non-functional/NFR-002-scheduler-overhead-and-isolation.md) | Bounded overhead, probe failure isolation |
 | [NFR-001](non-functional/NFR-001-reproducible-measurement.md) | Reproducibility and read-only observation |
 | [IT-001](integration/IT-001-incident-replay.md) | Generalization and adverse-case replay |
 
@@ -128,5 +138,6 @@ constants. Rust projects receive Rust logic rather than Python or shell runners.
 
 - Linear [SWM-160](https://linear.app/agent-ix/issue/SWM-160), program request;
   [SWM-161](https://linear.app/agent-ix/issue/SWM-161), this contract.
+- Linear [SWM-237](https://linear.app/agent-ix/issue/SWM-237), build scheduler extension (FR-009 to FR-016); it depends on the shared host-probe crate, [SWM-238](https://linear.app/agent-ix/issue/SWM-238).
 - Existing ix-board [retro contract](ix://agent-ix/ix-board/FR-024) and
   [unavailable contract](ix://agent-ix/ix-board/FR-026).

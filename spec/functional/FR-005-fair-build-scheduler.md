@@ -11,7 +11,7 @@ relationships:
 ## Description
 
 The shared Rust build scheduler SHALL grant build leases from configured or
-verified live host capacity using stable FIFO order and bounded priority aging.
+verified live host capacity using stable FIFO order within a lane and bounded priority aging.
 
 The shared package is `dev-tools/tools/locked-build`. Operator planning
 annotations such as ix-relay `ServerCapacity.max_agents` are not measured build
@@ -25,7 +25,7 @@ succeeded/failed/timed_out/cancelled; queued → cancelled is also valid. A chil
 crash is failed. Every transition emits a stable event ID and timestamps.
 
 The effective priority is `base_priority + floor(wait/aging_interval)`, with
-lower enqueue sequence breaking ties. Base priorities lie in configured finite
+lower enqueue sequence breaking ties within one lane; between lanes at equal effective priority [FR-011](FR-011-priority-classes-lane-fair-share.md) fair share orders requests and never overrides a reservation. Base priorities lie in configured finite
 range `[0,P]`; aging interval is configured positive. Reservation eligibility
 means the request fits the host's total current configured/verified capacity,
 regardless of how much capacity is currently free. Once the oldest such queued
@@ -60,7 +60,7 @@ contention and a running child's outcome are separate events.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-005-AC-1 | Equal-priority eligible requests run in enqueue order; repeated high-priority arrivals cannot pass an eligible request after its configured reservation threshold. A deterministic-clock test proves this under sustained arrivals. | Test |
+| FR-005-AC-1 | Equal-priority eligible requests of one lane (see FR-011 for cross-lane share) run in enqueue order; repeated high-priority arrivals cannot pass an eligible request after its configured reservation threshold. A deterministic-clock test proves this under sustained arrivals. | Test |
 | FR-005-AC-2 | Higher-priority waiting work gets the next available capacity before aging reservation, while an already running child continues; no new grant exceeds current capacity or duplicates leased units. If capacity shrinks from two units to one while two units are running, both continue, overcommit is reported, and new admission waits for sufficient release. | Test |
 | FR-005-AC-3 | Capacity shrink/growth, unavailable/stale host telemetry, insufficient disk reserve and oversized requests follow the defined admission behavior without a hardcoded slot count. | Test |
 | FR-005-AC-4 | Timeout, cancellation, child crash, scheduler restart, stale heartbeat and PID-reuse fixtures reclaim leases only after verified termination of the owned child group; unrelated children are never terminated. | Test |
