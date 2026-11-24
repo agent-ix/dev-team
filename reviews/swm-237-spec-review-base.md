@@ -397,3 +397,13 @@ scope:
 | FND-007 | fixed | Verified at 10413b3. |
 | FND-008 | fixed | Verified at 10413b3. |
 | FND-009 | fixed | Verified at 10413b3. |
+| FND-010 | fixed | Verified at 9fafb73. |
+| FND-011 | fixed | Verified at 9fafb73. |
+| FND-012 | fixed | Verified at 9fafb73. |
+| FND-013 | fixed | Verified at 9fafb73. |
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-014 | low | The fix for FND-011 replaced the Meaning cell of the `[governor]` row with a literal `&` (a sed replacement artifact), deleting the descriptions of `sample_interval`, `heartbeat_stale`, `max_pause` and `probe_timeout` and leaving `watchdog_poll`, `stall_wait` and `max_lane_labels` undescribed in the profile table. Restore the meanings and add the three new keys. | spec/functional/FR-009-host-profile-sustainable-slots.md:31 |

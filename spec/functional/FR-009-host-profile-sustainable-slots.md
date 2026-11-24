@@ -28,7 +28,7 @@ The profile has these tables. Unknown keys are refused at load with a diagnostic
 | `[reserve]` `cpu_cores`, `memory`, `services` | CPU and memory reserved for shared services on this host (for example the relay Redis bus on titan, Prometheus and kind on luna); `services` is a documentation list shown in status |
 | `[weight]` `cpu_weight`, `nice` | Scheduling weight of builds below services: Linux and WSL run each job in a systemd user scope with `CPUWeight` (default 20 against the default 100); macOS runs jobs at `nice` (default 10) |
 | `[pool]` `path`, `budget`, `per_key_slots`, `min_free`, `max_age` | Target-pool settings of [FR-012](FR-012-target-dir-pool.md) |
-| `[governor]` `sample_interval`, `heartbeat_stale`, `watchdog_poll`, `max_pause`, `probe_timeout`, `stall_wait`, `max_lane_labels` | &
+| `[governor]` `sample_interval`, `heartbeat_stale`, `watchdog_poll`, `max_pause`, `probe_timeout`, `stall_wait`, `max_lane_labels` | Sampling cadence (`sample_interval`, default 5 s); age at which watchdogs treat the governor as dead (`heartbeat_stale`, default 15 s); longest pause (`max_pause`); per-probe timeout (`probe_timeout`); watchdog observation interval (`watchdog_poll`, default 5 s, also the FR-005 supervisor poll); wait that counts as an admission stall (`stall_wait`, default 5 min, FR-016); distinct lane label values (`max_lane_labels`, default 64, FR-015) |
 | `[repos.<name>]` `mirror`, `remote` | Bare mirror directory and remote URL for a repo on this host (FR-014) |
 | `[commands]` `allow` | Non-cargo commands a dispatched job may run in a checkout (FR-014); empty by default |
 | `[[probe]]` `name`, `kind`, `required`, `interval` | A probe from the shared crate and whether its loss is fatal to admission |
