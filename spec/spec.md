@@ -51,6 +51,10 @@ views read the same report model that a future plugin or desktop view can read.
 | [FR-003](functional/FR-003-role-safeguards.md) | Four role safeguards and department health interpretation |
 | [FR-004](functional/FR-004-terminal-views.md) | Reusable status, health and retro views |
 | [FR-005](functional/FR-005-fair-build-scheduler.md) | Capacity-aware fair shared scheduler |
+| [US-002](usecase/US-002-measured-role-rules.md) | Owner knows which role rules are followed and which matter |
+| [FR-006](functional/FR-006-role-spec-format.md) | Role spec format: objectives, metrics, rules, paired evaluations |
+| [FR-007](functional/FR-007-role-spec-lint.md) | Lint: no rule without evaluation, no objective without metric |
+| [FR-008](functional/FR-008-evaluation-result-record.md) | Per-session and per-role evaluation result rows |
 | [NFR-001](non-functional/NFR-001-reproducible-measurement.md) | Reproducibility and read-only observation |
 | [IT-001](integration/IT-001-incident-replay.md) | Generalization and adverse-case replay |
 
