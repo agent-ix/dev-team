@@ -122,3 +122,26 @@ scope:
   role: context_only
   excerpt: 'Each fleet status and fleet tick run SHALL append to a schema-versioned SQLite ledger stored outside every git work tree.'
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-010 | low | references/ownership.md cites "the orchestrator role spec, version 2", but the spec and the skill's `role_spec_version` are 3. Main goes from version 1 to 3 in this PR with no version 2, so cite version 3. | skills/fleet-orchestrator/references/ownership.md:19 |
+| FND-011 | low | Step 2 lists `relay_read_errors` as a `fleet status` defect kind. It is a `fleet assign` report defect (FR-035 behaviour 13); `fleet status` never emits it. Attribute it to `fleet assign`. | skills/fleet-orchestrator/SKILL.md:55 |
+
+## Dispositions
+
+Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d92656). Checked against ix-board FR-038 on #95 head 792f28e.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |
+| FND-008 | fixed | - |
+| FND-009 | fixed | - |

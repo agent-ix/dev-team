@@ -1,14 +1,14 @@
 ---
 name: fleet-orchestrator
 description: Run the fleet orchestrator loop. Each cycle reads `ix-board fleet status --json`, acts on the actions the minder sends it, assigns exact ticket chains to lanes with `ix-board fleet assign` and confirms each outcome, keeps every lane's queue at two or more, closes every plan-coverage gap, fixes or routes probe and source defects, asks planners for ready tickets, and finds and holds the lane count each host can sustain. Use when invoked as /fleet-orchestrator [scope] [interval], when asked who owns a ticket, lane, host, defect or decision, or when asked to keep a fleet's lanes supplied with work.
-role_spec_version: 3
+role_spec_version: 4
 ---
 
 # Fleet Orchestrator
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 3. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 4. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 ## Tool availability
 
@@ -52,16 +52,16 @@ The words "in target", "all hosts", "healthy" and "saturated" appear in output o
 
 A failed probe, a missing command or any `defects` row is fixed, or routed to a named owner with a ticket, in the cycle it appears (ORCH-R08). The orchestrator owns `fix_source` until it routes it by ticket to the owning repository (Ownership table). Name the defect's source and host in the ticket (ORCH-R08). These are defects to route under ORCH-R08:
 
-- Any `fleet status` defect kind, including `relay_read_errors` and `ledger_unwritable` (ORCH-R08).
+- Any `fleet status` defect kind, including `ledger_unwritable`, and the `relay_read_errors` defect a `fleet assign` report carries (ORCH-R08).
 - One `interim_mode` defect per cycle naming every producer in the availability table that is missing (Interim mode).
 - An `owner_unreachable` gap from plan-coverage: `fleet assign` refuses to move a ticket off a lane on a stale host, so the gap cannot be closed with the tools. Route it citing SWM-287 and do not try to re-assign it (ORCH-R06).
 - Every `fleet assign` refusal that no re-run can clear (step 6) (ORCH-R08).
 
 ### 3. Act on the actions the minder sent
 
-The orchestrator never runs `ix-board fleet tick`. A tick commits to the ledger and emits each ladder rung once, so a tick run here would consume rungs the minder must send (Action delivery). The minder sends the orchestrator every action addressed to it as a relay message (MIND-R21). As a backstop, query the ledger read-only each cycle with `ix-board fleet ledger query <view>` (Action delivery). FR-039 has no view of open actions by target role over all kinds today; SWM-288 owns the `orchestrator_addressed_actions` view, so name that gap in the cycle output until it ships.
+The orchestrator never runs `ix-board fleet tick`. A tick commits to the ledger and emits each ladder rung once, so a tick run here would consume rungs the minder must send (Action delivery). The minder sends the orchestrator every action it executes as a relay message (MIND-R21): `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the drain cap, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved`. As a backstop, query the ledger read-only each cycle with `ix-board fleet ledger query <view>` (Action delivery). FR-039 has no view of open actions over that kind list today; SWM-288 owns the `orchestrator_addressed_actions` view, which selects by kind and not by target, so name that gap in the cycle output until it ships.
 
-Every action addressed to the orchestrator is acted on in the cycle it arrives, or rejected only by citing newer `fleet status` evidence that contradicts it. A rejection without that evidence is a breach (ORCH-R10).
+Every action the orchestrator executes is acted on in the cycle it arrives, or rejected only by citing newer `fleet status` evidence that contradicts it. A rejection without that evidence is a breach (ORCH-R10).
 
 | Action | Step |
 |---|---|
@@ -71,6 +71,7 @@ Every action addressed to the orchestrator is acted on in the cycle it arrives, 
 | `escalate_drain` | Act on the drain, citing the ledger action row as evidence (ORCH-R30, ORCH-R10). |
 | `add_lane` for a host below its recorded level with ready work | Add the lane in the cycle it arrives (ORCH-R27). Do not add a lane for a host the tick suppressed: `discovery_active`, `no_recorded_level`, `at_recorded_level` or `cool_off` (ORCH-R21, ORCH-R23). |
 | `need_ready_tickets` | Send the stated number to the owning planner as a request for ready tickets (step 8) (ORCH-R14, ORCH-R10). |
+| `route_dead_lane`, `route_idle_lane` | Act as step 4 states (ORCH-R09, ORCH-R10). |
 
 ### 4. Map the routes the minder sends
 
@@ -78,8 +79,8 @@ The minder routes these lane and host conditions to the orchestrator. Each has a
 
 | Minder route | Orchestrator step |
 |---|---|
-| `DEAD` lane (MIND-R17) | Check its row in the current `fleet status`; assign no work to it while it is dead, and route the defect with a ticket (ORCH-R08, ORCH-R09). |
-| `IDLE` lane with an empty assignment list (MIND-R18) | Assign it a chain (step 5) in the cycle (ORCH-R03, ORCH-R09). |
+| `DEAD` lane, `route_dead_lane` (MIND-R17) | Check its row in the current `fleet status`; assign no work to it while it is dead, and route the defect with a ticket (ORCH-R08, ORCH-R09). |
+| `IDLE` lane with an empty assignment list, `route_idle_lane` (MIND-R18) | Assign it a chain (step 5) in the cycle (ORCH-R03, ORCH-R09). |
 | `UNREACHABLE` host or lanes | Route the host defect (step 2) (ORCH-R08). Its tickets are `owner_unreachable`; step 2 handles that gap. |
 | Source defect, `empty_fleet` | Route it (step 2) (ORCH-R08). |
 | `interim_mode` from the minder | It names minder gaps. Route the matching defect once, and keep the orchestrator's own `interim_mode` defect (ORCH-R08). |
@@ -147,7 +148,7 @@ When the owner asks who owns a ticket, lane, host, defect or decision, answer fr
 
 ## Escalation
 
-The in-fleet ladder runs worker, lane lead, orchestrator. The tick emits it and the minder sends it; the orchestrator is its last rung, and ORCH-R10 applies to every action addressed to it. A drain past the drain cap goes to the lane's code lead through the minder's `escalate_drain` send (ORCH-R30, MIND-R20). Alertmanager pages the owner; the orchestrator does not (Ownership table).
+The in-fleet ladder runs worker, lane lead, orchestrator. The tick emits it and the minder sends it; the orchestrator is its last rung, and ORCH-R10 applies to every action it executes. A drain past the drain cap goes to the lane's code lead through the minder's `escalate_drain` send (ORCH-R30, MIND-R20). Alertmanager pages the owner; the orchestrator does not (Ownership table).
 
 ## Communication
 

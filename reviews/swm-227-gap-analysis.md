@@ -186,3 +186,29 @@ scope:
   role: context_only
   excerpt: 'Each instruction below cites the rule it implements as ORCH-Rnn; evaluations and feedback point at those ids.'
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-009 | medium | ix-board FR-038 at #95 head 792f28e adds `route_dead_lane` and `route_idle_lane`, both targeted at the orchestrator, each a ladder condition. MIND-R21, ORCH-R10, the Action delivery list and the minder's rung 0 list do not name either kind. MIND-R17 and MIND-R18 describe the behaviour but not the kind names, so MIND-R21-E1 and ORCH-R10 do not cover them. Add both kinds to MIND-R21, ORCH-R10 and Action delivery, and name them in MIND-R17 and MIND-R18. | spec/roles/minder.md:147 |
+| FND-010 | medium | MIND-R21 and ORCH-R10 call `add_lane` and `need_ready_tickets` actions "addressed to" the orchestrator. FR-038 targets `add_lane` at the host and `need_ready_tickets` at the owning planner project (`target_role` `host` and `planner`). A view by target role (`orchestrator_addressed_actions`, MIND-R21-E1, SWM-288) would leave both out. Either change the FR-038 targets to the orchestrator, or word the rules as "actions the orchestrator executes" with an explicit kind list, and make SWM-288 select by that list. | spec/roles/orchestrator.md:257 |
+| FND-011 | medium | ORCH-R31-E1 uses an invented query, `ledger.orchestrator_cycle_gaps_over_2_intervals_without_owner_instruction`. FR-039 already defines the `cycle_missed` view for this gap (written by `fleet tick`, deferred to SWM-255). No store records owner instructions, so the exemption cannot be computed. The evaluation note names `ix_fleet_tick_timestamp_seconds` as freshness, but that series is the minder's tick, not the orchestrator's cycle. Use `ledger.cycle_missed` = 0, and take owner instructions from the transcript (ORCH-R31-E2) as the exemption, or name a producer for them. | spec/roles/orchestrator.md:322 |
+| FND-012 | medium | The ORCH-R32 evaluations cannot be computed from their declared source. Relay receipts carry no message kind and no body, so neither `relay.orchestrator_messages_without_action_or_allowed_kind` (E1) nor `relay.etiquette_replies_per_sender_hour_max` (E2) can be computed from them, and no producer row names either evaluation. E1's allowed kinds (assignments, planner requests, defect routes, drain or ladder actions) also differ from the rule text ("done, blocked, a decision or a handoff"). Make both transcript pattern queries under SWM-221, or name a producer that records message kinds, and use one list of allowed kinds in the rule and in E1. | spec/roles/orchestrator.md:324 |
+| FND-013 | low | ORCH-R32 maps to ORCH-O03 ("A stopped lane is working again quickly", ORCH-M03 time-to-action). Message noise is not what that metric measures. ORCH-R31 to ORCH-O01 is defensible, because a deleted loop leaves capacity idle. Map R32 to the objective its noise delays, or state why O03 applies. | spec/roles/orchestrator.md:279 |
+| FND-014 | low | FR-038 at 792f28e addresses `act_on_undetermined` to the lane's lead when the lane is BLOCKED (reason `lane_blocked_route_to_lead`). The minder v5 rung 0 text still says `act_on_undetermined` goes to the lane. State the BLOCKED exception, which MIND-R19 already implies. | spec/roles/minder.md:63 |
+
+## Dispositions
+
+Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d92656). Ticket SWM-227 AC 1 now reads "confirm by focus (ORCH-R05)".
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |
+| FND-008 | fixed | - |
