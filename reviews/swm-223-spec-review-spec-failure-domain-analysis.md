@@ -179,6 +179,13 @@ scope:
 | FND-010 | medium | The knee compares 'the marginal lane output of the added lane' (tickets closed plus PRs merged per hour) over one 30-minute window with the mean per-lane output. A newly added lane starts cold: its first ticket rarely reaches close and merge through review and the gate within 30 minutes, so its measured output is biased to 0 and the knee fires at the first step. Counts per lane per window are also small integers, and the commits fallback applies when counts are 'too small to compare', which is undefined. Measure the change in total host output between levels over a window long enough for the output measure (or several windows), state the minimum count that triggers the commits fallback, and exclude a lane's first ticket ramp-up from its step. | spec/roles/orchestrator.md:112-116 |
 | FND-011 | low | ORCH-R20 starts discovery for an unrecorded host 'while ready work exists', but a window is valid only when the ready-buffer deficit is zero (ORCH-R17), and ORCH-R28 ends a run after 2 inconclusive windows. While the deficit is positive, an unrecorded host cycles every hour: start, add a lane, 2 inconclusive windows, end and drain the lane, restart. The ORCH-R24 cap applies only to re-discoveries. Start discovery only when the deficit is zero, or apply a per-day cap to first discovery runs as well. | spec/roles/orchestrator.md:220 |
 
+
+## New findings (disposition pass 3)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-012 | low | ORCH-R22 requires a host throttled above 5% for an hour to be 'stepped down one lane and re-discovered', but ORCH-R24 now caps discovery runs at 2 per host per day, first runs included. A host that has used both runs and then throttles cannot be re-discovered that day, so obeying R24 breaks R22's wording. R22-E1 checks only the step-down, so no evaluation fails. Reword R22 to 're-discovered when the daily cap allows', or exempt throttle re-discovery from the cap. | spec/roles/orchestrator.md:227-229 |
+
 ## Dispositions
 
 | FND | outcome | reason |
@@ -192,3 +199,5 @@ scope:
 | FND-007 | fixed | - |
 | FND-008 | fixed | - |
 | FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | fixed | - |
