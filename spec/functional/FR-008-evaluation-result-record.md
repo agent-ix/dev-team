@@ -15,7 +15,7 @@ relationships:
 ## Description
 
 The evaluator (`ix-board retro eval --role <r> [--session <id>] [--since <t>]`,
-SWM-221) SHALL emit evaluation results as three row kinds, defined here so the
+SWM-221) SHALL emit evaluation results as four row kinds, defined here so the
 evaluator, the minder, team-retro and the director read one shape. This
 requirement defines the record; the evaluator's implementation belongs to
 ix-board.

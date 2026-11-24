@@ -259,3 +259,22 @@ scope:
 ## Method and Limits
 
 Diff scope: git diff origin/main...HEAD (US-002, FR-006, FR-007, FR-008, spec/spec.md index, roles/minder.md). No applicable AssuranceProfile exists in the repository; direct review applies. Spec files validate (quire validate exit 0 each); roles/minder.md fails with unknown type 'RoleSpec', as the PR declares (archetype is an external dependency). quire matrix shows all 22 new criteria untagged/requirement-without-design, expected at the spec-only stage. No hash/digest/pin antipattern found. Owner intent was read from the program plan section W4a. Criterion-strength (Jev), evidence, risk-complexity and scope-boundary lenses were not run for this bounded review set.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-006 | low | The Description still says the evaluator emits 'three row kinds', but Behavior now defines four (session rule, session objective, role rule, role objective). Update the count. | spec/functional/FR-008-evaluation-result-record.md:18 |
+
+## Dispositions
+
+Round 1, fix commit 4cad0509fcd863729c032e8a31aee0879594483a (reviewed diff 627838c..4cad050).
+
+| FND | Outcome | Reason |
+|---|---|---|
+| FND-001 | fixed | Verified in 4cad050. |
+| FND-002 | fixed | Verified in 4cad050. |
+| FND-003 | fixed | Verified in 4cad050. |
+| FND-004 | fixed | Verified in 4cad050. |
+| FND-005 | fixed | Verified in 4cad050. |
+| FND-006 | still-open | New in disposition pass 1; no fix yet. |

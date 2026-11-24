@@ -51,3 +51,11 @@ scope:
 ## Method and Limits
 
 Diff scope: git diff origin/main...HEAD (US-002, FR-006, FR-007, FR-008, spec/spec.md index, roles/minder.md). No applicable AssuranceProfile exists in the repository; direct review applies. Spec files validate (quire validate exit 0 each); roles/minder.md fails with unknown type 'RoleSpec', as the PR declares (archetype is an external dependency). quire matrix shows all 22 new criteria untagged/requirement-without-design, expected at the spec-only stage. No hash/digest/pin antipattern found. Owner intent was read from the program plan section W4a. Criterion-strength (Jev), evidence, risk-complexity and scope-boundary lenses were not run for this bounded review set.
+
+## Dispositions
+
+Round 1, fix commit 4cad0509fcd863729c032e8a31aee0879594483a (reviewed diff 627838c..4cad050).
+
+| FND | Outcome | Reason |
+|---|---|---|
+| FND-001 | fixed | Verified in 4cad050. |

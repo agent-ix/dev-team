@@ -157,3 +157,22 @@ scope:
 ## Method and Limits
 
 Diff scope: git diff origin/main...HEAD (US-002, FR-006, FR-007, FR-008, spec/spec.md index, roles/minder.md). No applicable AssuranceProfile exists in the repository; direct review applies. Spec files validate (quire validate exit 0 each); roles/minder.md fails with unknown type 'RoleSpec', as the PR declares (archetype is an external dependency). quire matrix shows all 22 new criteria untagged/requirement-without-design, expected at the spec-only stage. No hash/digest/pin antipattern found. Owner intent was read from the program plan section W4a. Criterion-strength (Jev), evidence, risk-complexity and scope-boundary lenses were not run for this bounded review set.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-006 | high | Moving the example to spec/roles/ (the FND-001 fix) makes `quire validate --scope . "spec/**/*.md"` exit 3 ('unknown type RoleSpec') at this head; origin/main exits 0. The repo has no Makefile or CI workflow, but this glob is the spec validation gate the spec-review and reviewer process runs, and every later spec PR would inherit the red. Keep the example out of spec/ until SWM-245 lands (for example docs/examples/minder-role-spec.md, referenced from FR-006-AC-6), and make moving it to spec/roles/minder.md part of SWM-245's acceptance. | spec/roles/minder.md:1-9 |
+
+## Dispositions
+
+Round 1, fix commit 4cad0509fcd863729c032e8a31aee0879594483a (reviewed diff 627838c..4cad050).
+
+| FND | Outcome | Reason |
+|---|---|---|
+| FND-001 | fixed | Verified in 4cad050. |
+| FND-002 | fixed | Verified in 4cad050. |
+| FND-003 | fixed | Verified in 4cad050. |
+| FND-004 | fixed | Verified in 4cad050. |
+| FND-005 | fixed | Verified in 4cad050. |
+| FND-006 | still-open | New in disposition pass 1; no fix yet. |

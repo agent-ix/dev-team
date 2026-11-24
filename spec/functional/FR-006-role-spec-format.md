@@ -15,7 +15,8 @@ relationships:
 The role-spec format SHALL define each role (coder, reviewer, code lead, planner,
 minder, orchestrator, director) as one Markdown document at
 `spec/roles/<role>.md` with frontmatter `type: RoleSpec` that a Quire module
-validates. The document lives under `spec/` because `quire matrix` reads
+validates. The worked example is kept at `docs/examples/minder-role-spec.md`, outside
+`spec/`, until the `RoleSpec` archetype lands (SWM-245) so that the spec tree validates; real role specs live at `spec/roles/<role>.md` from then on. The document lives under `spec/` because `quire matrix` reads
 documents only from `<scope>/spec`; a document elsewhere would be invisible to
 the lint ([FR-007](FR-007-role-spec-lint.md)). It is the single place that says
 what the role is for, what it must and must not do, and how each statement is
@@ -75,7 +76,7 @@ records the role spec version it was derived from in its frontmatter
 | FR-006-AC-3 | A deterministic evaluation without a query reference, a judgement evaluation without a rubric reference of the form `<rubric>@<version>#<check-slug>`, and any evaluation without a trigger each fail validation. | Test |
 | FR-006-AC-4 | A judgement evaluation with cadence `tick` fails validation; a rule whose evaluations are all judgement is reported as a warning, not an error. | Test |
 | FR-006-AC-5 | Duplicate IDs within a role spec, an ID whose prefix differs from the frontmatter `id`, and a rule that names a nonexistent objective each fail validation. | Test |
-| FR-006-AC-6 | The minder role spec declares at least one rule for each of these failure classes: unknown state read as not idle, failed probe read as healthy, ready work parked behind an idle lane, escalation muted or repeated-suppressed, and monitoring loop removed without owner instruction; removing the last rule of any class is detectable by the class column of the Rules table, and the spec validates once the `RoleSpec` archetype is installed. | Inspection |
+| FR-006-AC-6 | The worked minder role spec (`docs/examples/minder-role-spec.md`) declares at least one rule for each of these failure classes: unknown state read as not idle, failed probe read as healthy, ready work parked behind an idle lane, escalation muted or repeated-suppressed, and monitoring loop removed without owner instruction; removing the last rule of any class is detectable by the class column of the Rules table, and the spec validates once the `RoleSpec` archetype is installed. | Inspection |
 | FR-006-AC-7 | A skill frontmatter `role_spec_version` and its cited rule IDs are checked against the role spec at that version; a cited ID absent from it is reported ([FR-007-AC-8](FR-007-role-spec-lint.md)). | Test |
 | FR-006-AC-8 | A threshold with a missing comparator, a non-numeric value or a missing unit fails validation. | Test |
 | FR-006-AC-9 | A judgement evaluation whose evaluator is neither `director` nor `team-retro`, and a deterministic evaluation whose evaluator is not `evaluator`, each fail validation. | Test |

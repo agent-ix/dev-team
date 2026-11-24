@@ -75,3 +75,19 @@ scope:
 ## Method and Limits
 
 Diff scope: git diff origin/main...HEAD (US-002, FR-006, FR-007, FR-008, spec/spec.md index, roles/minder.md). No applicable AssuranceProfile exists in the repository; direct review applies. Spec files validate (quire validate exit 0 each); roles/minder.md fails with unknown type 'RoleSpec', as the PR declares (archetype is an external dependency). quire matrix shows all 22 new criteria untagged/requirement-without-design, expected at the spec-only stage. No hash/digest/pin antipattern found. Owner intent was read from the program plan section W4a. Criterion-strength (Jev), evidence, risk-complexity and scope-boundary lenses were not run for this bounded review set.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-003 | low | FR-007 now attributes these capabilities to SWM-245, but SWM-245's checklist covers only the frontmatter schema, trace targets, enum/prefix/objective-metric/rule-evaluation asserts and validating the example. It does not list the unused-metric orphan check, versioned rubric references, the base-revision version-bump check or the skill-citation scan, and it still names roles/*.md. Update SWM-245, or file a sibling ticket for the lint-side checks, so the blocker is planned. This is a tracker change, not a spec edit. | spec/functional/FR-007-role-spec-lint.md:50-52 |
+
+## Dispositions
+
+Round 1, fix commit 4cad0509fcd863729c032e8a31aee0879594483a (reviewed diff 627838c..4cad050).
+
+| FND | Outcome | Reason |
+|---|---|---|
+| FND-001 | fixed | Verified in 4cad050. |
+| FND-002 | fixed | Verified in 4cad050. |
+| FND-003 | still-open | New in disposition pass 1; no fix yet. |

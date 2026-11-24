@@ -1,6 +1,6 @@
 # Minder rubric
 
-Rubric version: 1 (cited as `rubric-minder@1`; bump on any change to a check or its scoring). Checks are cited by the slug in the first column of the id list below the table.
+Rubric version: 1 (cited as `rubric-minder@1`; bump on any change to a check or its scoring). Checks are cited by the slugs listed below the table.
 
 Score 2/1/0 with cited judgment. Deterministic measurements come from ix-board;
 missing or partial evidence scores `n/a` under Data quality.
