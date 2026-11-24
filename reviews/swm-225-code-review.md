@@ -218,3 +218,7 @@ Round 1, fix head efda94de5ed4eacf713a3b783163ca25fd1be7f8 (commit efda94d). Re-
 | FND-010 | fixed | - |
 | FND-011 | fixed | - |
 | FND-012 | fixed | - |
+| FND-013 | fixed | - |
+| FND-014 | fixed | - |
+
+The FND-013 and FND-014 rows are round 2, fix head 8149fd60a3bda5b7f025c47e944b04619040a80a.
