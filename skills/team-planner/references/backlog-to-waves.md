@@ -40,19 +40,18 @@ Apply the corrections: close stale tickets with the merge that delivered them, a
 ## 5. Batch by area
 
 1. One batch is one area (crate, module or requirement block) with one owner. Two lanes never edit the same files.
-2. One spec author per repository per batch. Spec pull requests land before the code that depends on them.
+2. One PR per batch. Its spec commit comes first, then the code. Tickets that touch the same files or requirement files share the batch.
 3. Batch 0 is merge-out: pull requests already reviewed. Land them and close their tickets first.
 4. Split any change above the team's `pr_oversize_lines` limit before review, by area, with the split recorded on the ticket.
 
 ## 6. Waves
 
-1. Order the batches: spec wave, then the implementation wave for the same area, then the gate check. The next layer starts after its gate passes.
+1. Order the batches by area; each batch's PR carries its spec and its code, then the gate check. The next layer starts after its gate passes.
 2. Staff the critical path first and keep it staffed. Off-path batches take only the capacity left over.
 3. Use current configured lane capacity and verified build leases, RAM and disk
    reserve to admit work. Keep lane headcount distinct from build slots; no
    hardcoded slot count or inference from `live_subagents`. Missing capacity
-   goes to its owner once. Spec PRs still consume workers even when they need
-   no heavy build, so preserve honest staffing and build counts separately.
+   goes to its owner once. Keep honest staffing and build counts separate.
 4. Hand each batch to a code lead with `ix-board focus plan-chunk` so readiness, blockers and acceptance excerpts travel with it.
 
 ## 7. Freeze and measure

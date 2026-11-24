@@ -1,6 +1,6 @@
 ---
 name: code-lead
-description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch spec authors, coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
+description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
 ---
 
 # Code Lead
@@ -8,8 +8,8 @@ description: Run the coding lane for one team as its long-lived code lead. Pull 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
 The code lead runs the coding lane for one team or project. It takes planned
-tickets from the planner, gets them specced, coded, reviewed and merged, and
-keeps the tracker true. It runs for hours or days. Subagents do all specifying,
+tickets from the planner, gets them specced and coded in one PR, reviewed once
+and merged, and keeps the tracker true. It runs for hours or days. Subagents do all specifying,
 coding and reviewing, so the lead's context stays clean and reviews stay
 unbiased.
 
@@ -99,10 +99,10 @@ One lead can run several teams. Treat the argument as a list.
    state before queuing it.
 6. Order the implementation queue: land open PRs first, then unblocked tickets
    in plan order. If that queue is empty, tell the planner once.
-7. Dispatch `/spec-steward` for a blocking spec-gap issue, or for the next
-   queued issue when there is no blocking gap. Include the issue, affected
-   specification, implementation repo, and any linked blocker. The steward
-   skill owns queue ordering and build-capacity policy.
+7. Dispatch `/spec-steward` for a spec-gap issue that belongs to another repo
+   or lane, blocking ones first. Include the issue, affected specification,
+   implementation repo, and any linked blocker. The steward skill owns queue
+   ordering and build-capacity policy.
 
 Before dispatch, read current lane/build capacity from explicit configuration
 or verified host state, with source and age. Keep planning headcount distinct
@@ -139,35 +139,40 @@ continue; never report a success you did not observe.
 Dispatch a separate subagent in a fresh context for each kind of work a ticket
 needs:
 
-- **Speccing** -> spec author (`/quoin:specify`), only when no requirement
-  already owns the work.
-- **Spec review** -> one spec reviewer per spec PR (`/quoin:spec-review` and its
-  sub-analyses), a different agent from the code reviewer.
-- **Code** -> coder. A small change may run the repo's work-task skill end to end.
-- **Code review** -> one reviewer per PR.
+- **Code and spec** -> one coder per PR. The coder writes the spec change (the
+  repo's spec workflow, for example `/quoin:specify`) as the first commit when
+  no requirement owns the behavior, then the code and tests.
+- **Review** -> one reviewer per PR, covering code, gap analysis and the spec
+  commit in one review.
 - **Research** -> a read-only subagent.
-Every PR gets exactly one reviewer. No agent reviews its own work. Spec work
-lands as its own PR before the code that depends on it. Dispatch each reviewer
+
+One PR per ticket, or per batch of like tickets. Batch tickets that touch the
+same files or requirement files into one PR. Split only for a real reason
+(different repo, or a blocking dependency another lane owns) and state the
+reason on the ticket. Never open a spec-only PR that merges before a separate
+code PR; a ticket whose whole scope is spec gets a spec-only PR. Every PR gets
+exactly one reviewer. No agent reviews its own work. Dispatch each reviewer
 with the instruction to take the `/reviewer` role and follow it end to end; it
 selects the methods, writes the SR artifacts and posts to the tracker.
 
-**Spec check, every ticket:** before dispatching a coder, check the ticket is
-in the org's specced state and that a requirement owns the behavior. Read the
-spec; the state alone is not proof. Specced -> code. Not specced -> author,
-reviewer, merge the spec PR, then code. Never code unspecced behavior, never
-re-spec specced work. A spec-only ticket is done when its spec PR merges.
-Layered spec waves are planned by `/team-planner`; see
-[workflows.md](references/workflows.md).
+**Spec check, every ticket:** before dispatching a coder, read the spec and
+confirm whether a requirement owns the behavior. The tracker state alone is not
+proof. Owned -> the coder codes it. Not owned -> the coder adds the requirement
+as the first commit of the PR. Never code unspecced behavior, never re-spec
+specced work. A spec-only ticket is done when its spec PR merges. Layered spec
+waves are planned by `/team-planner`; see [workflows.md](references/workflows.md).
 
 ## Spec-gap handoff
 
-When implementation reveals omitted or contradictory behavior, resolve the
-owning specification, tracker team/project and spec steward from the assigned
-scope. Have the coder file the gap there with the configured spec-gap label,
-the exact missing requirement and code/acceptance evidence. Link it as a
-structured blocker of the affected ticket. If ownership is unresolved, ask the
-planner once and continue independent work; never use a universal destination
-from another team's instructions. Do not expand implementation scope silently.
+When implementation reveals omitted or contradictory behavior, the coder fixes
+it in the same PR: spec commit first, then the code. Do not file a separate
+ticket or PR. Only a gap that belongs to another repo or another lane goes
+there: resolve the owning specification, tracker team/project and spec steward
+from the assigned scope, have the coder file the gap with the configured
+spec-gap label, the exact missing requirement and code/acceptance evidence, and
+link it as a structured blocker of the affected ticket. If ownership is
+unresolved, ask the planner once and continue independent work; never use a
+universal destination from another team's instructions.
 
 ## Per-ticket loop
 
@@ -185,7 +190,8 @@ from another team's instructions. Do not expand implementation scope silently.
    review returns. Retain its sole worktree and named private cache through
    review, fix rounds and the final aggregate gate; freeze is not completion.
 5. **Review:** one reviewer per PR, scoped to `git diff origin/main...HEAD`,
-   no edits. It posts findings to the tracker with its markers.
+   no edits. It reviews the spec commit and the code in one pass and posts
+   findings to the tracker with its markers.
 6. **Fix:** resume the same coder with ALL findings, lows included. Gap-analysis
    gaps get real tests. Confined checks only in fix rounds
    ([fix-round message](references/briefs.md#fix-round-message)).
@@ -194,6 +200,8 @@ from another team's instructions. Do not expand implementation scope silently.
    ([message](references/briefs.md#disposition-pass-message)), round 1, then
    2, 3 after each further fix round, until every finding's latest outcome is
    neither `still-open` nor missing and the reviewer reports the PR mergeable.
+   Spec review rounds cap at 2; accept remaining lows with no change. Read and
+   merge a one-line final fix yourself without another review round.
 8. **Verify** yourself ([verification](references/briefs.md#verify-before-merge)).
 9. **Merge**, see below.
 10. **Close out:** set the tracker state (Done, or back to backlog with a
@@ -221,7 +229,7 @@ to the tracker, and every finding is fixed, the code lead merges:
 the whole condition. The planner's sign-off and extra evidence comments are not
 required. Run the repo's aggregate gate once at the final head before merging;
 earlier fix rounds, re-pins and cross-repo checks use confined checks only. Do
-not run the gate before review. Spec-only markdown diffs skip the gate (if a
+not run the gate before review. A PR with only spec markdown skips the gate (if a
 test embeds the edited file, tell that file's owner). A repo or org rule that
 differs wins.
 

@@ -42,7 +42,7 @@ When a project holds more open tickets than one lead can track, or `team-retro` 
 
 - For a small change, define an acceptance criterion and a single owned issue when that is sufficient.
 - For a large system, map the domain, bounded contexts, invariants, owner interfaces, important change scenarios, failure modes, and measurable quality goals before implementation tickets.
-- Establish a reviewed architecture in layers. Specify the whole-system boundaries first, then plan a specification wave before each implementation wave. Identify the contract and evidence required to advance from one layer to the next.
+- Establish a reviewed architecture in layers. Specify the whole-system boundaries first, then plan each layer's tickets so a PR carries its spec change first and its code after. Identify the contract and evidence required to advance from one layer to the next.
 - Use Quoin's specification, architecture-review, and spec-to-plan methods when installed. Apply spec-driven design to make requirements testable, domain-driven design to set boundaries, and test-driven design to define failing evidence before coding. If Quoin is unavailable, record the same decisions and verification obligations in accessible project artifacts; state that formal Quoin checks were not run.
 
 ## 3. Build the Linear hierarchy

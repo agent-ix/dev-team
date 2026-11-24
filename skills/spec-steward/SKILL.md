@@ -34,13 +34,18 @@ count or ledger.
 - Author the smallest normative change that resolves the demonstrated gap.
   Use the repository's installed specification workflow and catalog where
   available; do not create unrelated requirements or workflow artifacts.
+- Take only a gap that belongs to another repo or lane, or a ticket whose whole
+  scope is spec. A gap in the same repo and lane as the blocked implementation
+  is fixed in that implementation's PR, spec commit first; hand it back to the
+  code lead.
 - Open a spec-only PR and link it to the spec-gap issue and the blocked
   implementation issue. Run only the applicable artifact validation. Spec
   work does not require a build lane or a code build.
-- Never review or merge your own PR. A separate reviewer reviews the spec PR.
-  The code lead merges it after the required review and validation pass, then
-  links the merge to the queue item. Implementation can resume when its
-  specification change has merged.
+- Never review or merge your own PR. A separate reviewer reviews the spec PR,
+  capped at 2 rounds with lows accepted without change. The code lead merges it
+  after the required review and validation pass, then links the merge to the
+  queue item. Implementation can resume when its specification change has
+  merged.
 - Keep build work moving on every scope that does not depend on the gap. A
   missing specification can block only the implementation that needs it; it
   must not hold an unrelated build lane idle.
@@ -52,7 +57,7 @@ For each handled queue item, report:
 - **Decision:** blocking gap, valuable non-blocking gap, or delete-as-ceremony.
 - **Evidence:** the issue relation, requirement or source files, and affected
   implementation behavior.
-- **Action:** spec PR and review status, or cancellation reason and status.
+- **Action:** spec PR and review status, or handed back to the code lead for the implementation PR, or cancellation reason and status.
 - **Build impact:** the exact dependent scope, if any; state that unrelated
   build work can continue.
 
