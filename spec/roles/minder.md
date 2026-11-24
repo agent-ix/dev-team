@@ -1,7 +1,7 @@
 ---
 id: MIND
 role: minder
-version: 4
+version: 5
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -34,7 +34,7 @@ The minder keeps every registered lane doing planned work. Each tick it runs
 the next queued ticket to an idle lane, answers dialogs and queued questions
 that a standing order covers, re-sends expired orders, routes dead lanes and
 idle lanes with no assigned work to the orchestrator, and sends each escalation
-rung the tick emits. It does not classify lanes itself, plan, assign new work
+rung the tick emits, including `escalate_drain` and every action addressed to the orchestrator. It does not classify lanes itself, plan, assign new work
 or merge.
 Planning, queues and assignment belong to the
 [orchestrator](orchestrator.md).
@@ -61,8 +61,10 @@ There are two ladders, and neither pages twice:
   emitted. Rung 0 is the emitted action itself, sent to that action's own
   target in the same tick: `push_next_ticket`, `resend_order`,
   `act_on_undetermined` and `answer_dialog` go to the lane, and
-  `escalate_block`, `escalate_stuck` and `escalate_stale_pr` go to the owner
-  `fleet tick` names for them (the lane's lead by default). While the
+  `escalate_block`, `escalate_stuck`, `escalate_stale_pr` and `escalate_drain` go to the owner
+  `fleet tick` names for them (the lane's lead by default, the orchestrator with
+  reason `lead_unresolved` when no lead is configured). `fix_source`, `add_lane`
+  and `need_ready_tickets` go to the orchestrator. While the
   condition persists, the tick emits rung 1 to the worker, rung 2 to the
   lane's lead and rung 3 to the orchestrator, each in the first tick at or
   after 1, 2 and 3 tick intervals from rung 0 (about 5, 10 and 15 minutes at
@@ -76,7 +78,8 @@ There are two ladders, and neither pages twice:
   does not page the owner.
 
 MIND-R03 (push at rung 0), MIND-R13 (escalate a block to the lead at rung
-0), MIND-R17 (route a dead lane at rung 0) and MIND-R18 (route an idle lane
+0), MIND-R20 (escalate a drain to the lead at rung 0), MIND-R21 (send the
+orchestrator its actions at rung 0), MIND-R17 (route a dead lane at rung 0) and MIND-R18 (route an idle lane
 with an empty list at rung 0) are rung 0 actions of this ladder, not
 exceptions to it.
 
@@ -96,7 +99,7 @@ that reads it names its producer here:
 
 | Producer | Evidence | Evaluations |
 |---|---|---|
-| SWM-256 (`fleet tick`) | Per-lane `act_on_undetermined` action; the in-fleet ladder rungs, with rung 1 skipped for a BLOCKED lane; `answer_dialog` for a queued question matching a standing order; owners of `escalate_stuck` and `escalate_stale_pr` | MIND-R01-E1, MIND-R04-E1, MIND-R05-E1, MIND-R09-E1, MIND-R11-E1, MIND-R19-E1 |
+| SWM-256 (`fleet tick`) | Per-lane `act_on_undetermined` action; the in-fleet ladder rungs, with rung 1 skipped for a BLOCKED lane; `answer_dialog` for a queued question matching a standing order; owners of `escalate_stuck`, `escalate_stale_pr` and `escalate_drain`; `fix_source`, `add_lane` and `need_ready_tickets` actions | MIND-R20-E1, MIND-R21-E1, MIND-R01-E1, MIND-R04-E1, MIND-R05-E1, MIND-R09-E1, MIND-R11-E1, MIND-R19-E1 |
 | SWM-255 (ledger) | Escalation rung records; tick session attribution; per-order focus at the deadline | MIND-R04-E1, MIND-R05-E1, MIND-R07-E1, MIND-R10-E1 |
 | SWM-258 (answer log) | Every dialog answer the minder sends, with its standing-order id | MIND-R09-E1, MIND-R12-E1, MIND-R14-E1 |
 | SWM-221 (evaluator) | Transcript pattern queries | MIND-R06-E1, MIND-R08-E1, MIND-R12-E1, MIND-R14-E1, MIND-R16-E1 |
@@ -140,6 +143,8 @@ that reads it names its producer here:
 | MIND-R17 | A lane in DEAD SHALL be routed to the orchestrator with its fleet status evidence in the tick it is found. | MIND-O02 | dead-lane-unrouted | DEAD lanes had no minder action, SWM-225 review |
 | MIND-R18 | A lane in IDLE whose ix-relay FR-072 assignment list is empty SHALL be routed to the orchestrator with its fleet status evidence in the tick it is found. | MIND-O02 | idle-without-work-unrouted | Idle lanes with no assigned work had no minder action, SWM-225 review |
 | MIND-R19 | The minder SHALL NOT send a relay message to a lane in BLOCKED. | MIND-O03 | blocked-pane-input | Ladder rung 1 to a blocked lane is pane input at a dialog, SWM-225 review |
+| MIND-R20 | An `escalate_drain` action SHALL be sent to its owner, the lane's lead, in the tick it is emitted. | MIND-O02 | drain-unescalated | Drain-cap escalation had no sender, SWM-227 review |
+| MIND-R21 | The minder SHALL send the orchestrator, as a relay message in the tick it is emitted, every action addressed to it: `fix_source`, `add_lane`, `need_ready_tickets`, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved`. | MIND-O02 | orchestrator-action-undelivered | Orchestrator cannot run `fleet tick` without consuming rungs, SWM-227 review |
 
 ## Evaluations
 
@@ -171,6 +176,8 @@ that reads it names its producer here:
 | MIND-R17-E1 | MIND-R17 | relay-receipts | ledger.dead_lane_ticks | deterministic | relay.dead_lane_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
 | MIND-R18-E1 | MIND-R18 | relay-receipts | ledger.idle_empty_list_ticks | deterministic | relay.idle_empty_list_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
 | MIND-R19-E1 | MIND-R19 | relay-receipts | ledger.blocked_lane_ticks | deterministic | relay.minder_sends_to_blocked_lane | evaluator | = | 0 | messages | tick |
+| MIND-R20-E1 | MIND-R20 | relay-receipts | ledger.escalate_drain_actions | deterministic | relay.escalate_drain_without_lead_message | evaluator | = | 0 | actions | tick |
+| MIND-R21-E1 | MIND-R21 | relay-receipts | ledger.orchestrator_addressed_actions | deterministic | relay.orchestrator_actions_without_orchestrator_message | evaluator | = | 0 | actions | tick |
 
 ## Evaluation notes
 

@@ -1,6 +1,6 @@
 # Who owns X
 
-This table is the orchestrator's answer to the owner's "who owns X" questions (ORCH-R15). Name the role and its lane address `server:workspace:tab` as registered in the relay. Read the address from the relay's lane registry at answer time; do not answer from memory, and do not answer with a role alone (ORCH-R15).
+This table is the orchestrator's answer to the owner's "who owns X" questions (ORCH-R15). Name the role and its lane address `server:workspace:tab` as registered in the relay. Read the address at answer time from the ix-board `[fleet_tick]` settings `orchestrator`, `minder` and `leads` (lane to lead address), and from the relay lane registry for every other lane, planner and host (ORCH-R15). An answer with a role and no address is incomplete (ORCH-R15).
 
 | Thing | Owner |
 |---|---|
@@ -16,4 +16,4 @@ This table is the orchestrator's answer to the owner's "who owns X" questions (O
 | Landing an assigned ticket (spec, code, review, merge) | the lane's code lead |
 | Evaluating orchestrator and minders | director |
 
-Source: the Ownership table of the orchestrator role spec, version 1.
+Source: the Ownership section of the orchestrator role spec, version 2.
