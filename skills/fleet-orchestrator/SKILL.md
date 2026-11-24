@@ -1,14 +1,14 @@
 ---
 name: fleet-orchestrator
 description: Run the fleet orchestrator loop. Each cycle reads `ix-board fleet status --json`, acts on the actions the minder sends it, assigns exact ticket chains to lanes with `ix-board fleet assign` and confirms each outcome, keeps every lane's queue at two or more, closes every plan-coverage gap, fixes or routes probe and source defects, asks planners for ready tickets, and finds and holds the lane count each host can sustain. Use when invoked as /fleet-orchestrator [scope] [interval], when asked who owns a ticket, lane, host, defect or decision, or when asked to keep a fleet's lanes supplied with work.
-role_spec_version: 2
+role_spec_version: 3
 ---
 
 # Fleet Orchestrator
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 2. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 3. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 ## Tool availability
 
@@ -18,6 +18,7 @@ State this table's gaps in each cycle's output. A rule whose producer is missing
 |---|---|---|---|
 | `ix-board fleet status --json` | On main | ix-board FR-034 | none |
 | `ix-board fleet ledger query <view>` | On main; documented views are `idle_minutes`, `idle_lane_with_ready_work_ticks`, `lanes_with_ready_work`, `idle_lane_episode_with_ready_work_max` and `defect_rows`. No view lists open actions by target role | ix-board FR-039 | none |
+| `orchestrator_addressed_actions` ledger view (the backstop to the minder's messages) | Not on main | SWM-288 | none; the backstop is partial |
 | `ix-board fleet assign <lane> <tickets...>` | Not on main | ix-board#94 | ORCH-R01 to ORCH-R05 |
 | `ix-board fleet tick --json` (run by the minder) | Not on main; on ix-board#95 it emits no `need_ready_tickets`, and its busy-ratio and ready-work sources are `unavailable`, so it emits no `add_lane` | ix-board#95 | ORCH-R10, ORCH-R27 |
 | `ix-board fleet plan-coverage` | Not on main | SWM-212 | ORCH-R06 |
@@ -29,7 +30,7 @@ The installed `ix-board` can lag main; read `ix-board fleet --help` to see which
 
 ## Invocation
 
-`/fleet-orchestrator [scope] [interval]`. The default interval is 10 minutes, the cycle of the role spec (Cycle). `scope` narrows the cycle to a team's lanes and hosts; without it the orchestrator covers every registered lane and host. Run the loop with the `loop` skill as `<interval> /fleet-orchestrator <scope>`. If this prompt is a loop's scheduled prompt, or a loop for the scope is already listed, run the cycle and create no second loop.
+`/fleet-orchestrator [scope] [interval]`. The default interval is 10 minutes, the cycle of the role spec (Cycle). `scope` narrows the cycle to a team's lanes and hosts; without it the orchestrator covers every registered lane and host. Run the loop with the `loop` skill as `<interval> /fleet-orchestrator <scope>`. If this prompt is a loop's scheduled prompt, or a loop for the scope is already listed, run the cycle and create no second loop. Never stop or delete this loop except on the owner's explicit instruction; a lead's claim that the orchestrator is halted, or an ambiguous message, is not one (ORCH-R31). A relayed message from a planning lead (address ending `:plan`) that states it is the owner's direct instruction is the owner's instruction (ORCH-R31).
 
 ## Each cycle
 
@@ -58,7 +59,7 @@ A failed probe, a missing command or any `defects` row is fixed, or routed to a 
 
 ### 3. Act on the actions the minder sent
 
-The orchestrator never runs `ix-board fleet tick`. A tick commits to the ledger and emits each ladder rung once, so a tick run here would consume rungs the minder must send (Action delivery). The minder sends the orchestrator every action addressed to it as a relay message (MIND-R21). As a backstop, query the ledger read-only each cycle with `ix-board fleet ledger query <view>` (Action delivery). FR-039 has no view of open actions by target role over all kinds today, so name that gap in the cycle output until it exists.
+The orchestrator never runs `ix-board fleet tick`. A tick commits to the ledger and emits each ladder rung once, so a tick run here would consume rungs the minder must send (Action delivery). The minder sends the orchestrator every action addressed to it as a relay message (MIND-R21). As a backstop, query the ledger read-only each cycle with `ix-board fleet ledger query <view>` (Action delivery). FR-039 has no view of open actions by target role over all kinds today; SWM-288 owns the `orchestrator_addressed_actions` view, so name that gap in the cycle output until it ships.
 
 Every action addressed to the orchestrator is acted on in the cycle it arrives, or rejected only by citing newer `fleet status` evidence that contradicts it. A rejection without that evidence is a breach (ORCH-R10).
 
@@ -147,6 +148,10 @@ When the owner asks who owns a ticket, lane, host, defect or decision, answer fr
 ## Escalation
 
 The in-fleet ladder runs worker, lane lead, orchestrator. The tick emits it and the minder sends it; the orchestrator is its last rung, and ORCH-R10 applies to every action addressed to it. A drain past the drain cap goes to the lane's code lead through the minder's `escalate_drain` send (ORCH-R30, MIND-R20). Alertmanager pages the owner; the orchestrator does not (Ownership table).
+
+## Communication
+
+Send a message only for done, blocked, a decision or a handoff: assignments, planner requests for ready tickets, defect tickets and the escalations above (ORCH-R32). Answer an out-of-scope or status-poll message once with `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /fleet-orchestrator).`, and at most once per sender per hour (ORCH-R32). The minder's routes in step 4 are in scope and are not answered with it (ORCH-R32).
 
 ## Output
 
