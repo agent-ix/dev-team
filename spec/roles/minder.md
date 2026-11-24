@@ -1,7 +1,7 @@
 ---
 id: MIND
 role: minder
-version: 3
+version: 4
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -31,9 +31,11 @@ relationships:
 
 The minder keeps every registered lane doing planned work. Each tick it runs
 `ix-board fleet tick --json` and executes the actions in that list: it pushes
-the next queued ticket to an idle lane, answers dialogs that a standing order
-covers, re-sends expired orders, and sends each escalation rung the tick
-emits. It does not classify lanes itself, plan, assign new work or merge.
+the next queued ticket to an idle lane, answers dialogs and queued questions
+that a standing order covers, re-sends expired orders, routes dead lanes and
+idle lanes with no assigned work to the orchestrator, and sends each escalation
+rung the tick emits. It does not classify lanes itself, plan, assign new work
+or merge.
 Planning, queues and assignment belong to the
 [orchestrator](orchestrator.md).
 
@@ -66,11 +68,17 @@ There are two ladders, and neither pages twice:
   after 1, 2 and 3 tick intervals from rung 0 (about 5, 10 and 15 minutes at
   the default interval). A rung is sent even when its recipient already
   received an earlier rung. The ladder ends when the condition clears.
+  A condition on a lane in BLOCKED skips rung 1: a relay message delivered to
+  a pane that sits at a dialog, login or usage-limit screen is pane input and
+  can select an option, so no rung goes to the blocked lane (MIND-R19). Rungs 2
+  and 3 follow at their usual times.
 - **Owner paging** goes through Alertmanager to Discord (plan W3). The minder
   does not page the owner.
 
-MIND-R03 (push at rung 0) and MIND-R13 (escalate a block to the lead at rung
-0) are rung 0 actions of this ladder, not exceptions to it.
+MIND-R03 (push at rung 0), MIND-R13 (escalate a block to the lead at rung
+0), MIND-R17 (route a dead lane at rung 0) and MIND-R18 (route an idle lane
+with an empty list at rung 0) are rung 0 actions of this ladder, not
+exceptions to it.
 
 ## Query sources and producers
 
@@ -88,7 +96,7 @@ that reads it names its producer here:
 
 | Producer | Evidence | Evaluations |
 |---|---|---|
-| SWM-256 (`fleet tick`) | Per-lane `act_on_undetermined` action; the in-fleet ladder rungs; owners of `escalate_stuck` and `escalate_stale_pr` | MIND-R01-E1, MIND-R04-E1, MIND-R05-E1, MIND-R09-E1 |
+| SWM-256 (`fleet tick`) | Per-lane `act_on_undetermined` action; the in-fleet ladder rungs, with rung 1 skipped for a BLOCKED lane; `answer_dialog` for a queued question matching a standing order; owners of `escalate_stuck` and `escalate_stale_pr` | MIND-R01-E1, MIND-R04-E1, MIND-R05-E1, MIND-R09-E1, MIND-R11-E1, MIND-R19-E1 |
 | SWM-255 (ledger) | Escalation rung records; tick session attribution; per-order focus at the deadline | MIND-R04-E1, MIND-R05-E1, MIND-R07-E1, MIND-R10-E1 |
 | SWM-258 (answer log) | Every dialog answer the minder sends, with its standing-order id | MIND-R09-E1, MIND-R12-E1, MIND-R14-E1 |
 | SWM-221 (evaluator) | Transcript pattern queries | MIND-R06-E1, MIND-R08-E1, MIND-R12-E1, MIND-R14-E1, MIND-R16-E1 |
@@ -123,12 +131,15 @@ that reads it names its producer here:
 | MIND-R08 | The minder SHALL NOT run its own host or lane probes in place of `fleet tick` and `fleet status`. | MIND-O02 | weak-evidence-as-work | Blind ssh probes read as fine, MONITORING-DESIGN |
 | MIND-R09 | The minder SHALL execute every tick action addressed to a lane or a lead before its `due_by`, and SHALL NOT skip one because its own reading shows the lane working. | MIND-O02 | weak-evidence-as-work | herdr "working" alone read as work, MONITORING-DESIGN |
 | MIND-R10 | An order the minder sent that is unconfirmed at its deadline (`AckExpired`, or `Acted` with a focus other than its expected ticket) SHALL be re-sent or escalated in the tick the deadline passes. | MIND-O02 | queued-as-delivered | Queued relay orders treated as delivered, MONITORING-DESIGN |
-| MIND-R11 | A lane in BLOCKED(dialog) whose dialog matches a standing order SHALL be answered per that order in the tick it is found. | MIND-O03 | dialog-not-cleared | Lanes blocked on queued questions and dialogs, MONITORING-DESIGN |
-| MIND-R12 | Every dialog answer the minder sends SHALL be recorded in the dialog answer log with its standing-order id. | MIND-O03 | dialog-not-cleared | Dialog answers unlogged and unreviewable, plan decision on dialogs |
-| MIND-R13 | A lane in BLOCKED(login), BLOCKED(usage_limit), BLOCKED(question), or BLOCKED(dialog) with no matching standing order SHALL be escalated to the lane's lead in the tick it is found. | MIND-O03 | dialog-not-cleared | Lanes blocked on dialogs, MONITORING-DESIGN |
-| MIND-R14 | The minder SHALL NOT answer a dialog, login or permission prompt that no standing order covers. | MIND-O03 | unauthorized-answer | Plan decision: login screens and usage limits escalate |
+| MIND-R11 | A lane in BLOCKED(dialog), or in BLOCKED(question) on a queued question (relay reason `queued_question`), whose dialog or queued question matches a standing order SHALL be answered per that order in the tick it is found. | MIND-O03 | dialog-not-cleared | Lanes blocked on queued questions and dialogs, MONITORING-DESIGN; owner decision SWM-226 |
+| MIND-R12 | Every dialog or queued-question answer the minder sends SHALL be recorded in the dialog answer log with its standing-order id. | MIND-O03 | dialog-not-cleared | Dialog answers unlogged and unreviewable, plan decision on dialogs |
+| MIND-R13 | A lane in BLOCKED(login), BLOCKED(usage_limit), BLOCKED(question) on a free-form question (relay reason `question`), or BLOCKED(dialog) or a queued question with no matching standing order SHALL be escalated to the lane's lead in the tick it is found. | MIND-O03 | dialog-not-cleared | Lanes blocked on dialogs, MONITORING-DESIGN |
+| MIND-R14 | The minder SHALL NOT answer a dialog, queued question, login or permission prompt that no standing order covers. | MIND-O03 | unauthorized-answer | Plan decision: login screens and usage limits escalate |
 | MIND-R15 | Every order the minder sends to a lane SHALL name the exact ticket it expects the lane to take up. | MIND-O01 | vague-assignment | Vague "next ready" orders, MONITORING-DESIGN |
 | MIND-R16 | Every escalation SHALL carry the ledger action id and the fleet status evidence it rests on. | MIND-O02 | minder-evidence-dismissed | Minder saw the idle lanes and was dismissed, 2026-11-23/24 |
+| MIND-R17 | A lane in DEAD SHALL be routed to the orchestrator with its fleet status evidence in the tick it is found. | MIND-O02 | dead-lane-unrouted | DEAD lanes had no minder action, SWM-225 review |
+| MIND-R18 | A lane in IDLE whose ix-relay FR-072 assignment list is empty SHALL be routed to the orchestrator with its fleet status evidence in the tick it is found. | MIND-O02 | idle-without-work-unrouted | Idle lanes with no assigned work had no minder action, SWM-225 review |
+| MIND-R19 | The minder SHALL NOT send a relay message to a lane in BLOCKED. | MIND-O03 | blocked-pane-input | Ladder rung 1 to a blocked lane is pane input at a dialog, SWM-225 review |
 
 ## Evaluations
 
@@ -136,7 +147,7 @@ that reads it names its producer here:
 |---|---|---|---|---|---|---|---|---|---|---|
 | MIND-R01-E1 | MIND-R01 | ledger | ledger.act_on_undetermined_actions | deterministic | ledger.act_on_undetermined_unexecuted_ticks | evaluator | = | 0 | ticks | tick |
 | MIND-R02-E1 | MIND-R02 | ledger | ledger.failed_probe_ticks | deterministic | ledger.probe_failure_without_routed_defect | evaluator | = | 0 | ticks | tick |
-| MIND-R02-E2 | MIND-R02 | transcript | ledger.failed_probe_ticks | judgement | rubric-minder@2#failed-probe | director | >= | 2 | score | daily |
+| MIND-R02-E2 | MIND-R02 | transcript | ledger.failed_probe_ticks | judgement | rubric-minder@3#failed-probe | director | >= | 2 | score | daily |
 | MIND-R03-E1 | MIND-R03 | relay-receipts | ledger.push_next_ticket_actions | deterministic | relay.push_next_ticket_unsent_in_tick | evaluator | = | 0 | actions | tick |
 | MIND-R04-E1 | MIND-R04 | ledger | ledger.ladder_rungs_emitted | deterministic | ledger.escalation_rung_send_latency_max | evaluator | <= | 1 | tick intervals | tick |
 | MIND-R05-E1 | MIND-R05 | ledger | ledger.ladder_rungs_emitted | deterministic | ledger.escalation_rungs_suppressed | evaluator | = | 0 | rungs | tick |
@@ -144,18 +155,22 @@ that reads it names its producer here:
 | MIND-R07-E1 | MIND-R07 | ledger | hooks.minder_turns | deterministic | ledger.minder_turns_without_committed_tick | evaluator | = | 0 | turns | tick |
 | MIND-R08-E1 | MIND-R08 | transcript | hooks.minder_turns | deterministic | transcript.minder_own_probe_commands | evaluator | = | 0 | commands | session-end |
 | MIND-R09-E1 | MIND-R09 | ledger | ledger.minder_addressed_actions | deterministic | ledger.tick_actions_unexecuted_by_minder | evaluator | = | 0 | actions | tick |
-| MIND-R09-E2 | MIND-R09 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@2#liveness | team-retro | >= | 2 | score | 3h |
+| MIND-R09-E2 | MIND-R09 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@3#liveness | team-retro | >= | 2 | score | 3h |
 | MIND-R10-E1 | MIND-R10 | ledger | ledger.minder_orders_unconfirmed_at_deadline | deterministic | ledger.unconfirmed_orders_not_resent_or_escalated | evaluator | = | 0 | orders | tick |
-| MIND-R10-E2 | MIND-R10 | transcript | ledger.minder_orders_unconfirmed_at_deadline | judgement | rubric-minder@2#overdue-order | team-retro | >= | 2 | score | 3h |
+| MIND-R10-E2 | MIND-R10 | transcript | ledger.minder_orders_unconfirmed_at_deadline | judgement | rubric-minder@3#overdue-order | team-retro | >= | 2 | score | 3h |
 | MIND-R11-E1 | MIND-R11 | ledger | ledger.answer_dialog_actions | deterministic | ledger.answer_dialog_latency_max | evaluator | <= | 1 | tick intervals | tick |
+| MIND-R11-E2 | MIND-R11 | transcript | ledger.answer_dialog_actions | judgement | rubric-minder@3#dialog-answer | team-retro | >= | 2 | score | 3h |
 | MIND-R12-E1 | MIND-R12 | transcript | ledger.answer_dialog_actions | deterministic | transcript.dialog_answers_missing_from_answer_log | evaluator | = | 0 | answers | session-end |
 | MIND-R13-E1 | MIND-R13 | relay-receipts | ledger.escalate_block_actions | deterministic | relay.escalate_block_without_lead_message | evaluator | = | 0 | actions | tick |
-| MIND-R13-E2 | MIND-R13 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@2#login-blocker | director | >= | 2 | score | daily |
+| MIND-R13-E2 | MIND-R13 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@3#login-blocker | director | >= | 2 | score | daily |
 | MIND-R14-E1 | MIND-R14 | transcript | ledger.escalate_block_actions | deterministic | transcript.answers_sent_while_escalate_block_open | evaluator | = | 0 | answers | session-end |
-| MIND-R14-E2 | MIND-R14 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@2#uncovered-answer | director | >= | 2 | score | daily |
+| MIND-R14-E2 | MIND-R14 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@3#uncovered-answer | director | >= | 2 | score | daily |
 | MIND-R15-E1 | MIND-R15 | relay-receipts | relay.minder_orders | deterministic | relay.minder_orders_without_expect_ticket | evaluator | = | 0 | orders | tick |
 | MIND-R16-E1 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | deterministic | transcript.escalations_without_action_reference | evaluator | = | 0 | escalations | session-end |
-| MIND-R16-E2 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | judgement | rubric-minder@2#evidence-cited | team-retro | >= | 2 | score | 3h |
+| MIND-R16-E2 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | judgement | rubric-minder@3#evidence-cited | team-retro | >= | 2 | score | 3h |
+| MIND-R17-E1 | MIND-R17 | relay-receipts | ledger.dead_lane_ticks | deterministic | relay.dead_lane_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
+| MIND-R18-E1 | MIND-R18 | relay-receipts | ledger.idle_empty_list_ticks | deterministic | relay.idle_empty_list_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
+| MIND-R19-E1 | MIND-R19 | relay-receipts | ledger.blocked_lane_ticks | deterministic | relay.minder_sends_to_blocked_lane | evaluator | = | 0 | messages | tick |
 
 ## Evaluation notes
 
@@ -183,3 +198,14 @@ that reads it names its producer here:
   ledger, joined with the SWM-258 answer log.
 - MIND-R03-E1 counts sends; MIND-M01 sums idle minutes, so the rule's pass rate
   and the objective are compared without sharing a query.
+- `fleet status` classes relay reasons `question` and `queued_question` both as
+  BLOCKED(question) (ix-board FR-034); the row's evidence item
+  `ix_fleet_lane_blocked{reason=...}` keeps the relay reason, which separates a
+  queued question (MIND-R11) from a free-form question (MIND-R13).
+- MIND-R17-E1 and MIND-R18-E1 count lanes whose DEAD, or IDLE-with-empty-list,
+  interval in the ledger has no relay send from the minder to the orchestrator
+  within one tick interval of the interval's start. MIND-R18-E1 reads the list
+  from the FR-072 transition history at the interval's start.
+- MIND-R19-E1 counts relay sends from the minder whose recipient lane is in a
+  BLOCKED interval at send time. A standing-order answer is pane input through
+  herdr, not a relay send, and is governed by MIND-R11 and MIND-R14.

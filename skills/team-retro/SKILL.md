@@ -22,7 +22,7 @@ team-retro is an independent evaluation of whether a team's work is landing on i
 
 ## Loop setup (first thing, once)
 
-1. **Already in a loop:** if this prompt is a loop's scheduled prompt, or a loop for it is active (the harness's scheduler listing; `CronList` in Claude Code), skip setup and run the tick. In a harness with no listing, the minder rubric's `rubric-minder@2#loop-alive` check scores `n/a`.
+1. **Already in a loop:** if this prompt is a loop's scheduled prompt, or a loop for it is active (the harness's scheduler listing; `CronList` in Claude Code), skip setup and run the tick. In a harness with no listing, the minder rubric's `rubric-minder@3#loop-alive` check scores `n/a`.
 2. **Claude Code, not in a loop:** invoke the `loop` skill with `<interval> /team-retro <team>`, then stop. The loop runs the first tick.
 3. **No loop support:** ask the user once for a scheduler and give them `/loop 3h /team-retro <team>`; run one tick now.
 
@@ -60,7 +60,7 @@ its condition from raw snapshots. When no flag is raised, send nothing.
 
 ### Full retro
 
-1. Score every rubric: [planner](references/rubric-planner.md), [code lead](references/rubric-code-lead.md), [coder](references/rubric-coder.md), [reviewer](references/rubric-reviewer.md) and [minder](https://github.com/agent-ix/dev-team/blob/main/spec/rubrics/rubric-minder.md) (version 2, cited as `rubric-minder@2#<check>`). Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.
+1. Score every rubric: [planner](references/rubric-planner.md), [code lead](references/rubric-code-lead.md), [coder](references/rubric-coder.md), [reviewer](references/rubric-reviewer.md) and [minder](https://github.com/agent-ix/dev-team/blob/main/spec/rubrics/rubric-minder.md) (version 3, cited as `rubric-minder@3#<check>`). Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.
 2. Interpret emitted repeating-loop findings, including tag/repin, state bounce
    and order flips. Preserve matching event IDs, ordering, scope and missing
    attribution. Cite a qualitative concern separately when no supported
