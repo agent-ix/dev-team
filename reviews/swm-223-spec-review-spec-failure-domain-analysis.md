@@ -201,3 +201,4 @@ scope:
 | FND-009 | fixed | - |
 | FND-010 | fixed | - |
 | FND-011 | fixed | - |
+| FND-012 | fixed | - |
