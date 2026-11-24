@@ -18,10 +18,10 @@ requirement — that's churn, not progress.
 ## One PR per ticket or batch
 
 Batch tickets that touch the same files or requirement files into one PR. Split
-only for a real reason (different repo, or a blocking dependency another lane
-owns) and state the reason on the ticket.
+only for a real reason (different repo, a blocking dependency another lane
+owns, or a change above the team's PR size limit) and state the reason on the ticket.
 
-## Layered spec waves
+## Layered waves
 
 The team-planner owns layered, architecture-first planning: it lays out the
 milestones and gate tickets in the tracker. The code lead only executes them.
@@ -38,7 +38,5 @@ waiting for code that belongs to a different ticket.
 
 ## Small or already-specced work
 
-Work that's small, or already has an owning requirement, skips the spec-wave
-machinery entirely and goes straight to the code step. See
-[Work kinds](../SKILL.md#work-kinds) for who
-does that work.
+Work that's small, or already has an owning requirement, needs no spec commit.
+See [Work kinds](../SKILL.md#work-kinds) for who does that work.

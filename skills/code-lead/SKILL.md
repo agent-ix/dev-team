@@ -59,7 +59,8 @@ One lead can run several teams. Treat the argument as a list.
   the goal while reviewed PRs are waiting.
 - **Fix every finding.** The reviewer posts findings to the tracker through
   `/reviewer`; that ticket comment is the record, never a PR comment. Fix every
-  finding inside the PR, lows included, via the same coder. Two exceptions:
+  finding inside the PR, lows included, via the same coder (spec lows after
+  review round 2 are accepted with no change). Two exceptions:
   the fix is too big for this PR (open a linked subticket first, then work it),
   or it belongs upstream or downstream (file it where its owner sees it and
   link it). Never file findings as new tickets or open a new PR for one.
@@ -148,9 +149,9 @@ needs:
 
 One PR per ticket, or per batch of like tickets. Batch tickets that touch the
 same files or requirement files into one PR. Split only for a real reason
-(different repo, or a blocking dependency another lane owns) and state the
-reason on the ticket. Never open a spec-only PR that merges before a separate
-code PR; a ticket whose whole scope is spec gets a spec-only PR. Every PR gets
+(different repo, a blocking dependency another lane owns, or a change above
+the team's PR size limit) and state the reason on the ticket. Never open a spec-only PR that merges before a separate
+code PR in the same repo and lane; a ticket whose whole scope is spec gets a spec-only PR. Every PR gets
 exactly one reviewer. No agent reviews its own work. Dispatch each reviewer
 with the instruction to take the `/reviewer` role and follow it end to end; it
 selects the methods, writes the SR artifacts and posts to the tracker.
@@ -167,7 +168,7 @@ waves are planned by `/team-planner`; see [workflows.md](references/workflows.md
 When implementation reveals omitted or contradictory behavior, the coder fixes
 it in the same PR: spec commit first, then the code. Do not file a separate
 ticket or PR. Only a gap that belongs to another repo or another lane goes
-there: resolve the owning specification, tracker team/project and spec steward
+to its owner: resolve the owning specification, tracker team/project and spec steward
 from the assigned scope, have the coder file the gap with the configured
 spec-gap label, the exact missing requirement and code/acceptance evidence, and
 link it as a structured blocker of the affected ticket. If ownership is
@@ -200,8 +201,9 @@ universal destination from another team's instructions.
    ([message](references/briefs.md#disposition-pass-message)), round 1, then
    2, 3 after each further fix round, until every finding's latest outcome is
    neither `still-open` nor missing and the reviewer reports the PR mergeable.
-   Spec review rounds cap at 2; accept remaining lows with no change. Read and
-   merge a one-line final fix yourself without another review round.
+   Spec review rounds cap at 2; the reviewer marks remaining spec lows
+   accepted-no-change. Read the coder's one-line final fix and merge it
+   without another review round.
 8. **Verify** yourself ([verification](references/briefs.md#verify-before-merge)).
 9. **Merge**, see below.
 10. **Close out:** set the tracker state (Done, or back to backlog with a
@@ -223,8 +225,8 @@ ready work within current scope/capacity in the same cycle.
 
 ## Merge policy
 
-When `/reviewer` has posted code-review, the language review and gap-analysis
-to the tracker, and every finding is fixed, the code lead merges:
+When `/reviewer` has posted code-review, the language review, gap-analysis
+and spec-review (for a spec commit) to the tracker, and every finding is fixed, the code lead merges:
 `gh pr merge <N> --squash`, adding `--admin` where org rules allow. That is
 the whole condition. The planner's sign-off and extra evidence comments are not
 required. Run the repo's aggregate gate once at the final head before merging;

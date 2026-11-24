@@ -42,7 +42,7 @@ count or ledger.
   implementation issue. Run only the applicable artifact validation. Spec
   work does not require a build lane or a code build.
 - Never review or merge your own PR. A separate reviewer reviews the spec PR,
-  capped at 2 rounds with lows accepted without change. The code lead merges it
+  capped at 2 rounds with remaining lows accepted with no change. The code lead merges it
   after the required review and validation pass, then links the merge to the
   queue item. Implementation can resume when its specification change has
   merged.
