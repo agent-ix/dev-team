@@ -145,3 +145,7 @@ Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d9
 | FND-007 | fixed | - |
 | FND-008 | fixed | - |
 | FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | fixed | - |
+
+Round 2, fix head 1128758331cc644afeb24e468256f2a052cea250. The FND-010 and FND-011 rows above are round 2.

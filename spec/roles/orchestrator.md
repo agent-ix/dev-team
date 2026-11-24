@@ -1,7 +1,7 @@
 ---
 id: ORCH
 role: orchestrator
-version: 4
+version: 5
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -274,7 +274,7 @@ that reads it names its producer here:
 | ORCH-R29 | A discovery run whose build slots were saturated for a whole valid window SHALL end with reason `build_slots_saturated` and record that level, without raising the host further. | ORCH-O06 | capacity-unknown | Build slots cap lane throughput, capacity review round 2 |
 | ORCH-R30 | A lane still draining after the drain cap (default 4 hours) SHALL be escalated to its code lead by the minder's `escalate_drain` send (MIND-R20). An `escalate_drain` addressed to the orchestrator SHALL be acted on under ORCH-R10, citing the ledger action row as its evidence. | ORCH-O06 | capacity-overload | Drain may span cycles, capacity review round 2 |
 | ORCH-R31 | The orchestrator SHALL NOT stop or delete its own recurring loop (cron, loop or wakeup) except on the owner's explicit instruction; a lead's claim that it is halted, or an ambiguous message, is not such an instruction. | ORCH-O01 | loop-removed | IXD's only minder cron deleted on an ambiguous message, 2026-11-23 |
-| ORCH-R32 | The orchestrator SHALL send a message only of the kinds done, blocked, decision or handoff, and SHALL answer an out-of-scope or status-poll message with the one-line etiquette reply at most once per sender per hour. | none | comms-noise | Status polls and FYIs between lanes, code-lead and coder communication rules |
+| ORCH-R32 | The orchestrator SHALL send a message only of the kinds done, blocked, decision or handoff, and SHALL answer an out-of-scope or status-poll message with the one-line etiquette reply at most once per sender per hour. | ORCH-O03 | comms-noise | Status polls and FYIs between lanes, code-lead and coder communication rules |
 
 ## Evaluations
 
@@ -341,13 +341,18 @@ that reads it names its producer here:
   `ix_fleet_tick_timestamp_seconds` is not its freshness series. The owner
   instruction that excuses a stop comes from the ORCH-R31-E2 transcript check:
   a relayed instruction from a planning lead that states it is the owner's
-  counts as the owner's, and a lead's "halted" claim does not.
+  counts as the owner's, and a lead's "halted" claim does not. ORCH-R31-E1 is
+  `n.a.` for the span after an owner-ordered stop that ORCH-R31-E2 records. No
+  ledger record of owner stops exists, so the exemption is read from the
+  transcript and the check is not fully deterministic; a ledger record of
+  owner stops is a gap for SWM-221, the evaluator, to close.
 - ORCH-R32-E1 and ORCH-R32-E2 are transcript pattern queries (SWM-221), since
   relay receipts carry no message kind. The allowed kinds are the rule's list:
   done, blocked, decision and handoff; any other outbound message is a
   violation.
-- ORCH-R32 serves no objective of this spec: message noise does not move
-  ORCH-M01 to ORCH-M08, so its Objective column reads `none`.
+- ORCH-R32 serves ORCH-O03: status polls and FYIs crowd out the routes the
+  orchestrator must act on, which delays the next WORKING run of a stopped lane
+  (ORCH-M03, time-to-action).
 - ORCH-R03 applies per order: the relay body limit is 4096 bytes and one
   `fleet assign` order carries the full text of every ticket in the chain, so a
   chain of long tickets can be refused. The refusal is a routed defect, not a

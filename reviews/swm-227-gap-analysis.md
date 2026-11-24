@@ -198,6 +198,13 @@ scope:
 | FND-013 | low | ORCH-R32 maps to ORCH-O03 ("A stopped lane is working again quickly", ORCH-M03 time-to-action). Message noise is not what that metric measures. ORCH-R31 to ORCH-O01 is defensible, because a deleted loop leaves capacity idle. Map R32 to the objective its noise delays, or state why O03 applies. | spec/roles/orchestrator.md:279 |
 | FND-014 | low | FR-038 at 792f28e addresses `act_on_undetermined` to the lane's lead when the lane is BLOCKED (reason `lane_blocked_route_to_lead`). The minder v5 rung 0 text still says `act_on_undetermined` goes to the lane. State the BLOCKED exception, which MIND-R19 already implies. | spec/roles/minder.md:63 |
 
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-015 | low | ORCH-R31-E1 now counts `ledger.cycle_missed` rows with threshold = 0. The evaluation note says an owner instruction excuses a stop through the ORCH-R31-E2 transcript check, but a deterministic ledger query cannot read that transcript result. A stop the owner ordered still writes `cycle_missed` rows and fails E1. State that E1 is `n.a.` for a span that follows an owner stop recorded by E2, or name a ledger record for owner stops. | spec/roles/orchestrator.md:320 |
+
 ## Dispositions
 
 Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d92656). Ticket SWM-227 AC 1 now reads "confirm by focus (ORCH-R05)".
@@ -212,3 +219,11 @@ Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d9
 | FND-006 | fixed | - |
 | FND-007 | fixed | - |
 | FND-008 | fixed | - |
+| FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | fixed | - |
+| FND-012 | fixed | - |
+| FND-013 | still-open | ORCH-R32's Objective is now `none`. dev-team FR-006-AC-5 says a rule naming a nonexistent objective fails validation, and spec-artifacts-process FR-021 traces Rules.Objective to an objective row, so `none` is a dangling-trace-reference (FR-021-AC-3). The RuleRow schema describes the cell as "the objective id as authored", and FR-007 has no exemption. Map R32 to ORCH-O03, with a note that status polls and FYIs crowd out the routes the orchestrator must act on, which delays ORCH-M03 time-to-action. Alternatively, drop R32 and keep the etiquette as the shared skill convention. |
+| FND-014 | fixed | - |
+
+Round 2, fix head 1128758331cc644afeb24e468256f2a052cea250. The FND-009 to FND-014 rows above are round 2. Minder v6 kind names match ix-board FR-038 at #95 head 792f28e, including `route_dead_lane`, `route_idle_lane` and `lane_blocked_route_to_lead`.

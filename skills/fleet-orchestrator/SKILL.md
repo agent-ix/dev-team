@@ -1,14 +1,14 @@
 ---
 name: fleet-orchestrator
 description: Run the fleet orchestrator loop. Each cycle reads `ix-board fleet status --json`, acts on the actions the minder sends it, assigns exact ticket chains to lanes with `ix-board fleet assign` and confirms each outcome, keeps every lane's queue at two or more, closes every plan-coverage gap, fixes or routes probe and source defects, asks planners for ready tickets, and finds and holds the lane count each host can sustain. Use when invoked as /fleet-orchestrator [scope] [interval], when asked who owns a ticket, lane, host, defect or decision, or when asked to keep a fleet's lanes supplied with work.
-role_spec_version: 4
+role_spec_version: 5
 ---
 
 # Fleet Orchestrator
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 4. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 5. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 ## Tool availability
 
