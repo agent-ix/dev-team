@@ -6,7 +6,7 @@ the harness you're actually running in.
 ## Claude Code
 
 - Dispatch a subagent: the `Agent` tool. Pick a `subagent_type` for the role
-  (coder, reviewer, spec author): `general-purpose` unless the org defines
+  (coder, reviewer): `general-purpose` unless the org defines
   role agents. A `fork` inherits your full context instead of starting fresh.
 - Run in background: subagents launched with the `Agent` tool already run in
   the background; you're notified when one finishes. No extra flag needed.
