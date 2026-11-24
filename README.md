@@ -22,7 +22,7 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | --- | --- |
 | `team-planner` | Turn an idea into a structured Linear plan with dependencies and ready tickets. |
 | `code-lead` | Run a team's coding lane through specs, coding, review, and merge. |
-| `team-minder` | Watch a team's agents on an interval and unstick idle or blocked ones by message. |
+| `team-minder` | Run the fleet minder loop from `ix-board fleet status`: push next tickets to idle lanes, answer covered dialogs, route defects and escalate on a fixed ladder. |
 | `team-retro` | Measure on a schedule whether a team's work is landing on its gate tickets, score each role, and name the repeating loops. |
 | `department-health` | Inspect planning, flow, churn and capacity across selected teams or projects. |
 | `coder` | Implement an assigned ticket in its worktree and open the PR. |
