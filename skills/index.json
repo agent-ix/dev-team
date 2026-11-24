@@ -51,6 +51,15 @@
       ]
     },
     {
+      "name": "fleet-orchestrator",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md",
+        "references/ownership.md",
+        "references/capacity-discovery.md"
+      ]
+    },
+    {
       "name": "program-reviewer",
       "version": "0.1.1",
       "files": [
@@ -90,7 +99,7 @@
     },
     {
       "name": "team-minder",
-      "version": "0.3.0",
+      "version": "0.5.0",
       "files": [
         "SKILL.md",
         "references/standing-orders.md",

@@ -1,7 +1,7 @@
 ---
 id: ORCH
 role: orchestrator
-version: 1
+version: 5
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -49,8 +49,9 @@ waits for work, fixes the fleet's own blind spots, and finds and holds the
 number of lanes each host can sustain. It does not code, review, merge or plan
 projects; planners create ready tickets and code leads land them. Build slots
 belong to the build scheduler (dev-team FR-009, FR-010), not to the
-orchestrator. The [minder](minder.md) executes the per-tick actions and sends
-the in-fleet ladder's orchestrator rung to it.
+orchestrator. The [minder](minder.md) runs `fleet tick`, executes the per-tick
+actions and sends the orchestrator every action addressed to it (see Action
+delivery). The orchestrator never runs `fleet tick`.
 
 The rules come from the 2026-11-23/24 overnight loss: terra idle about 12h50m,
 terra lanes idle 6 to 10 hours, titan lanes idle 2 hours or more, a ready perf
@@ -69,11 +70,45 @@ ledger as a cycle event (SWM-255). "In the cycle it appears" means by the end
 of the first cycle that ends after the condition was first recorded; cycle
 counts in evaluations are counted from these events.
 
+## Action delivery
+
+Only the minder runs `ix-board fleet tick`. Each tick commits to the ledger and
+emits each ladder rung once, so a second runner would consume rungs the minder
+must send. The minder sends the orchestrator, as a relay message in the tick the
+action is emitted, every action the orchestrator executes: `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the drain cap, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved` (MIND-R21). The kinds are selected by name, not by the action's target: ix-board FR-038 targets `add_lane` at the host and `need_ready_tickets` at the owning planner project, and the minder forwards both to the orchestrator. As a backstop the orchestrator reads its
+open actions read-only with `ix-board fleet ledger query` (ix-board FR-039)
+each cycle. A view of open actions over this kind list is not in FR-039 today (the
+`orchestrator_rungs_emitted` view covers rungs only); SWM-288 owns the
+`orchestrator_addressed_actions` view, which selects by the kind list above and
+not by target role, and until it exists the backstop is the rung view and the
+relay messages.
+
+## Interim mode
+
+A rule whose producer is missing is `n.a.` until the producer ships. The
+orchestrator does not replace the producer with a hand-written order or its own
+probe (ORCH-R02). Each cycle it routes one `interim_mode` defect, with a ticket
+(ORCH-R08), naming every producer still missing:
+
+| Missing producer | Rules `n.a.` meanwhile |
+|---|---|
+| `fleet assign` (ix-board#94, SWM-257) | ORCH-R01, ORCH-R02, ORCH-R03, ORCH-R04, ORCH-R05 |
+| `fleet tick` (ix-board#95, SWM-256) and its delivery to the orchestrator | ORCH-R10, ORCH-R27 |
+| `fleet plan-coverage` (SWM-212) | ORCH-R06 |
+| drift findings (SWM-213, ix-board FR-037) | ORCH-R13 |
+| `fleet saturation` (SWM-217, ix-board FR-041) | ORCH-R14, ORCH-R17, ORCH-R20 |
+| `fleet capacity` calibrate and capacity history (SWM-216, SWM-252) | ORCH-R16 to ORCH-R24, ORCH-R28, ORCH-R29 |
+
+While the capacity history is missing no discovery run starts, because a run
+that cannot be recorded would breach ORCH-R19.
+
 ## Ownership
 
 The orchestrator answers the owner's "who owns X" questions from this table,
-naming the role and its lane address (`server:workspace:tab`) as registered in
-the relay.
+naming the role and its lane address (`server:workspace:tab`). Addresses come
+from the ix-board `[fleet_tick]` settings `orchestrator`, `minder` and `leads`
+(lane to lead address), and from the relay lane registry for every other lane,
+planner and host.
 
 | Thing | Owner |
 |---|---|
@@ -169,11 +204,16 @@ that reads it names its producer here:
 
 | Producer | Evidence | Evaluations and metrics |
 |---|---|---|
-| SWM-255 (ledger) | Plan-coverage snapshots each tick; drift history; `fleet assign` results in `assignment_history`; escalation rung records; orchestrator cycle events | ORCH-M04, ORCH-M05, ORCH-R03-E1, ORCH-R04-E1, ORCH-R05-E1, ORCH-R06-E1, ORCH-R08-E1, ORCH-R09-E1, ORCH-R10-E1, ORCH-R13-E1, ORCH-R27-E1 |
-| SWM-256 (`fleet tick`) | In-fleet ladder; `add_lane` suppressed during discovery | ORCH-R10-E1, ORCH-R27-E1 |
+| SWM-255 (ledger) | Plan-coverage snapshots each tick; drift history; `fleet assign` results in `assignment_history`; escalation rung records; orchestrator cycle events | ORCH-M04, ORCH-M05, ORCH-R03-E1, ORCH-R04-E1, ORCH-R05-E1, ORCH-R06-E1, ORCH-R08-E1, ORCH-R09-E1, ORCH-R10-E1, ORCH-R13-E1, ORCH-R27-E1, ORCH-R31-E1 |
+| SWM-256 (`fleet tick`) | In-fleet ladder; `add_lane` suppressed during discovery; actions addressed to the orchestrator and their delivery by the minder (MIND-R21) | ORCH-R10-E1, ORCH-R27-E1 |
+| SWM-288 (`orchestrator_addressed_actions` view) | Open actions of every kind the orchestrator executes (the kind list in Action delivery, selected by kind), readable with `fleet ledger query`: the backstop to the minder's relay messages | ORCH-R10-E1 |
+| SWM-212 (`fleet plan-coverage`) | Unowned ready tickets, short queues and stale assignments, with the `owner_unreachable` note | ORCH-R06-E1 |
+| SWM-213 (drift, ix-board FR-037) | Drift findings `not_assigned`, `not_in_plan`, `priority_inversion` | ORCH-R13-E1, ORCH-M05 |
+| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit` and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
+| SWM-216 (`fleet capacity` calibrate) | Discovery runs and their recorded levels, into the SWM-252 capacity history | ORCH-R16-E1 to ORCH-R29-E1 |
 | SWM-257 (`fleet assign`) | `--expect-ticket` set to the first ticket; order id on FR-072 transitions | ORCH-R01-E1, ORCH-R02-E1 |
 | SWM-252 (capacity history; scope extended in its ticket comment) | Discovery steps; per-step host output with per-lane attribution of tickets closed, pull requests merged and commits pushed from Linear and GitHub; valid and inconclusive windows; knee; run end reasons; recorded level; draining marks and drain completion; step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
-| SWM-221 (evaluator) | Transcript pattern queries | ORCH-R07-E1, ORCH-R15-E1 |
+| SWM-221 (evaluator) | Transcript pattern queries | ORCH-R07-E1, ORCH-R15-E1, ORCH-R31-E2, ORCH-R32-E1, ORCH-R32-E2 |
 
 ## Metrics
 
@@ -205,24 +245,24 @@ that reads it names its producer here:
 |---|---|---|---|---|
 | ORCH-R01 | Every order to a lane SHALL name the exact ticket it expects, as the head of the lane's ordered ticket chain. | ORCH-O05 | vague-assignment | Vague "next ready" orders, MONITORING-DESIGN |
 | ORCH-R02 | Every assignment SHALL be sent with `ix-board fleet assign`, which carries the full ticket text, and SHALL NOT rely on the lane reading the tracker. | ORCH-O04 | no-tracker-access | No Linear or GitHub on titan, MONITORING-DESIGN |
-| ORCH-R03 | Every reachable lane SHALL hold at least 2 remaining assigned tickets while ready work exists. | ORCH-O01 | short-queue | Lanes ran dry overnight, 2026-11-23/24 |
-| ORCH-R04 | An assignment whose `fleet assign` result is `acted_not_focused`, `ack_expired` or `timed_out` SHALL be treated as unconfirmed and re-assigned or escalated in the cycle the result is recorded. | ORCH-O04 | queued-as-delivered | Queued relay orders treated as delivered, MONITORING-DESIGN |
+| ORCH-R03 | Every reachable lane SHALL hold at least 2 remaining assigned tickets while ready work exists and one `fleet assign` order can carry them. `fleet assign` replaces the lane's list and never splits an assignment, so the queue is built in one order; an order body over the relay limit (4096 bytes) is refused and the refusal SHALL be routed as a defect (ORCH-R08). | ORCH-O01 | short-queue | Lanes ran dry overnight, 2026-11-23/24 |
+| ORCH-R04 | An assignment whose `fleet assign` result is `acted_not_focused`, `ack_expired` or `timed_out` SHALL be treated as unconfirmed and re-assigned, or escalated to the lane's code lead, in the cycle the result is recorded. | ORCH-O04 | queued-as-delivered | Queued relay orders treated as delivered, MONITORING-DESIGN |
 | ORCH-R05 | Every assignment SHALL reach `confirmed`, the lane's derived focus equal to the first assigned ticket, within the `fleet assign` acknowledgement deadline (default 5 minutes). | ORCH-O04 | queued-as-delivered | Plan W4: confirm every assignment |
-| ORCH-R06 | Every gap `fleet plan-coverage` reports (unowned ready ticket, short queue, stale assignment) SHALL be closed in the cycle it appears. | ORCH-O01 | parked-unowned-work | Ready perf batch parked all night, 2026-11-23/24 |
+| ORCH-R06 | Every gap `fleet plan-coverage` reports (unowned ready ticket, short queue, stale assignment) SHALL be closed in the cycle it appears, except a gap no tool can close (an `unowned_ready` ticket noted `owner_unreachable`, which `fleet assign` refuses to move off a stale lane, SWM-287), which SHALL be routed as a defect (ORCH-R08) in that cycle. | ORCH-O01 | parked-unowned-work | Ready perf batch parked all night, 2026-11-23/24 |
 | ORCH-R07 | The orchestrator SHALL NOT state that hosts or lanes are in target, healthy or saturated without a `fleet status` run that exited zero with `complete: true`. | ORCH-O01 | failed-probe-as-healthy | 18 "all hosts in target" claims, 2026-11-23/24 |
 | ORCH-R08 | A failed probe or source defect SHALL be fixed, or routed to a named owner with a ticket, in the cycle it appears. | ORCH-O03 | failed-probe-as-healthy | Terra probe broken all night, 129 "unreachable" readings |
 | ORCH-R09 | No reachable lane SHALL stay idle while ready work exists that the lane can take. | ORCH-O01 | parked-unowned-work | Terra lanes idle 6 to 10 hours, titan lanes 2 hours, 2026-11-23/24 |
-| ORCH-R10 | An in-fleet ladder rung addressed to the orchestrator SHALL be acted on, or rejected only by citing newer fleet status evidence that contradicts it. | ORCH-O03 | minder-evidence-dismissed | Minder saw the idle lanes and was dismissed, 2026-11-23/24 |
+| ORCH-R10 | Every action the orchestrator executes (`fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the drain cap, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved`) SHALL be acted on, or rejected only by citing newer fleet status evidence that contradicts it. | ORCH-O03 | minder-evidence-dismissed | Minder saw the idle lanes and was dismissed, 2026-11-23/24 |
 | ORCH-R11 | While a host's builds are paused or its sustainable build slots are zero, its lanes SHALL be kept on work that needs no build slot. | ORCH-O01 | thermal-excuse | Thermal guard used as a reason to leave lanes idle, 2026-11-23/24 |
 | ORCH-R12 | The orchestrator SHALL NOT lower a host's lane count for a thermal or memory reason without scheduler evidence (an active pause, an admission block, a build abort, or memory headroom below reserve) at that time. | ORCH-O06 | thermal-excuse | Thermal guard used as a reason to leave lanes idle, 2026-11-23/24 |
 | ORCH-R13 | A drift finding (`not_assigned`, `not_in_plan`, `priority_inversion`) SHALL be corrected by re-assigning or re-ordering the lane in the cycle it appears. | ORCH-O05 | drift | Plan W2: focus and drift |
 | ORCH-R14 | A positive ready-buffer deficit SHALL be sent to each owning planner as a request for the stated number of ready tickets in the cycle it appears. | ORCH-O02 | parked-unowned-work | Plan W6: saturation drives planning upstream |
-| ORCH-R15 | When the owner asks who owns a ticket, lane, host, defect or decision, the orchestrator SHALL answer with a named role and lane address. | ORCH-O03 | unowned-work | Owner's "who owns X" questions, plan W4 |
+| ORCH-R15 | When the owner asks who owns a ticket, lane, host, defect or decision, the orchestrator SHALL answer with a named role and lane address, read from the ix-board `[fleet_tick]` settings `orchestrator`, `minder` and `leads` and from the relay lane registry. | ORCH-O03 | unowned-work | Owner's "who owns X" questions, plan W4 |
 | ORCH-R16 | Capacity discovery SHALL add one lane per step and hold each step for the measurement window. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R17 | A discovery step SHALL be judged only on a window in which the ready-buffer deficit was zero throughout, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
 | ORCH-R18 | Capacity discovery SHALL stop at the first knee signal and step the host back one lane. | ORCH-O06 | capacity-unknown | Titan thermal limits found by hand, plan W6 |
 | ORCH-R19 | The orchestrator SHALL record each host's found level, with the measurements it was found at, in the capacity history. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R20 | A host with no recorded level SHALL be put into discovery when the ready-buffer deficit is zero. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
+| ORCH-R20 | A host with no recorded level SHALL be put into discovery when the ready-buffer deficit is zero and the capacity history is available to record the run. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R21 | The orchestrator SHALL NOT run a host above its recorded level except during a discovery run of at most 8 steps. | ORCH-O06 | capacity-unknown | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R22 | A host throttled above 5% for an hour at its recorded level SHALL be stepped down one lane, and re-discovered when the daily discovery cap (ORCH-R24) allows. | ORCH-O06 | capacity-unknown | Titan thermal handoff, plan W6 |
 | ORCH-R23 | After a step-down, the orchestrator SHALL NOT raise the host above the stepped-down level before the cool-off ends. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
@@ -232,7 +272,9 @@ that reads it names its producer here:
 | ORCH-R27 | An `add_lane` action for a host below its recorded level with ready work SHALL be executed in the cycle it is emitted. | ORCH-O01 | host-underutilized | Terra host idle about 12h50m, 2026-11-23/24 |
 | ORCH-R28 | A discovery run with 2 inconclusive windows in a row SHALL end with reason `inconclusive_no_demand` and return the host to its last validly measured level. | ORCH-O06 | capacity-unknown | Demand gate stalls discovery, capacity review round 2 |
 | ORCH-R29 | A discovery run whose build slots were saturated for a whole valid window SHALL end with reason `build_slots_saturated` and record that level, without raising the host further. | ORCH-O06 | capacity-unknown | Build slots cap lane throughput, capacity review round 2 |
-| ORCH-R30 | A lane still draining after the drain cap (default 4 hours) SHALL be escalated to its code lead. | ORCH-O06 | capacity-overload | Drain may span cycles, capacity review round 2 |
+| ORCH-R30 | A lane still draining after the drain cap (default 4 hours) SHALL be escalated to its code lead by the minder's `escalate_drain` send (MIND-R20). An `escalate_drain` addressed to the orchestrator SHALL be acted on under ORCH-R10, citing the ledger action row as its evidence. | ORCH-O06 | capacity-overload | Drain may span cycles, capacity review round 2 |
+| ORCH-R31 | The orchestrator SHALL NOT stop or delete its own recurring loop (cron, loop or wakeup) except on the owner's explicit instruction; a lead's claim that it is halted, or an ambiguous message, is not such an instruction. | ORCH-O01 | loop-removed | IXD's only minder cron deleted on an ambiguous message, 2026-11-23 |
+| ORCH-R32 | The orchestrator SHALL send a message only of the kinds done, blocked, decision or handoff, and SHALL answer an out-of-scope or status-poll message with the one-line etiquette reply at most once per sender per hour. | ORCH-O03 | comms-noise | Status polls and FYIs between lanes, code-lead and coder communication rules |
 
 ## Evaluations
 
@@ -275,6 +317,10 @@ that reads it names its producer here:
 | ORCH-R28-E1 | ORCH-R28 | ledger | ledger.discovery_inconclusive_windows | deterministic | ledger.no_demand_runs_not_ended | evaluator | = | 0 | runs | daily |
 | ORCH-R29-E1 | ORCH-R29 | ledger | ledger.discovery_slot_saturated_windows | deterministic | ledger.discovery_raised_past_slot_saturation | evaluator | = | 0 | steps | daily |
 | ORCH-R30-E1 | ORCH-R30 | ledger | ledger.draining_lanes | deterministic | ledger.drains_over_cap_without_escalation | evaluator | = | 0 | lanes | tick |
+| ORCH-R31-E1 | ORCH-R31 | ledger | ledger.orchestrator_cycle_events | deterministic | ledger.cycle_missed | evaluator | = | 0 | cycles | tick |
+| ORCH-R31-E2 | ORCH-R31 | transcript | transcript.orchestrator_loop_removal_events | deterministic | transcript.orchestrator_loop_removed_without_owner_instruction | evaluator | = | 0 | events | session-end |
+| ORCH-R32-E1 | ORCH-R32 | transcript | transcript.orchestrator_outbound_messages | deterministic | transcript.orchestrator_messages_outside_allowed_kinds | evaluator | = | 0 | messages | 3h |
+| ORCH-R32-E2 | ORCH-R32 | transcript | transcript.orchestrator_etiquette_replies | deterministic | transcript.etiquette_replies_per_sender_hour_max | evaluator | <= | 1 | replies | 3h |
 
 ## Evaluation notes
 
@@ -284,6 +330,33 @@ that reads it names its producer here:
 - ORCH-R01 checks the head ticket of every order; the order of the rest of
   the chain against plan rank is checked through drift (`priority_inversion`,
   ORCH-R13).
+- ORCH-R10-E1 reads the rung view; the other action kinds the orchestrator
+  executes are evaluated through the rule each one drives: `fix_source` and
+  defects by ORCH-R08-E1, `add_lane` by ORCH-R27-E1, `need_ready_tickets` by
+  ORCH-R14-E1, `escalate_drain` by ORCH-R30-E1, and `route_dead_lane` and
+  `route_idle_lane` by ORCH-R09-E1. Every evaluation selects by action kind,
+  not by target.
+- ORCH-R31-E1 reads the orchestrator's own cycle events through
+  `ledger.cycle_missed` (ix-board FR-039, deferred to SWM-255); the minder's
+  `ix_fleet_tick_timestamp_seconds` is not its freshness series. The owner
+  instruction that excuses a stop comes from the ORCH-R31-E2 transcript check:
+  a relayed instruction from a planning lead that states it is the owner's
+  counts as the owner's, and a lead's "halted" claim does not. ORCH-R31-E1 is
+  `n.a.` for the span after an owner-ordered stop that ORCH-R31-E2 records. No
+  ledger record of owner stops exists, so the exemption is read from the
+  transcript and the check is not fully deterministic; a ledger record of
+  owner stops is a gap for SWM-221, the evaluator, to close.
+- ORCH-R32-E1 and ORCH-R32-E2 are transcript pattern queries (SWM-221), since
+  relay receipts carry no message kind. The allowed kinds are the rule's list:
+  done, blocked, decision and handoff; any other outbound message is a
+  violation.
+- ORCH-R32 serves ORCH-O03: status polls and FYIs crowd out the routes the
+  orchestrator must act on, which delays the next WORKING run of a stopped lane
+  (ORCH-M03, time-to-action).
+- ORCH-R03 applies per order: the relay body limit is 4096 bytes and one
+  `fleet assign` order carries the full text of every ticket in the chain, so a
+  chain of long tickets can be refused. The refusal is a routed defect, not a
+  split order (ORCH-R02).
 - ORCH-R02-E1 joins each orchestrator order to an FR-072 assignment-list
   transition through the order id `fleet assign` records on it (SWM-257); an
   order with no such transition was not sent with `fleet assign`.

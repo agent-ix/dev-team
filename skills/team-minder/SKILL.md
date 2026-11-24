@@ -1,14 +1,14 @@
 ---
 name: team-minder
 description: Run the fleet minder loop. Each tick reads `ix-board fleet status --json`, treats undetermined lanes as idle, pushes the next assigned ticket to idle lanes as a relay order, answers dialogs and queued questions a standing order covers and logs each answer, routes every source defect, dead lane and lane without work, and escalates worker, lead, orchestrator on a fixed ladder. Use when invoked as /team-minder [scope] [interval], or when asked to keep a fleet's or team's lanes busy, find idle or blocked lanes, or run a minder loop.
-role_spec_version: 4
+role_spec_version: 6
 ---
 
 # Team Minder
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 4. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
+team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 6. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
 
 `ix-board fleet tick --json` (SWM-256, recorded in the SWM-255 ledger) will become the tick's input and emit the actions below directly; until it is installed, the minder derives them from `fleet status` exactly as this skill states and routes each interim gap as a defect (step 2).
 
@@ -70,12 +70,14 @@ Execute the action for every row before the next tick, even if your own reading 
 |---|---|
 | `WORKING` | None. |
 | `IDLE` with a remaining ticket on its assignment list | Push the next ticket (step 4) (MIND-R03). If this minder's own order to the lane is still inside its ack deadline, push nothing; step 4.3 and 4.4 handle it (MIND-R10). |
-| `IDLE` with an empty assignment list | Route to the orchestrator with the row evidence: lane, idle age, empty list (MIND-R18). Assignment is the orchestrator's. |
+| `IDLE` with an empty assignment list (`route_idle_lane`) | Route to the orchestrator with the row evidence: lane, idle age, empty list (MIND-R18). Assignment is the orchestrator's. |
 | `BLOCKED(dialog)`, or `BLOCKED(question)` whose evidence shows `ix_fleet_lane_blocked{reason=queued_question}`, matching a [standing order](references/standing-orders.md) | Answer per the order and log it (step 5) (MIND-R11, MIND-R12). |
 | `BLOCKED(question)` with relay reason `question` (free-form), `BLOCKED(login)`, `BLOCKED(usage_limit)`, or a dialog or queued question with no matching order | Escalate to the lane's lead with the reason (MIND-R13). Send no input to the pane (MIND-R14). |
 | `STUCK`, `LOOP` | Escalate to the lane's lead (MIND-R04). |
+| `escalate_drain` action (a lane still draining after the drain cap; from `fleet tick` once installed) | Send it to the lane's lead with the action row evidence (MIND-R20). |
+| An action the orchestrator executes (from `fleet tick` once installed): `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the cap, or `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved` | Send it to the orchestrator as a relay message in the tick it is emitted, with the action row evidence. The orchestrator never runs `fleet tick`, so this message is its only copy of the action (MIND-R21). |
 | `STALE-ORDER` | Re-send the order with its `--expect-ticket` (MIND-R10). |
-| `DEAD` | Route to the orchestrator with the row evidence: lane, last event, evidence (MIND-R17). |
+| `DEAD` (`route_dead_lane`) | Route to the orchestrator with the row evidence: lane, last event, evidence (MIND-R17). |
 | `UNREACHABLE` | Escalate to the orchestrator: host unreachable, listing every `UNREACHABLE` lane of that host with its row evidence, one message per host, whether or not a host defect row exists this tick (MIND-R02). |
 
 Send no relay message to a `BLOCKED` lane; a standing-order answer through herdr is the only input it gets (MIND-R19).
