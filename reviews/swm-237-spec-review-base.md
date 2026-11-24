@@ -374,3 +374,26 @@ scope:
   role: examined
   excerpt: The reference and migration guide state the cutover order and the retirement condition per script.
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-010 | medium | Renumbering missed FR-005-AC-1: it still says 'see FR-008 for cross-lane share'. Fair share is now FR-011, and after dev-team#30 merges FR-008 is the evaluation-result-record requirement, so the reference points at the wrong artifact. Change it to FR-011. | spec/functional/FR-005-fair-build-scheduler.md:63 |
+| FND-011 | medium | FR-009's profile schema is closed (unknown keys refused, FR-009-AC-4), yet keys other FRs put in the profile are missing from its table: `[repos.<name>] mirror`, `remote` and the non-cargo command allowlist (FR-014), `max_lane_labels` (FR-015) and `stall_wait` (FR-016). A conforming loader would refuse a profile that sets them. Add them to the table, or say where they live if not in the profile. | spec/functional/FR-009-host-profile-sustainable-slots.md:22 |
+| FND-012 | low | `nice` is declared twice, as `[host] nice` (nice level for jobs) and `[weight] nice` (macOS build weight, default 10), with no precedence rule. State which one applies, or drop one. | spec/functional/FR-009-host-profile-sustainable-slots.md:26,29 |
+| FND-013 | low | The bound is 'heartbeat_stale plus its poll', but the watchdog's poll interval is defined nowhere (it is not a `[governor]` key), so the test has no bound to assert. Name the interval, for example `sample_interval`. | spec/functional/FR-010-scheduler-owned-throttling.md:40 |
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Verified at 10413b3. |
+| FND-002 | fixed | Verified at 10413b3. |
+| FND-003 | fixed | Verified at 10413b3. |
+| FND-004 | fixed | Verified at 10413b3. |
+| FND-005 | fixed | Verified at 10413b3. |
+| FND-006 | fixed | Verified at 10413b3. |
+| FND-007 | fixed | Verified at 10413b3. |
+| FND-008 | fixed | Verified at 10413b3. |
+| FND-009 | fixed | Verified at 10413b3. |

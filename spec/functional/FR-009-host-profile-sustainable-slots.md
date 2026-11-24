@@ -23,12 +23,14 @@ The profile has these tables. Unknown keys are refused at load with a diagnostic
 
 | Table and keys | Meaning |
 |---|---|
-| `[host]` `name`, `max_slots`, `cpu_cores`, `jobs_per_slot`, `cpu_set`, `nice` | Host label; hard slot ceiling; cores (default measured); `CARGO_BUILD_JOBS` per slot; optional CPU affinity; nice level for jobs |
+| `[host]` `name`, `max_slots`, `cpu_cores`, `jobs_per_slot`, `cpu_set` | Host label; hard slot ceiling; cores (default measured); `CARGO_BUILD_JOBS` per slot; optional CPU affinity |
 | `[memory]` `ram_per_job_default`, `ram_per_job_min`, `reserve`, `history_window`, `grow_after` | Per-job RAM before history exists, its floor, RAM kept free, jobs of history used, hold time before a rise in slots applies |
 | `[reserve]` `cpu_cores`, `memory`, `services` | CPU and memory reserved for shared services on this host (for example the relay Redis bus on titan, Prometheus and kind on luna); `services` is a documentation list shown in status |
 | `[weight]` `cpu_weight`, `nice` | Scheduling weight of builds below services: Linux and WSL run each job in a systemd user scope with `CPUWeight` (default 20 against the default 100); macOS runs jobs at `nice` (default 10) |
 | `[pool]` `path`, `budget`, `per_key_slots`, `min_free`, `max_age` | Target-pool settings of [FR-012](FR-012-target-dir-pool.md) |
-| `[governor]` `sample_interval`, `heartbeat_stale`, `max_pause`, `probe_timeout` | Sampling cadence, age at which watchdogs treat the governor as dead, longest pause, per-probe timeout |
+| `[governor]` `sample_interval`, `heartbeat_stale`, `watchdog_poll`, `max_pause`, `probe_timeout`, `stall_wait`, `max_lane_labels` | &
+| `[repos.<name>]` `mirror`, `remote` | Bare mirror directory and remote URL for a repo on this host (FR-014) |
+| `[commands]` `allow` | Non-cargo commands a dispatched job may run in a checkout (FR-014); empty by default |
 | `[[probe]]` `name`, `kind`, `required`, `interval` | A probe from the shared crate and whether its loss is fatal to admission |
 | `[[limit]]` `probe`, `pause_above`, `resume_below`, `abort_above`, `block_above`, `reason` | Thresholds on a probe reading; see [FR-010](FR-010-scheduler-owned-throttling.md) |
 | `[env]` | Environment set for every job (for example `CARGO_INCREMENTAL`) |

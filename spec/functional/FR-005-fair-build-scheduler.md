@@ -60,7 +60,7 @@ contention and a running child's outcome are separate events.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-005-AC-1 | Equal-priority eligible requests of one lane (see FR-008 for cross-lane share) run in enqueue order; repeated high-priority arrivals cannot pass an eligible request after its configured reservation threshold. A deterministic-clock test proves this under sustained arrivals. | Test |
+| FR-005-AC-1 | Equal-priority eligible requests of one lane (see FR-011 for cross-lane share) run in enqueue order; repeated high-priority arrivals cannot pass an eligible request after its configured reservation threshold. A deterministic-clock test proves this under sustained arrivals. | Test |
 | FR-005-AC-2 | Higher-priority waiting work gets the next available capacity before aging reservation, while an already running child continues; no new grant exceeds current capacity or duplicates leased units. If capacity shrinks from two units to one while two units are running, both continue, overcommit is reported, and new admission waits for sufficient release. | Test |
 | FR-005-AC-3 | Capacity shrink/growth, unavailable/stale host telemetry, insufficient disk reserve and oversized requests follow the defined admission behavior without a hardcoded slot count. | Test |
 | FR-005-AC-4 | Timeout, cancellation, child crash, scheduler restart, stale heartbeat and PID-reuse fixtures reclaim leases only after verified termination of the owned child group; unrelated children are never terminated. | Test |

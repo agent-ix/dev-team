@@ -26,7 +26,7 @@ Each retired function maps to a requirement:
 | Remote runner: build a pushed sha in a per-slot worktree and target | FR-012 slot, FR-014 dispatch |
 | Remote runner: rc, test result lines, failure and panic lines | FR-013 summary |
 | Remote runner: hold file, memory and disk gates before start | FR-009 required probes and `block_above`; FR-010 `hold` and `resume` |
-| Remote runner: CPU set, nice level, debug-info and incremental env | FR-009 `cpu_set`, `nice`, `[env]` |
+| Remote runner: CPU set, nice level, debug-info and incremental env | FR-009 `cpu_set`, `[weight] nice`, `[env]` |
 | Remote runner: per-test RSS watchdog | FR-010 `rss_cap` |
 | Heat guard: stop at high Tctl, resume lower; memory stop | FR-010 governor pause and resume; abort policy |
 | Health logger: Tctl, load, memory, fans every 30 s; HOT marker | FR-015 probe series |
@@ -38,7 +38,7 @@ Each retired function maps to a requirement:
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-016-AC-1 | A parity table in the tool reference maps each retired function above to a command or profile key, and every mapped command exists in `--help`. | Inspection |
-| FR-016-AC-2 | A job starts with the profile's `cpu_set`, nice level and `[env]` values and `CARGO_BUILD_JOBS` equal to `jobs_per_slot`; a request override is applied within `[request_limits]` and refused outside (FR-009-AC-10). | Test |
+| FR-016-AC-2 | A job starts with the profile's `cpu_set`, `[weight] nice` and `[env]` values and `CARGO_BUILD_JOBS` equal to `jobs_per_slot`; a request override is applied within `[request_limits]` and refused outside (FR-009-AC-10). | Test |
 | FR-016-AC-3 | The tool tree contains no `.py` file and no shell script with a conditional or loop; Makefile recipes invoke only `cargo` and the built binary. | Inspection |
 | FR-016-AC-4 | With a fixture where a request waits 6 minutes with a free slot, `retire-check` fails and reports the stall; with a paused orphan event it fails; with 24 hours of builds and neither event it passes; with no builds in the window it fails as unproven. | Test |
 | FR-016-AC-5 | The reference and migration guide state the cutover order and name `retire-check` as the per-script retirement condition. | Inspection |

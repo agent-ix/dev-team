@@ -258,3 +258,15 @@ scope:
     from the JSON snapshot through the FR-001 evidence contract with host and observation time; a Prometheus scrape
     of a live host shows the same series in the Grafana dashboard.
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Verified at 10413b3. |
+| FND-002 | fixed | Verified at 10413b3. |
+| FND-003 | fixed | Verified at 10413b3. |
+| FND-004 | fixed | Verified at 10413b3. |
+| FND-005 | fixed | Verified at 10413b3. |
+| FND-006 | fixed | Verified at 10413b3. |
+| FND-007 | fixed | Verified at 10413b3. |

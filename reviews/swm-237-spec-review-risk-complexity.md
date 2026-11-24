@@ -90,3 +90,11 @@ scope:
   excerpt: Two remote requests of classes `gate` and `check` on a one-slot host are admitted in FR-008 order on
     the remote queue.
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Verified at 10413b3. |
+| FND-002 | fixed | Verified at 10413b3. |
+| FND-003 | fixed | Verified at 10413b3. |
