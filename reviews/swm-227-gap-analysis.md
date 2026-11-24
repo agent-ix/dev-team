@@ -227,3 +227,7 @@ Round 1, fix head 2d92656fde61c2572b541ae9a953c0ec467cf186 (commits 33229fe, 2d9
 | FND-014 | fixed | - |
 
 Round 2, fix head 1128758331cc644afeb24e468256f2a052cea250. The FND-009 to FND-014 rows above are round 2. Minder v6 kind names match ix-board FR-038 at #95 head 792f28e, including `route_dead_lane`, `route_idle_lane` and `lane_blocked_route_to_lead`.
+| FND-013 | fixed | - |
+| FND-015 | fixed | - |
+
+Round 3, fix head 9dae9031867776df727320c6a303c101e73676db. The FND-013 and FND-015 rows above are round 3. Every finding's latest outcome is now `fixed`.
