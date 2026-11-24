@@ -44,10 +44,11 @@ missing teams or relevant unavailable sources make the share unavailable.
 Preserve the metric's availability and query; never reconstruct a share from
 partial rows, worker counts or file ages.
 
-Use the [minder's count contract](../../team-minder/SKILL.md#reading-worker-counts-during-rollout)
-when inspecting agent rows. Nullable worker counts stay unknown and do not
-measure execution or spare slots. Older reports' numeric `live_subagents`
-measures legacy recent-file evidence; its lifecycle count remains unknown.
+Agent rows from `ix-board agents` carry worker counts. Prefer `active_direct_workers`;
+a present `null` is unknown and never falls back to the deprecated `live_subagents`
+alias. Nullable worker counts do not measure execution or spare slots. Older reports'
+numeric `live_subagents` measures legacy recent-file evidence; its lifecycle count
+remains unknown.
 
 ## Owners
 

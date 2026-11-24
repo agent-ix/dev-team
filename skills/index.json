@@ -90,9 +90,11 @@
     },
     {
       "name": "team-minder",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "files": [
-        "SKILL.md"
+        "SKILL.md",
+        "references/standing-orders.md",
+        "references/status-request.md"
       ]
     },
     {
@@ -106,7 +108,7 @@
     },
     {
       "name": "team-retro",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "files": [
         "SKILL.md",
         "references/measures.md",
@@ -115,7 +117,6 @@
         "references/rubric-code-lead.md",
         "references/rubric-coder.md",
         "references/rubric-reviewer.md",
-        "references/rubric-minder.md",
         "references/state-record.md",
         "references/strategies.md"
       ]
