@@ -95,12 +95,15 @@ Each host's sustainable lane count is unknown until measured. Discovery ramps
 lanes only; build slots are computed by the build scheduler from live
 headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
 
-- **Start.** A host with no recorded level starts discovery while ready work
-  exists for it. `fleet tick` suppresses `add_lane` for a host while its
-  discovery run is active (SWM-256).
+- **Start.** A host with no recorded level starts discovery when the
+  ready-buffer deficit is zero. `fleet tick` suppresses `add_lane` for a host
+  while its discovery run is active (SWM-256). A host runs at most 2
+  discovery runs a day, first runs and re-discoveries counted together.
 - **Step.** Add one lane. A run takes at most 8 steps; a run that reaches the
   bound records the last valid level.
-- **Hold.** Keep each level for a measurement window (default 30 minutes).
+- **Hold.** Keep each level for a measurement window (default 2 hours,
+  configurable). The first 30 minutes after a lane is added are ramp-up and
+  are excluded from the measurement.
 - **Valid window.** A window counts only when the ready-buffer deficit
   (`ix_fleet_ready_buffer_deficit`, ix-board FR-041) was zero for the whole
   window, so ready work was available to every lane. Otherwise the step is
@@ -109,19 +112,21 @@ headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
   capacity history (SWM-252), and the host returns to the last level measured
   on a valid window. The deficit itself is sent to the planners as
   `need_ready_tickets` (ORCH-R14).
-- **Lane output.** Per step, measure what a lane delivers that build slots do
-  not cap: tickets closed plus pull requests merged, per lane per hour
-  (Linear and GitHub, attributed to the lane by its focus and branch). Commits
-  pushed per lane per hour is a secondary measure, read when the primary
-  counts are too small to compare within one window.
+- **Host output.** Per level, measure what the host's lanes deliver that
+  build slots do not cap: tickets closed plus pull requests merged per hour,
+  summed over the host's lanes (Linear and GitHub, attributed to a lane by
+  its focus and branch; SWM-252). When tickets closed plus pull requests
+  merged in a window come to fewer than 5, commits pushed per hour is used for
+  that comparison instead.
 - **Watch.** Also read throttled time (`ix_build_pause_seconds_total`,
   `ix_build_admission_blocked_seconds_total`), memory and thermal headroom
   (`ix_build_probe_value` against the host profile), and build slots busy
   against sustainable (`ix_build_slots_busy`, `ix_build_slots_sustainable`)
   from the build scheduler (dev-team FR-015).
-- **Knee.** A valid step is past the knee when the marginal lane output of the
-  added lane is below 50% of the mean per-lane output at the previous level,
-  or throttled share exceeds 5% of the window.
+- **Knee.** A valid step is past the knee when the gain in total host output
+  over the previous level is below 50% of the previous level's mean per-lane
+  output (its host output divided by its lane count), or throttled share
+  exceeds 5% of the window.
 - **Hold at the knee.** Step back one lane and keep the host at that level.
 - **Build-slot saturation.** When build slots busy equal sustainable slots for
   a whole valid window, the build scheduler is the binding limit, not lanes.
@@ -129,7 +134,7 @@ headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
   is recorded; this is not a knee.
 - **Record.** The found level and the reason the run ended (`knee`,
   `build_slots_saturated`, `step_bound`, `inconclusive_no_demand`), with the
-  window and the lane output, throttled share, headroom and slot use it was
+  window and the host output, throttled share, headroom and slot use it was
   measured at, are recorded in the capacity history (SWM-252). The lane count
   is projected to the host's server capacity (ix-relay FR-058).
 - **Immediate step-down.** When memory headroom falls below the profile
@@ -140,8 +145,8 @@ headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
 - **Throttle step-down.** A host throttled above 5% for an hour at its
   recorded level steps down one lane and is re-discovered.
 - **Hysteresis.** After any step-down, the stepped-down level is the host's
-  ceiling for a cool-off (default 6 hours) before it ramps again, and a host
-  is re-discovered at most twice a day.
+  ceiling for a cool-off (default 6 hours) before it ramps again, and the
+  daily cap of 2 discovery runs per host applies.
 - **Drain.** A lane being removed gets no new assignment, finishes its current
   ticket to a commit or pull request, and is never ended during a build. A
   drain may span cycles; one still open after the drain cap (default 4
@@ -167,7 +172,7 @@ that reads it names its producer here:
 | SWM-255 (ledger) | Plan-coverage snapshots each tick; drift history; `fleet assign` results in `assignment_history`; escalation rung records; orchestrator cycle events | ORCH-M04, ORCH-M05, ORCH-R03-E1, ORCH-R04-E1, ORCH-R05-E1, ORCH-R06-E1, ORCH-R08-E1, ORCH-R09-E1, ORCH-R10-E1, ORCH-R13-E1, ORCH-R27-E1 |
 | SWM-256 (`fleet tick`) | In-fleet ladder; `add_lane` suppressed during discovery | ORCH-R10-E1, ORCH-R27-E1 |
 | SWM-257 (`fleet assign`) | `--expect-ticket` set to the first ticket; order id on FR-072 transitions | ORCH-R01-E1, ORCH-R02-E1 |
-| SWM-252 (capacity history) | Discovery steps, valid or inconclusive windows, per-lane output per step, knee, run end reason, recorded level, draining marks, step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
+| SWM-252 (capacity history; scope extended in its ticket comment) | Discovery steps; per-step host output with per-lane attribution of tickets closed, pull requests merged and commits pushed from Linear and GitHub; valid and inconclusive windows; knee; run end reasons; recorded level; draining marks and drain completion; step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
 | SWM-221 (evaluator) | Transcript pattern queries | ORCH-R07-E1, ORCH-R15-E1 |
 
 ## Metrics
@@ -179,7 +184,7 @@ that reads it names its producer here:
 | ORCH-M03 | Time-to-action, p90: lane entering a non-WORKING class to its next WORKING run | ledger | ledger.time_to_action_p90 | minutes | 15 | lower |
 | ORCH-M04 | Assignment confirmation latency, p90: `fleet assign` send to the lane's focus matching the first ticket | ledger | ledger.assignment_confirm_latency_p90 | minutes | 5 | lower |
 | ORCH-M05 | Drift rate: lane-minutes with a drift finding over WORKING lane-minutes | ledger | ledger.drift_lane_minutes_share | percent | 5 | lower |
-| ORCH-M06 | Lane output per host (tickets closed plus pull requests merged per hour) as a share of the output recorded at its found level | ledger | ledger.lane_output_share_of_recorded_level | percent | 90 | higher |
+| ORCH-M06 | Host output (tickets closed plus pull requests merged per hour, summed over the host's lanes) as a share of the output recorded at its found level | ledger | ledger.host_output_share_of_recorded_level | percent | 90 | higher |
 | ORCH-M07 | Throttled share: paused plus admission-blocked seconds over wall seconds, per host | ix-board-metric | prom.host_throttled_share | percent | 5 | lower |
 | ORCH-M08 | Gate queue wait, p90 | ix-board-metric | prom.gate_queue_wait_p90 | minutes | 10 | lower |
 
@@ -217,11 +222,11 @@ that reads it names its producer here:
 | ORCH-R17 | A discovery step SHALL be judged only on a window in which the ready-buffer deficit was zero throughout, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
 | ORCH-R18 | Capacity discovery SHALL stop at the first knee signal and step the host back one lane. | ORCH-O06 | capacity-unknown | Titan thermal limits found by hand, plan W6 |
 | ORCH-R19 | The orchestrator SHALL record each host's found level, with the measurements it was found at, in the capacity history. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R20 | A host with no recorded level SHALL be put into discovery while ready work exists for it. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
+| ORCH-R20 | A host with no recorded level SHALL be put into discovery when the ready-buffer deficit is zero. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R21 | The orchestrator SHALL NOT run a host above its recorded level except during a discovery run of at most 8 steps. | ORCH-O06 | capacity-unknown | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R22 | A host throttled above 5% for an hour at its recorded level SHALL be stepped down one lane and re-discovered. | ORCH-O06 | capacity-unknown | Titan thermal handoff, plan W6 |
 | ORCH-R23 | After a step-down, the orchestrator SHALL NOT raise the host above the stepped-down level before the cool-off ends. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
-| ORCH-R24 | The orchestrator SHALL NOT start more than 2 re-discoveries of one host per day. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
+| ORCH-R24 | The orchestrator SHALL NOT start more than 2 discovery runs of one host per day, first runs and re-discoveries counted together. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
 | ORCH-R25 | A host whose memory headroom falls below the profile reserve, or whose scheduler aborts a build for a thermal limit, SHALL have one lane marked draining, with no new assignment to it, in the same cycle. | ORCH-O06 | capacity-overload | Titan heat guard and THERMAL handoff, plan W6 |
 | ORCH-R26 | A draining lane SHALL NOT be removed before its current ticket reaches a commit or pull request, nor while it runs a build. | ORCH-O06 | capacity-overload | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R27 | An `add_lane` action for a host below its recorded level with ready work SHALL be executed in the cycle it is emitted. | ORCH-O01 | host-underutilized | Terra host idle about 12h50m, 2026-11-23/24 |
@@ -259,11 +264,11 @@ that reads it names its producer here:
 | ORCH-R18-E1 | ORCH-R18 | ledger | ledger.discovery_knee_signals | deterministic | ledger.discovery_raised_past_knee | evaluator | = | 0 | steps | daily |
 | ORCH-R18-E2 | ORCH-R18 | transcript | ledger.discovery_knee_signals | judgement | rubric-orchestrator@1#capacity-knee | director | >= | 2 | score | weekly |
 | ORCH-R19-E1 | ORCH-R19 | ledger | ledger.discovery_runs_ended | deterministic | ledger.discovery_runs_without_recorded_level | evaluator | = | 0 | runs | daily |
-| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_with_ready_work | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
+| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_at_zero_deficit | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
 | ORCH-R21-E1 | ORCH-R21 | ledger | ledger.hosts_with_recorded_level | deterministic | ledger.host_minutes_above_recorded_level_outside_bounded_discovery | evaluator | = | 0 | minutes | daily |
 | ORCH-R22-E1 | ORCH-R22 | ix-board-metric | prom.hosts_throttled_at_recorded_level | deterministic | prom.throttled_hosts_without_step_down | evaluator | = | 0 | hosts | daily |
 | ORCH-R23-E1 | ORCH-R23 | ledger | ledger.host_step_downs | deterministic | ledger.raises_during_cool_off | evaluator | = | 0 | raises | daily |
-| ORCH-R24-E1 | ORCH-R24 | ledger | ledger.rediscovery_runs | deterministic | ledger.rediscoveries_per_host_day_max | evaluator | <= | 2 | runs | daily |
+| ORCH-R24-E1 | ORCH-R24 | ledger | ledger.discovery_runs | deterministic | ledger.discovery_runs_per_host_day_max | evaluator | <= | 2 | runs | daily |
 | ORCH-R25-E1 | ORCH-R25 | ledger | prom.reserve_breach_or_thermal_abort_events | deterministic | ledger.overload_events_without_draining_mark_in_cycle | evaluator | = | 0 | events | tick |
 | ORCH-R26-E1 | ORCH-R26 | ledger | ledger.lane_removals | deterministic | ledger.lane_removals_before_drain | evaluator | = | 0 | removals | daily |
 | ORCH-R27-E1 | ORCH-R27 | ledger | ledger.add_lane_actions | deterministic | ledger.add_lane_action_open_cycles_max | evaluator | <= | 1 | cycles | tick |
@@ -304,7 +309,10 @@ that reads it names its producer here:
 - ORCH-R17 and ORCH-R28 together bound repeated windows: a run can repeat at
   most one inconclusive window before it ends.
 - ORCH-R27 is `n.a.` for a host until its level is recorded: before that the
-  host is in discovery (ORCH-R20), and `fleet tick` suppresses `add_lane` for
-  it (SWM-256).
+  host waits for a zero deficit or is in discovery (ORCH-R20), and `fleet
+  tick` suppresses `add_lane` for it during a run (SWM-256).
+- The knee compares total host output between levels, so a cold added lane
+  does not read as a knee on its own; the 30-minute ramp-up is excluded and
+  the 2-hour default window leaves room for tickets to close and merge.
 - The recorded level lives in the capacity history (SWM-252). ix-relay FR-058
   server capacity receives only the lane-count projection of it.

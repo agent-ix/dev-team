@@ -171,6 +171,14 @@ scope:
 | FND-008 | high | The new demand gate stalls or stops discovery. A window is valid only if the build queue (ix_build_queue_depth) is non-empty for the whole window, and an invalid window is repeated with the added lane kept. At a level where builds do not saturate the slots, the queue empties and the ramp repeats windows without bound (the 8-step cap counts steps, not repeats), so it never climbs. Once the queue is non-empty, builds per hour are bounded by sustainable slots (FR-009), so the added lane's marginal build throughput is about 0 and the knee fires immediately. Either way, the lane level found is at most the build-slot saturation point, and lane capacity for non-build work is never measured. Gate demand on the ready-buffer deficit alone, measure lane output that is not slot-bound (tickets or commits per hour, WORKING lane-minutes), bound repeated windows (for example 3, then record and stop), and keep queue wait as a knee signal. | spec/roles/orchestrator.md:104-108 |
 | FND-009 | medium | ORCH-R25 (lose one lane in the same cycle on a memory-reserve breach or thermal abort) conflicts with ORCH-R26 (drain: finish the current ticket to a commit or PR, never end a session during a build). A drain can take hours while memory stays below reserve, so either R25-E1 fails on every compliant drain, or the overloaded host keeps its load. State that, for R25, the step-down is done when the lane stops receiving work and its builds are paused or queued, and that drain finishing may span cycles; or give R25 an emergency path that ends the lane's session outside a build. | spec/roles/orchestrator.md:209-210 |
 
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-010 | medium | The knee compares 'the marginal lane output of the added lane' (tickets closed plus PRs merged per hour) over one 30-minute window with the mean per-lane output. A newly added lane starts cold: its first ticket rarely reaches close and merge through review and the gate within 30 minutes, so its measured output is biased to 0 and the knee fires at the first step. Counts per lane per window are also small integers, and the commits fallback applies when counts are 'too small to compare', which is undefined. Measure the change in total host output between levels over a window long enough for the output measure (or several windows), state the minimum count that triggers the commits fallback, and exclude a lane's first ticket ramp-up from its step. | spec/roles/orchestrator.md:112-116 |
+| FND-011 | low | ORCH-R20 starts discovery for an unrecorded host 'while ready work exists', but a window is valid only when the ready-buffer deficit is zero (ORCH-R17), and ORCH-R28 ends a run after 2 inconclusive windows. While the deficit is positive, an unrecorded host cycles every hour: start, add a lane, 2 inconclusive windows, end and drain the lane, restart. The ORCH-R24 cap applies only to re-discoveries. Start discovery only when the deficit is zero, or apply a per-day cap to first discovery runs as well. | spec/roles/orchestrator.md:220 |
+
 ## Dispositions
 
 | FND | outcome | reason |
@@ -182,3 +190,5 @@ scope:
 | FND-005 | fixed | - |
 | FND-006 | fixed | - |
 | FND-007 | fixed | - |
+| FND-008 | fixed | - |
+| FND-009 | fixed | - |

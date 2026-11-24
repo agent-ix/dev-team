@@ -335,6 +335,13 @@ scope:
 |---|---|---|---|
 | FND-012 | low | The minder producer table credits SWM-255 with 'per-order focus at the deadline' for MIND-R10-E1, but SWM-255's acceptance criteria cover fleet assign results, not the minder's own orders. Add the minder-order item to SWM-255, or derive focus at the deadline from lane_interval.focus and say so in the notes. | spec/roles/minder.md:92 |
 
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-013 | medium | The orchestrator producer table credits SWM-252 with per-lane output per step, inconclusive windows, run end reasons and draining marks (ORCH-M06, ORCH-R25-E1, ORCH-R28-E1 to ORCH-R30-E1). SWM-252's acceptance criteria still cover only build throughput, queue wait, throttle share, headroom, knee and level, with no comment adding the new scope. Lane output also needs a new producer: tickets closed and PRs merged attributed to a lane from Linear and GitHub by focus and branch. Add these to SWM-252, or file a ticket for the lane-output attribution. | spec/roles/orchestrator.md:170 |
+
 ## Dispositions
 
 | FND | outcome | reason |
@@ -350,3 +357,4 @@ scope:
 | FND-009 | fixed | - |
 | FND-010 | fixed | - |
 | FND-011 | fixed | - |
+| FND-012 | fixed | - |
