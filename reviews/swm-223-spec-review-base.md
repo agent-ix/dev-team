@@ -653,3 +653,23 @@ scope:
     Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of
     the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.'
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |
+| FND-008 | fixed | - |
+| FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | still-open | Only the skills/index.json version bump was reverted (0.2.1 back to 0.2.0). skills/team-retro/SKILL.md:63 still links the minder rubric to spec/rubrics/rubric-minder.md on main (version 2), and index.json still drops references/rubric-minder.md. After merge, team-retro grades with rubric v2 under an unchanged skill version 0.2.0, so the contradiction with team-minder SKILL.md:90/:132 remains, and FR-008's skill_version split can no longer separate the two rubric versions. Either revert the team-retro SKILL.md and index.json changes too (keep references/rubric-minder.md v1 until SWM-225 switches it), or keep the 0.2.1 bump and make SWM-225 block the team-retro release. |
+| FND-012 | fixed | - |
+| FND-013 | fixed | - |
+| FND-014 | fixed | - |
+| FND-015 | fixed | - |

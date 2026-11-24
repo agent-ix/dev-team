@@ -163,3 +163,22 @@ scope:
   excerpt: '| ORCH-R21-E1 | ORCH-R21 | ledger | ledger.add_lane_actions | deterministic | ledger.add_lane_action_open_max
     | evaluator | <= | 15 | minutes | tick |'
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-008 | high | The new demand gate stalls or stops discovery. A window is valid only if the build queue (ix_build_queue_depth) is non-empty for the whole window, and an invalid window is repeated with the added lane kept. At a level where builds do not saturate the slots, the queue empties and the ramp repeats windows without bound (the 8-step cap counts steps, not repeats), so it never climbs. Once the queue is non-empty, builds per hour are bounded by sustainable slots (FR-009), so the added lane's marginal build throughput is about 0 and the knee fires immediately. Either way, the lane level found is at most the build-slot saturation point, and lane capacity for non-build work is never measured. Gate demand on the ready-buffer deficit alone, measure lane output that is not slot-bound (tickets or commits per hour, WORKING lane-minutes), bound repeated windows (for example 3, then record and stop), and keep queue wait as a knee signal. | spec/roles/orchestrator.md:104-108 |
+| FND-009 | medium | ORCH-R25 (lose one lane in the same cycle on a memory-reserve breach or thermal abort) conflicts with ORCH-R26 (drain: finish the current ticket to a commit or PR, never end a session during a build). A drain can take hours while memory stays below reserve, so either R25-E1 fails on every compliant drain, or the overloaded host keeps its load. State that, for R25, the step-down is done when the lane stops receiving work and its builds are paused or queued, and that drain finishing may span cycles; or give R25 an emergency path that ends the lane's session outside a build. | spec/roles/orchestrator.md:209-210 |
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |

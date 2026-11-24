@@ -175,7 +175,9 @@ that reads it names its producer here:
   that lane in the SWM-258 answer log.
 - MIND-R10 counts an order as confirmed only when the lane's derived focus
   (ix-board FR-037) equals its `--expect-ticket` by the deadline. `Queued`,
-  `Delivered` and `Acted` receipts are not confirmation.
+  `Delivered` and `Acted` receipts are not confirmation. SWM-255 records the
+  focus at the deadline for every order carrying `--expect-ticket`, the
+  minder's orders included.
 - MIND-R14-E1 counts, in the minder transcript, every pane input or answer
   aimed at a lane while an `escalate_block` action for that lane is open in the
   ledger, joined with the SWM-258 answer log.

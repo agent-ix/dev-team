@@ -328,3 +328,25 @@ scope:
   role: examined
   excerpt: '| ORCH-M08 | Gate queue wait, p90 | ix-board-metric | prom.gate_queue_wait_p90 | minutes | 10 | lower |'
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-012 | low | The minder producer table credits SWM-255 with 'per-order focus at the deadline' for MIND-R10-E1, but SWM-255's acceptance criteria cover fleet assign results, not the minder's own orders. Add the minder-order item to SWM-255, or derive focus at the deadline from lane_interval.focus and say so in the notes. | spec/roles/minder.md:92 |
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
+| FND-007 | fixed | - |
+| FND-008 | fixed | - |
+| FND-009 | fixed | - |
+| FND-010 | fixed | - |
+| FND-011 | fixed | - |

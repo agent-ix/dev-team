@@ -268,3 +268,10 @@ scope:
   excerpt: '| ORCH-R21-E1 | ORCH-R21 | ledger | ledger.add_lane_actions | deterministic | ledger.add_lane_action_open_max
     | evaluator | <= | 15 | minutes | tick |'
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |

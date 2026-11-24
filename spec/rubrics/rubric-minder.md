@@ -9,9 +9,11 @@ relationships:
 # Rubric: minder
 
 The minder rubric grades the judgement evaluations of the
-[minder role spec](../roles/minder.md) and the minder row of a `/team-retro`
-full retro. A judgement evaluation cites one check as
-`rubric-minder@2#<check-slug>`.
+[minder role spec](../roles/minder.md). A judgement evaluation cites one
+check as `rubric-minder@2#<check-slug>`. `/team-retro` keeps scoring the
+minder with its own version 1 rubric
+(`skills/team-retro/references/rubric-minder.md`) until the minder skill
+rewrite (SWM-225) moves the skill and team-retro to this version together.
 
 Each check scores 0, 1 or 2 with one cited piece of evidence. A check scores
 `n/a` when its evidence was not read; `n/a` is listed under Data quality and is
