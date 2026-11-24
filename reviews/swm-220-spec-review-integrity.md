@@ -176,3 +176,4 @@ Round 1, fix commit 4cad0509fcd863729c032e8a31aee0879594483a (reviewed diff 6278
 | FND-004 | fixed | Verified in 4cad050. |
 | FND-005 | fixed | Verified in 4cad050. |
 | FND-006 | still-open | New in disposition pass 1; no fix yet. |
+| FND-006 | fixed | Verified in round 2 at 3005249. |
