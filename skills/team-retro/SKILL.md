@@ -60,7 +60,7 @@ its condition from raw snapshots. When no flag is raised, send nothing.
 
 ### Full retro
 
-1. Score every rubric: [planner](references/rubric-planner.md), [code lead](references/rubric-code-lead.md), [coder](references/rubric-coder.md), [reviewer](references/rubric-reviewer.md) and [minder](references/rubric-minder.md). Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.
+1. Score every rubric: [planner](references/rubric-planner.md), [code lead](references/rubric-code-lead.md), [coder](references/rubric-coder.md), [reviewer](references/rubric-reviewer.md) and [minder](https://github.com/agent-ix/dev-team/blob/main/spec/rubrics/rubric-minder.md). Each score is 0, 1 or 2 with one cited piece of evidence, or `n/a` when the evidence was not read; `n/a` stays out of the 0 to 2 scale and is listed under Data quality. Do not average scores into one number.
 2. Interpret emitted repeating-loop findings, including tag/repin, state bounce
    and order flips. Preserve matching event IDs, ordering, scope and missing
    attribution. Cite a qualitative concern separately when no supported

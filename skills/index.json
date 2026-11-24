@@ -106,7 +106,7 @@
     },
     {
       "name": "team-retro",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "files": [
         "SKILL.md",
         "references/measures.md",
@@ -115,7 +115,6 @@
         "references/rubric-code-lead.md",
         "references/rubric-coder.md",
         "references/rubric-reviewer.md",
-        "references/rubric-minder.md",
         "references/state-record.md",
         "references/strategies.md"
       ]

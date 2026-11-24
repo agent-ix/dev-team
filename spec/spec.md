@@ -67,6 +67,10 @@ views read the same report model that a future plugin or desktop view can read.
 | [NFR-002](non-functional/NFR-002-scheduler-overhead-and-isolation.md) | Bounded overhead, probe failure isolation |
 | [NFR-001](non-functional/NFR-001-reproducible-measurement.md) | Reproducibility and read-only observation |
 | [IT-001](integration/IT-001-incident-replay.md) | Generalization and adverse-case replay |
+| [Minder role](roles/minder.md) | Minder objectives, rules and paired evaluations |
+| [Orchestrator role](roles/orchestrator.md) | Orchestrator objectives, rules, ownership and capacity discovery |
+| [Minder rubric](rubrics/rubric-minder.md) | Judgement checks for minder evaluations and retros |
+| [Orchestrator rubric](rubrics/rubric-orchestrator.md) | Judgement checks for orchestrator evaluations |
 
 ## 5. Requirement Classes
 
