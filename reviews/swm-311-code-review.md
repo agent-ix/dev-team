@@ -31,3 +31,23 @@ Gap-analysis and spec-review do not apply: no production code and no `spec/` or 
 | FND-002 | medium   | Reports are keyed by agent process, so a restart starts empty and the 30-minute refresh writes only `focus`. "Report again at the next row above" never resends a failed `scope` or a failed `done`, leaving the scope missing or an entry `running`. | skills/code-lead/SKILL.md:139, skills/code-lead/SKILL.md:157 |
 | FND-003 | medium   | "Limit each wait" cannot produce the 30-minute `focus` for a Claude Code lead: a background subagent leaves the lead with no wait to limit, and nothing wakes it until the subagent finishes. | skills/code-lead/SKILL.md:154 |
 | FND-004 | low      | A `failed` or `canceled` entry stays until the ticket closes, and the consumer marks a lead failed while any entry is `failed`, even after a replacement subagent is running. | skills/code-lead/SKILL.md:153 |
+
+## New findings (disposition pass 1)
+
+Head checked: `0c2d07ab32af774d568272adb44719484dc556f4`. Both points were raised by the fix coder and confirmed here.
+
+| ID      | Severity | Summary | Refs |
+| ------- | -------- | ------- | ---- |
+| FND-005 | low      | The ticket-ID entry for a ticket with no subagent names no `--role` or `--status`, which `agent` requires, and nothing removes it when a subagent entry appears, so it stays beside later entries until the ticket closes. | skills/code-lead/SKILL.md:150 |
+| FND-006 | low      | A `focus` sent just after the free-running 1800-second timer starts is not yet 30 minutes old when the timer ends, so a lead that waits out another timer leaves a gap approaching 60 minutes. | skills/code-lead/SKILL.md:167 |
+
+## Dispositions
+
+| FND     | outcome    | reason |
+| ------- | ---------- | ------ |
+| FND-001 | fixed      | Start row and ticket-entry bullet verified at 0c2d07a; the remaining placeholder detail is FND-005. |
+| FND-002 | fixed      | `show` step, resend bullet and resend sentence verified at 0c2d07a. |
+| FND-003 | fixed      | Wake instruction verified at 0c2d07a; the timer interval is FND-006. |
+| FND-004 | fixed      | Removal of replaced `failed` and `canceled` entries verified at 0c2d07a. |
+| FND-005 | still-open | No fix at 0c2d07a. Role, status and removal of the ticket-ID entry are not stated. |
+| FND-006 | still-open | No fix at 0c2d07a. Nothing requires a report each time the timer ends. |

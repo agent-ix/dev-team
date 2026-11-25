@@ -148,9 +148,10 @@ agent-msg work remove <subagent-id>
 - `focus` names every ticket in flight with `--ticket`. The Work tab lists a
   lead's tickets from `agent` entries only, so each ticket in flight keeps at
   least one, with its latest status, until the ticket closes, even with no
-  subagent running (use the last subagent's ID, or the ticket ID if none). A
-  subagent covering several tickets gets one entry per ticket, with ID
-  `<subagent-id>:<ticket>`.
+  subagent running (use the last subagent's ID; if the ticket has had none, use
+  the ticket ID with `--role lead --status waiting`, and `remove` that entry
+  once a subagent has one for the ticket). A subagent covering several tickets
+  gets one entry per ticket, with ID `<subagent-id>:<ticket>`.
 - `scope` replaces the previous scope. `agent` replaces that subagent's entry,
   so repeat the ticket, name and role. `<subagent-id>` is the Claude agent ID
   or the Codex session ID. For a herdr pane agent add
@@ -164,7 +165,8 @@ agent-msg work remove <subagent-id>
 - Make sure something wakes you for the 30-minute `focus`. Cap each blocking
   wait on a subagent or gate below the time left. Where the harness wakes you
   only when work finishes (a Claude Code background subagent), keep one
-  `sleep 1800` running as a background command while work is in flight.
+  `sleep 1500` running as a background command while work is in flight, and make
+  the 30-minute report each time it ends.
 - Only the lead writes these reports. Give each call a 150-second time limit.
   A failed report never blocks the work: surface the error, continue and send it
   again with the next report. Never report a success you did not observe.
