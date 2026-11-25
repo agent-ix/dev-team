@@ -33,6 +33,20 @@ Reviewed FR-015's IDs, links, requirement quality, criteria, and source consiste
 | FND-005 | still-open | Found in round 2; no fix yet. |
 | FND-006 | still-open | Found in round 2; no fix yet. |
 | FND-007 | still-open | Found in round 2; no fix yet. |
+| FND-002 | fixed | Round 3, head 38f2026: ix_build_pause_seconds_total is restored with thermal and operator reasons, absent until produced. |
+| FND-003 | fixed | Round 3: the reason set again lists all seven values, absent until produced (precedence gap is FND-009). |
+| FND-004 | accepted-no-change | Round 3: the PR states that abort execution, classification and increments are deliberately unverified in this slice, consistent with the owner order of no aborting governor; abort values are now checked as present at zero. Verification belongs with the governor work. |
+| FND-005 | fixed | Round 3: AC-1 names an exact absence set and states the zero-valued outcome exception (the set itself is FND-008). |
+| FND-006 | fixed | Round 3: after SWM-239 configured slots come from TOML [host].max_slots, and AC-2 separates the two states. |
+| FND-007 | fixed | Round 3: FR-009-AC-8 separates before and after the profile and verifies the JSON file no longer affects values. |
+| FND-008 | still-open | Found in round 3; no fix yet. |
+| FND-009 | still-open | Found in round 3; no fix yet. |
+| FND-010 | still-open | Found in round 3; no fix yet. |
+| FND-008 | fixed | Round 4, head 44ef56f: the six emitted and eleven further absent names are listed and match all 19 table names; AC-1 can pass for this build (see FND-011). |
+| FND-009 | fixed | Round 4: precedence now orders all seven reasons (see FND-012). |
+| FND-010 | fixed | Round 4: both comment bodies are deleted and quire validate of reviews/**/*.md exits 0. |
+| FND-011 | still-open | Found in round 4; no fix yet. |
+| FND-012 | still-open | Found in round 4; no fix yet. |
 
 ## New findings (disposition pass 2)
 
@@ -46,3 +60,22 @@ This pass reviewed the PR diff at d1023710e636c65dcabf7f7235edc8d1215bd05b again
 | FND-005 | medium | AC-1 asks for every applicable series without defining applicable, so omitting any series can pass. Its rule that a metric with no source is omitted conflicts with the requirement to export every outcome from 0, including aborted values that have no producer. | spec/functional/FR-015-build-metrics-export.md:44,66 |
 | FND-006 | medium | ix_build_slots_configured is defined only until SWM-239. No TOML key or meaning replaces it (FR-009 has max_slots and computed sustainable slots), and AC-2 also requires a computed sustainable count that does not exist in the interim. | spec/functional/FR-015-build-metrics-export.md:42,67,77; spec/functional/FR-009-host-profile-sustainable-slots.md:18 |
 | FND-007 | medium | Rewritten FR-009-AC-8 mixes the interim and post-profile states: it computes sustainable capacity from a TOML profile while that profile does not exist, warns about the file that is in use, and no longer verifies that the JSON file stops being read once the profile exists. | spec/functional/FR-009-host-profile-sustainable-slots.md:18,59 |
+
+## New findings (disposition pass 3)
+
+Fix diff d102371..38f2026 only, rated by real impact.
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-008 | medium | FR-015 calls its current-build absence set complete and says every other table series has a source in this build, and AC-1 requires them all. The current build (dev-tools PR 25) emits six series; eleven others outside the set are not produced, so the claim is false and AC-1 cannot pass for this build. | spec/functional/FR-015-build-metrics-export.md:43,69 |
+| FND-009 | low | The reason set now lists seven values but the precedence orders only probe, host_load, target_disk and memory, so swap, compressor and operator are unordered once produced, although AC-11 verifies the documented precedence. | spec/functional/FR-015-build-metrics-export.md:45 |
+| FND-010 | low | The diff commits two Linear comment bodies under reviews/. They are not artifacts, duplicate the SR files, and make quire validate of reviews/**/*.md fail on both. | reviews/swm-242-round2/comment-r2-SR-045.md:1; reviews/swm-242-round2/comment-r2-SR-051.md:1 |
+
+## New findings (disposition pass 4)
+
+Fix diff 38f2026..44ef56f only, rated by real impact.
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-011 | low | AC-1 is pinned to today's implementation: it fails as soon as any listed producer ships, and no longer requires the other table series to carry expected values and labels once produced. | spec/functional/FR-015-build-metrics-export.md:69 |
+| FND-012 | low | operator is ranked last in the precedence, yet a hold never accrues here; with a hold and a memory limit together the precedence picks memory while the pause exclusion accrues nothing. | spec/functional/FR-015-build-metrics-export.md:45 |
