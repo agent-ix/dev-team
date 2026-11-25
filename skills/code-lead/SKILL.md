@@ -273,8 +273,8 @@ rule that differs wins; record it for the PR with a
 [waiver record](references/lead-records.md#waiver) naming the rule it replaces
 and the text that states the difference. Post none without such a rule
 (LEAD-R21). Merge within one hour of the PR becoming ready to merge, which is the
-latest of the clean review, the passing covering gate and any later rebase
-check, unless a repo, org or user rule holds it (LEAD-R17).
+latest of the clean review that covers the head, the passing covering gate and
+any later rebase check, unless a repo, org or user rule holds it (LEAD-R17).
 
 ## Priority-goal PRs
 
