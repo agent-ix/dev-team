@@ -56,3 +56,10 @@ Round 1, head 388ee6a1f08aa61eb88da49e83883f61635b190a.
 | FND-005 | fixed | skills/team-planner/SKILL.md:13 |
 | FND-006 | fixed | skills/reviewer/SKILL.md:14-17 |
 | FND-007 | accepted-no-change | Ruled accepted-no-change on the remainder. The version drift half is fixed: team-retro grades the rubrics shipped in its own plugin installation, or those at the install ref, cites the frontmatter version, and records n/a with reason 'rubric unavailable' otherwise. A skills-only install still ships no rubric. That is accepted: FR-006 places rubrics in spec/rubrics/, shipping them in the skill catalog would need a second copy, and the OpenCode install already fetches this repository from GitHub (README install table), so the files are reachable at the same ref. The unread case is reported as missing data, never as a score. Residual limit: the OpenCode ref is main, so a cached skill can read a newer rubric. |
+
+Round 2, head 9f4969fdd2d019c59315bf7bebc64c6287c5bbb6.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-008 | fixed | skills/coder/SKILL.md:107 |
+| FND-009 | fixed | skills/code-lead/SKILL.md:214-219 |

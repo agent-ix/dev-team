@@ -52,6 +52,14 @@ Found in the fix diff 9cba2bd..388ee6a.
 | FND-017 | low | A waiver comment posted by the code lead, the role being evaluated, removes the pull request from that rule's queries, and nothing checks that ref names a real differing rule. LEAD-R11, LEAD-R17 and LEAD-R20 have no judgement evaluation of their own, so an ungated merge with a self-written waiver passes LEAD-R11-E1. | spec/functional/FR-017-role-evaluation-records.md:100 |
 | FND-018 | low | The query counts any second PR of the same repository and ticket opened while a reviewed one is open, while CODE-R06 forbids only one opened for a finding. A stacked part of a split oversize change opened after the first part got its review fails the coder. | spec/roles/coder.md:75 |
 
+## New findings (disposition pass 2)
+
+Found in the fix diff 12e10b3..9f4969f.
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-019 | low | The narrowed scale lets a compliant rerun fit two levels. Level 2 is every rerun with a reason, and level 1 is a justified rerun recorded without its waiver record. A rerun after a failed run or an uncovered change is justified and owes no waiver record (LEAD-R21 allows one only for a differing rule), so read literally it scores 1 and fails the >= 2 threshold of LEAD-R06-E2. The earlier wording limited level 1 to an exception; limit it to a rerun that a repository or organization rule required. | spec/rubrics/rubric-code-lead.md:33 |
+
 ## Dispositions
 
 Round 1, head 388ee6a1f08aa61eb88da49e83883f61635b190a.
@@ -72,3 +80,12 @@ Round 1, head 388ee6a1f08aa61eb88da49e83883f61635b190a.
 | FND-012 | fixed | spec/roles/planner.md:78 |
 | FND-013 | fixed | spec/roles/coder.md:58-61 |
 | FND-014 | fixed | spec/roles/code-lead.md:122 |
+
+Round 2, head 9f4969fdd2d019c59315bf7bebc64c6287c5bbb6.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-015 | fixed | spec/functional/FR-017-role-evaluation-records.md:129-134 |
+| FND-016 | fixed | spec/rubrics/rubric-code-lead.md:36 |
+| FND-017 | fixed | spec/roles/code-lead.md:143 |
+| FND-018 | fixed | spec/roles/coder.md:134 |
