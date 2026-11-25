@@ -32,7 +32,7 @@ The profile has these tables. Unknown keys are refused at load with a diagnostic
 | `[repos.<name>]` `mirror`, `remote` | Bare mirror directory and remote URL for a repo on this host (FR-014) |
 | `[commands]` `allow` | Non-cargo commands a dispatched job may run in a checkout (FR-014); empty by default |
 | `[[probe]]` `name`, `kind`, `required`, `interval` | A probe from the shared crate and whether its loss is fatal to admission |
-| `[[limit]]` `probe`, `pause_above`, `resume_below`, `abort_above`, `block_above`, `reason` | Thresholds on a probe reading; see [FR-010](FR-010-scheduler-owned-throttling.md) |
+| `[[limit]]` `probe`, `pause_above`, `resume_below`, `abort_above`, `block_above`, `reason` | Thresholds on a probe reading and the `reason` they report, one of `thermal`, `memory`, `swap`, `compressor` or `host_load`; see [FR-010](FR-010-scheduler-owned-throttling.md) |
 | `[env]` | Environment set for every job (for example `CARGO_INCREMENTAL`) |
 | `[request_limits]` `jobs_per_slot`, `nice`, `rss_cap` each with `min` and `max` | Bounds within which a request may override the profile value |
 | `[agents]` `patterns` | Command patterns counted as agent processes |
@@ -43,7 +43,7 @@ Sustainable slots are the minimum of: `max_slots`; floor((available RAM minus `[
 
 RAM per job is the profile default until job history exists, then the 90th percentile of measured peak memory for that repo and priority class over the last `history_window` jobs, never below `ram_per_job_min`. Peak memory of a job's whole process group is measured per platform: cgroup v2 `memory.peak` of the job's systemd scope on Linux and WSL; on macOS the sum of resident memory over the group's processes sampled each `sample_interval` through `proc_pid_rusage`, whose sampling error (short peaks missed, shared pages counted twice) is accepted at 15 percent for history and for `rss_cap`.
 
-A decrease takes effect at the next sample. An increase takes effect only after the higher value has held for `grow_after`. A shrink never terminates running leases for slot-count reasons; it is reported as overcommit under FR-005. A required probe that is unavailable or stale gives zero sustainable slots with the probe named; an optional probe that is unavailable is ignored and reported. An invalid profile, such as a resume threshold not below its pause threshold, is refused at load. A profile edit is picked up at the next sample without restarting running builds. Because reserved CPU and memory are removed before slots are counted and jobs run at the lower weight, shared services keep priority over builds when the host is saturated.
+A decrease takes effect at the next sample. An increase takes effect only after the higher value has held for `grow_after`. A shrink never terminates running leases for slot-count reasons; it is reported as overcommit under FR-005. A required probe that is unavailable or stale gives zero sustainable slots with the probe named; an optional probe that is unavailable is ignored and reported. An invalid profile, such as a resume threshold not below its pause threshold, or a `[[limit]]` whose `reason` is missing or outside the set above, is refused at load with a diagnostic naming the key. A profile edit is picked up at the next sample without restarting running builds. Because reserved CPU and memory are removed before slots are counted and jobs run at the lower weight, shared services keep priority over builds when the host is saturated.
 
 ## Acceptance Criteria
 
@@ -59,6 +59,7 @@ A decrease takes effect at the next sample. An increase takes effect only after 
 | FR-009-AC-8 | A JSON host policy present at the legacy path is not read: capacity is unchanged, a warning names the file, and no code path converts it. | Test |
 | FR-009-AC-9 | With `[reserve]` set to half the cores and a fixed memory amount, the slot count is computed from the remainder; on Linux each job runs in a systemd user scope with the configured `CPUWeight`, on macOS at the configured nice level, verified from the child's observed weight or nice value. | Test |
 | FR-009-AC-10 | A request overriding `jobs_per_slot`, `nice` or `rss_cap` within `[request_limits]` is applied; a value outside its bounds is refused with a request error naming the key and limits; a key not listed is refused. | Test |
+| FR-009-AC-11 | A limit with each `reason` of `thermal`, `memory`, `swap`, `compressor` and `host_load` loads. A profile with a `[[limit]]` whose `reason` is `power`, or is missing, is refused at load naming the key, whether the limit declares `abort_above` or `block_above`. | Test |
 
 ## Dependencies
 
