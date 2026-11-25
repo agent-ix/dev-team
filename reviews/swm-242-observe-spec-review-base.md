@@ -58,3 +58,4 @@ spec/functional/FR-015-build-metrics-export.md:90, in FR-015-AC-16, replace the 
 |---|---|---|
 | FND-001 | still-open | Round 1, head 193bf7d: AC-20 and the AC-1 scoping landed, but the observed-store sentence is absent from Behavior; the old absence sentence was removed without it. Line 43, the Build outcomes paragraph and AC-9 still require zero series for every store, contradicting AC-20, and line 43 points to observe-mode series rules that do not exist. Insert the FND-001 line 49 replacement text at the end of the paragraph beginning "Before recording" (line 57). |
 | FND-002 | fixed | Round 1, head 193bf7d: line 57 and AC-16 carry the replacement text. |
+| FND-001 | fixed | Round 2, head 07761f1: the observed-store series rule is appended to the paragraph beginning "Before recording" (FR-015 line 57), matching AC-20. |

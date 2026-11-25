@@ -113,3 +113,4 @@ While an observed command runs, occupancy is recorded once, and a live observer 
 | FND-003 | fixed | Round 1, head 193bf7d: line 47 and AC-16 define liveness, the export trigger and no recorded outcome. The residual wording defect is FND-005. |
 | FND-004 | fixed | Round 1, head 193bf7d: the post-start failure paragraph is at line 53 and AC-21 is added. |
 | FND-005 | still-open | Round 1, head 193bf7d: found in this pass; no fix has landed. |
+| FND-005 | fixed | Round 2, head 07761f1: line 47 and AC-16 release the slot at completion and limit the no-outcome case to a command with no recorded completion. |
