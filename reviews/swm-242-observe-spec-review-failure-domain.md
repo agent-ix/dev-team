@@ -81,3 +81,35 @@ Append this row after FR-015-AC-20:
 ```text
 | FR-015-AC-21 | With the state directory made unwritable, the state corrupted, or the state lock held indefinitely after the command has started, `observe` ends with the command's own status or signal within 1000 ms of the command's exit, emits one warning, and records no partial outcome. | Test |
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-005 | medium | The new occupancy text records no outcome once observer and command are both dead, which literally includes a normal completion, and AC-16 no longer requires release at command completion. The wording came from the FND-003 replacement text. | spec/functional/FR-015-build-metrics-export.md:47, spec/functional/FR-015-build-metrics-export.md:96 |
+
+## Replacement Text (disposition pass 1)
+
+### FND-005
+
+spec/functional/FR-015-build-metrics-export.md:47, replace the sentence beginning "Once neither is verified alive" with:
+
+```text
+A live observer releases the slot when the command completes. If neither is verified alive (a reused process ID does not count) and no completion was recorded, the next `observe` invocation or metrics export no longer counts the slot, and no outcome, exit code or signal is recorded for it.
+```
+
+spec/functional/FR-015-build-metrics-export.md:96, in FR-015-AC-16, replace the text from "While an observed command runs" through "a reused process ID does not count as alive." with:
+
+```text
+While an observed command runs, occupancy is recorded once, and a live observer releases it when the command completes. The slot remains busy while the command is alive even if the observer dies. When observer and command are both dead and no completion was recorded, the next export reports the slot free without recording an outcome, exit code or signal; a reused process ID does not count as alive.
+```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, head 193bf7d: the invalid-argument paragraph is at line 51 and AC-18 is replaced. |
+| FND-002 | fixed | Round 1, head 193bf7d: line 55 and AC-15 carry the minder-amended signal contract (at-least-once delivery, at most twice, PID-only SIGKILL and SIGSTOP excepted) and keep the other transparency terms. |
+| FND-003 | fixed | Round 1, head 193bf7d: line 47 and AC-16 define liveness, the export trigger and no recorded outcome. The residual wording defect is FND-005. |
+| FND-004 | fixed | Round 1, head 193bf7d: the post-start failure paragraph is at line 53 and AC-21 is added. |
+| FND-005 | still-open | Round 1, head 193bf7d: found in this pass; no fix has landed. |

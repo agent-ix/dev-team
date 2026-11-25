@@ -51,3 +51,10 @@ Append this row after FR-015-AC-20:
 ```text
 | FR-015-AC-22 | `run` against an observed store, including one emptied by `prune`, is refused with a request error and leaves the store unchanged; concurrent first `observe` and `run` invocations on an empty store leave it holding one mode only. | Test |
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, head 193bf7d: line 49 excludes observed commands from FR-005, FR-010 and FR-011 behavior and AC-13 is replaced. |
+| FND-002 | still-open | Round 1, head 193bf7d: AC-22 landed, but the Behavior sentences are absent. Nothing requires every other queueing or admitting command to refuse an observed store, or says the first recorded request fixes the mode. Insert the FND-002 text after "runs the command without changing the store." in line 57. |

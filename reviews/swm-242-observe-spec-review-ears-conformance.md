@@ -66,3 +66,11 @@ spec/functional/FR-015-build-metrics-export.md:47, replace "A missing hint remai
 ```text
 A missing hint stays absent from the record and the export, with no placeholder value;
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, head 193bf7d: the 1000 ms bounds and lock release are at line 57 and AC-14 is replaced. |
+| FND-002 | fixed | Round 1, head 193bf7d: no supplied termination cause remains in line 47 or AC-17. |
+| FND-003 | fixed | Round 1, head 193bf7d: line 47 says a missing hint stays absent with no placeholder value. |

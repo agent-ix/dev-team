@@ -30,3 +30,9 @@ spec/functional/FR-015-build-metrics-export.md:43, append at the end of the para
 ```text
  The current-build lists above describe admitted stores; for an observed store the **Observe mode** rules below define which series exist, and `observe` is the producer of `ix_build_test_runs_total`.
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | Round 1, head 193bf7d: the sentence scoping the current-build lists to admitted stores is appended at FR-015 line 43. The observed-store rules it points to are tracked as SR-053 FND-001. |
