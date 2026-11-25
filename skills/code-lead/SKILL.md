@@ -137,12 +137,31 @@ agent-msg work agent <subagent-id> --name <name> --ticket TEAM-12 --role coder -
 agent-msg work remove <subagent-id>
 ```
 
-Each `scope` report replaces the previous one. Update focus when it changes
-and upsert each dispatched agent at stage changes and completion, repeating
-the ticket, name and role. For a herdr pane agent add
-`--worker <server:workspace:tab:pane>`. `done` does not complete the ticket.
+Each `scope` report replaces the previous one. Publish it when the assigned
+initiative/project/ticket population changes, preserving the native selectors.
+Update focus when it changes. Use the harness's native agent ID for each
+dispatch, and upsert it at stage changes and completion, repeating the ticket,
+name and role. For a Herdr pane agent add `--worker <server:workspace:tab>`;
+the command verifies its pane and session. `done` does not complete the ticket.
 Only the lead writes these reports. If one fails, surface the error and
 continue; never report a success you did not observe.
+
+Publish a terminal status before removing an assignment. Keep the same ID
+during fix rounds; use roles `coder`, `reviewer`, `fix`, `gate`, `build_queue`
+or `decision` for those stages, and `waiting` while that assignment is waiting.
+Report the transition when it happens, even if the stage finishes between
+dashboard refreshes. A running report describes an assignment; verified
+lifecycle evidence establishes execution.
+
+`agent-msg work events --after <cursor> --limit 500` reads retained transitions
+as JSON without changing inboxes. Collectors own that cursor; leads do not
+republish historical events. If the installed command lacks this capability,
+report the version gap and continue ordinary work reporting.
+
+When the user/planner explicitly pauses this entire assigned scope, report
+`agent-msg work pause`; report `agent-msg work resume` when that pause ends.
+Silence, an empty queue, a blocked ticket, and waiting on workers do not
+establish a scope pause. Record those through their actual assignment state.
 
 ## Work kinds
 
