@@ -131,12 +131,12 @@ installed syntax. Run them in the lead's own pane, or put
 
 | When | Report |
 |---|---|
-| Plan loaded, on every start or resume | `scope`, `focus`, and `agent` for each live subagent |
+| Plan loaded, on every start or resume | `scope`, `focus`, and `agent` for each ticket in flight |
 | Plan scope changes | `scope` |
 | A subagent is dispatched or resumed | `agent` with `running`, then `focus` |
 | A subagent changes stage or finishes | `agent` with `waiting`, `done`, `failed` or `canceled`, then `focus` |
 | Focus changes | `focus` |
-| 30 minutes since the last `focus`, while work is in flight | `focus`, changed or not |
+| 30 minutes since the last `focus`, while work is in flight | `focus`, changed or not, then `agent-msg work show` |
 
 ```bash
 agent-msg work scope --project <project-id> --project <other-project-id>   # or --initiative, --ticket, --all-team
@@ -145,17 +145,29 @@ agent-msg work agent <subagent-id> --name <name> --ticket TEAM-12 --role coder -
 agent-msg work remove <subagent-id>
 ```
 
-- `focus` names every ticket in flight with `--ticket`.
+- `focus` names every ticket in flight with `--ticket`. The Work tab lists a
+  lead's tickets from `agent` entries only, so each ticket in flight keeps at
+  least one, with its latest status, until the ticket closes, even with no
+  subagent running (use the last subagent's ID, or the ticket ID if none). A
+  subagent covering several tickets gets one entry per ticket, with ID
+  `<subagent-id>:<ticket>`.
 - `scope` replaces the previous scope. `agent` replaces that subagent's entry,
   so repeat the ticket, name and role. `<subagent-id>` is the Claude agent ID
   or the Codex session ID. For a herdr pane agent add
   `--worker <server:workspace:tab:pane>`. `done` does not complete the ticket;
-  `remove` the entry when its ticket closes.
-- While waiting on a subagent or gate, limit each wait so the 30-minute
-  `focus` still goes out.
+  `remove` an entry when its ticket closes, and a `failed` or `canceled` one
+  once its replacement has an entry.
+- Reports belong to one agent process: a restart starts empty, and a failed
+  report is not resent by itself. When `agent-msg work show` prints `null`,
+  lacks `scope`, or lacks or misstates a ticket's `agent` entry, publish what is
+  missing.
+- Make sure something wakes you for the 30-minute `focus`. Cap each blocking
+  wait on a subagent or gate below the time left. Where the harness wakes you
+  only when work finishes (a Claude Code background subagent), keep one
+  `sleep 1800` running as a background command while work is in flight.
 - Only the lead writes these reports. Give each call a 150-second time limit.
-  A failed report never blocks the work: surface the error, continue and report
-  again at the next row above. Never report a success you did not observe.
+  A failed report never blocks the work: surface the error, continue and send it
+  again with the next report. Never report a success you did not observe.
 
 ## Work kinds
 
