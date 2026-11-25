@@ -1,18 +1,27 @@
 ---
 name: reviewer
 description: Run a PR's review stage as the dedicated reviewer role — run every applicable review method (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses) in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
+role_spec_version: 1
 ---
 
 # Reviewer
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
+reviewer is the reviewer role of the
+[reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
+version 1. Instructions below cite the rule they implement as `REV-Rnn`;
+evaluations and feedback point at those ids. A tracked PR gets reviews from
+exactly one reviewer run (REV-R01): use one `run=` for the review pass and
+resume that run for dispositions. Never review a PR you authored (REV-R02).
+
 The reviewer role is a sibling of `skills/code-lead/` — one skill per role. A
 code lead (or any orchestrator) dispatches one reviewer subagent per tracked
 PR through `/reviewer`, for the review pass and again for dispositions. The
 method skills (`/code-review`, `/quoin:spec-review`, and applicable language
 and gap analyses) run inside this role; they are not separate reviewer
-dispatches. The subagent is reviewer-only, with no code edits. This skill's
+dispatches. The subagent is reviewer-only, with no code edits: never edit,
+commit or push to the branch under review (REV-R03). This skill's
 job stops at reporting: it never fixes a finding and never merges. It runs
 every review method the change needs, lets each write its own artifact, and
 posts the review to the project's **ticket tracker** so the data outlives the
@@ -49,7 +58,7 @@ outcomes go in the comment itself. See
 ## Communication
 
 - **Who talks to whom:** report to your code-lead only.
-- **Send** done, blocked, needs a decision, or handoff. Nothing else.
+- **Send** done, blocked, needs a decision, or handoff. Nothing else (REV-R14).
 - **Never send** per-commit, per-push, per-test-run, per-gate or per-review-step
   progress; acks; "still working"; FYIs about work outside the recipient's
   scope; status polls. Read status from git, gh, Linear and the pane instead.
@@ -108,12 +117,13 @@ don't refuse pre-emptively.
 Separately and unconditionally: **never post findings, excerpts, or a SpecReview
 section to the GitHub PR or issue itself**, on any repo. This is absolute on a
 public repo — check `gh repo view --json visibility -q .visibility` — and
-still the rule on a private one, so behavior does not depend on remembering to
+still the rule on a private one (REV-R06), so behavior does not depend on remembering to
 check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 
 ## 2. Decide which methods apply
 
-Scope the diff to what the PR actually changed:
+Scope the diff to what the PR actually changed; every finding is on a file in
+the PR's file list (REV-R11):
 
 ```bash
 git diff --name-only origin/main...HEAD
@@ -278,8 +288,9 @@ method's own contract:
 
 ## 5. Post one marked comment per method
 
-For each method that ran, post one comment to the ticket (Linear command
-shown; see [Other trackers](#10-other-trackers) for a different backend).
+For each method that ran, post one comment to the ticket (REV-R04), within the
+configured review age limit of your dispatch (REV-R12). The Linear command is
+shown; see [Other trackers](#10-other-trackers) for a different backend.
 Round-tripped through `linear issue comment list --json` and compared
 byte-for-byte, a first line reading `<!-- reviewer ... -->`, a Markdown table,
 a fenced ` ```yaml ` block, and a `+++ [title] ... +++` collapsible section
@@ -297,7 +308,8 @@ a fenced code block, never YAML frontmatter.
    readable — confirmed above to survive read-back unchanged, so there's no
    reason to leave it expanded.
 
-**Marker** (one line, exactly these fields):
+**Marker** (one line, exactly these fields; `id=`, `method=`, `pr=` and `run=`
+are never omitted, REV-R05):
 
 ```
 <!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> model=<model-id> run=<run-id> -->
@@ -349,6 +361,9 @@ findings:
     finding: "<the finding text, matching the SpecReview row's Summary>"
 bindings: []   # optional; see "Trace findings and bindings" below
 ```
+
+**Every finding names a file or line and a failure scenario** (REV-R10): fill
+`path` and `lines`, and say in `finding` what goes wrong and when.
 
 **One primary unit per finding.** `artifact_id` is the smallest unit the
 defect is about: exactly one `FR-x-AC-y`, or the FR statement itself when the
@@ -510,7 +525,8 @@ This pass may run more than once — a coder's fix can itself introduce a
 regression, and a leader may resume the same reviewer for a second, third,
 … disposition round. Track the round number `N` (1 for the first disposition
 pass after the first fix round, 2 after the second, and so on); it goes in
-the marker below.
+the marker below. Report everything you can see in each pass, so the PR reaches
+a clean disposition within the current review round policy (REV-R09).
 
 If this pass finds a defect that isn't an existing `FND-NNN` row — a
 regression the fix introduced, or something the review pass missed — append
@@ -522,7 +538,7 @@ stays exactly as the review pass wrote it. A new finding found this way is
 routed back to the coder for another fix round, the same as any other
 finding, and gets its own outcome in a later disposition pass.
 
-A finding is judged by its **latest** disposition row, not its first: decide
+A finding is judged by its **latest** disposition row, not its first (REV-R07): decide
 an outcome for every `FND-NNN` — from `## Findings` and from any
 `## New findings` section, including one added by this round or a previous
 round — whose latest outcome is `still-open`, plus every one that has no
@@ -550,7 +566,8 @@ Choose one outcome per finding checked:
   another fix round rather than merging. A later round's row for the same
   finding — `fixed`, `rejected`, `deferred`, or `accepted-no-change` —
   supersedes it; the earlier `still-open` row stays in the file unedited, it
-  is just no longer the latest.
+  is just no longer the latest. Never report the PR mergeable while any
+  finding's latest outcome is `still-open` or missing (REV-R08).
 
 Add these rows to (never edit or remove an existing row in) a `##
 Dispositions` section on the **same** SR file, appending it if it doesn't yet
@@ -619,7 +636,8 @@ one.
 
 ## 9. Read back and self-check every comment you posted
 
-Posting is not done until you have read the comment back. An audit of 123
+Posting is not done until you have read the comment back and repaired any data
+block that does not parse or lacks a required field (REV-R13). An audit of 123
 reviewer comments found 3 with a yaml block that did not parse, and 19 of 65
 `fixed` rows with no `after_excerpt` although step 8 requires one. Nothing
 else enforces these, so this step does. Run it after **every** post, review

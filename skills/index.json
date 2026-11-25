@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "code-lead",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "files": [
         "SKILL.md",
         "references/briefs.md",
@@ -17,7 +17,7 @@
     },
     {
       "name": "coder",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "files": [
         "SKILL.md"
       ]
@@ -71,7 +71,7 @@
     },
     {
       "name": "reviewer",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "files": [
         "SKILL.md"
       ]
@@ -108,7 +108,7 @@
     },
     {
       "name": "team-planner",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "files": [
         "SKILL.md",
         "references/backlog-to-waves.md",
@@ -117,15 +117,11 @@
     },
     {
       "name": "team-retro",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "files": [
         "SKILL.md",
         "references/measures.md",
         "references/department-health.md",
-        "references/rubric-planner.md",
-        "references/rubric-code-lead.md",
-        "references/rubric-coder.md",
-        "references/rubric-reviewer.md",
         "references/state-record.md",
         "references/strategies.md"
       ]
