@@ -36,7 +36,9 @@ unavailable, without inventing its count, rate, severity or a clean score.
 | rubric-planner@1#honest-flow | Stale, gated and merged-or-open findings are reconciled. Evidence: flow and signal assessments. | 2: reconciled; 1: a known discrepancy being corrected; 0: a claim defended against verified evidence |
 | rubric-planner@1#capacity | Reservations fit verified configured or live capacity. Evidence: capacity source, age and policy. | 2: reservations fit; 1: a missing source routed to its owner; 0: capacity invented or another lane commandeered |
 | rubric-planner@1#end-tick-audit | The end-of-tick audit of plan, scope and messaging yields an owned action. Evidence: the [order audit](../../skills/team-planner/references/order-audit.md). | 2: audit yields an owned action; 1: audit incomplete with an owner; 0: a repeating defect ignored |
-| rubric-planner@1#decisions | Open rulings have an owner and a recommendation. Evidence: decision assessment, ruling evidence. | 2: owner and recommendation on every open ruling; 1: a missing recommendation corrected; 0: the same unresolved request repeatedly sent |
+| rubric-planner@1#decision-owner | Every open ruling has an owner. Evidence: decision assessment, the tracker. | 2: an owner on every open ruling; 1: a missing owner assigned on notice; 0: an unowned ruling left waiting |
+| rubric-planner@1#decision-recommendation | Every ruling the planner requests carries a recommendation. Evidence: ruling evidence. | 2: a recommendation on every request; 1: a missing recommendation corrected; 0: the same request resent without one |
+| rubric-planner@1#comms | Every message is done, blocked, decision, handoff or the one-line etiquette reply. Evidence: the session's sends. | 2: every message is one of those; 1: one other message; 0: several |
 
 ## Notes
 

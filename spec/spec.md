@@ -64,6 +64,7 @@ views read the same report model that a future plugin or desktop view can read.
 | [FR-014](functional/FR-014-remote-dispatch-pushed-sha.md) | Remote dispatch of a pushed commit to a named host |
 | [FR-015](functional/FR-015-build-metrics-export.md) | Prometheus and ix-board metrics |
 | [FR-016](functional/FR-016-retire-ad-hoc-build-scripts.md) | Cover and retire the ad hoc scripts |
+| [FR-017](functional/FR-017-role-evaluation-records.md) | Records, derived facts and transcript terms that role evaluations count |
 | [NFR-002](non-functional/NFR-002-scheduler-overhead-and-isolation.md) | Bounded overhead, probe failure isolation |
 | [NFR-001](non-functional/NFR-001-reproducible-measurement.md) | Reproducibility and read-only observation |
 | [IT-001](integration/IT-001-incident-replay.md) | Generalization and adverse-case replay |
