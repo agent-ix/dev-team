@@ -44,7 +44,7 @@ block.
 | Marker | Producer | Required fields |
 |---|---|---|
 | `reviewer` | reviewer, one comment per method per run | `repo`, `id`, `method`, `pr`, `run`, `head` (the commit reviewed) |
-| `reviewer-dispositions` | reviewer, one comment per review artifact per round | `repo`, `id`, `round`, `run`, `head` (the commit checked), `mergeable` (`yes` or `no`, for the whole pull request after the pass) |
+| `reviewer-dispositions` | reviewer, per round, one comment for each review artifact that has findings; when none has, one on the first review artifact posted | `repo`, `id`, `round`, `run`, `head` (the commit checked), `mergeable` (`yes` or `no`, for the whole pull request after the pass) |
 | `lead-record` with `kind=gate` | code lead, after every aggregate gate run | `repo`, `pr`, `kind`, `head` (the commit gated), `exit` (the gate command's exit status), `started` and `finished` (the `started_at` and `finished_at` of the gate log line) |
 | `lead-record` with `kind=rebase` | code lead, after the confined check of an overlap rebase | `repo`, `pr`, `kind`, `from` (the head before the rebase), `head`, `exit` (the confined check's exit status) |
 | `lead-record` with `kind=final-fix` | code lead, after reading a one-line final fix | `repo`, `pr`, `kind`, `from` (the head before the fix), `head`, `fnd` (the closed findings as `SR-NNN/FND-NNN`, comma separated) |
@@ -64,7 +64,8 @@ A `reviewer-dispositions` data block holds `dispositions`, rows of `fnd` and
 `outcome` (`fixed`, `rejected`, `deferred`, `accepted-no-change` or
 `still-open`) with `after_excerpt` on a `fixed` row and `reason` on any other.
 A pass that finds a new defect also lists it under `new_findings`, with the
-fields of a review finding.
+fields of a review finding. `dispositions` is an empty list when the pass had no
+finding to re-check, as when it reviews a change made after a clean review.
 
 ### Derived facts
 
@@ -99,7 +100,9 @@ fields of a review finding.
   not ready to merge.
 - A pull request is **waived** for a rule when a `waiver` record for it names
   that rule in `covers`. A query that says it excludes waived pull requests
-  leaves them out for that rule only.
+  leaves them out for that rule only, and lists each one it leaves out, with the
+  waiver comment, in the evidence of its result. Whether the record's `ref`
+  states a rule that differs is judged under the code lead's LEAD-R21.
 
 ### Transcript terms
 
@@ -121,7 +124,13 @@ query `unavailable`.
 
 ### Evaluator settings
 
-The team's ix-board retro configuration holds these keys under `eval`.
+A team's evaluator settings are one JSON object in
+`$TEAM_RETRO_HOME/<team>/eval.json` (default root
+`~/.local/state/team-retro`). They are separate from the ix-board retro
+configuration, `config.json` in the same directory, because ix-board rejects a
+configuration with a key it does not know. The roles read `eval.json` for the
+review age limit, and the evaluator (SWM-221) reads every key; no other ix-board
+command reads the file. The queries name a key as `eval.<key>`.
 
 | Key | Meaning | When absent |
 |---|---|---|
@@ -135,14 +144,15 @@ The team's ix-board retro configuration holds these keys under `eval`.
 |---|---|---|
 | FR-017-AC-1 | A fixture comment of each marker kind missing any one required field is reported as incomplete, naming the field; a complete comment of each kind is accepted. | Test |
 | FR-017-AC-2 | Fixture reviews yield the expected findings, closed state and clean time for a review with no findings, one closed by a disposition, one reopened by a new finding and one closed by a final-fix record. | Test |
-| FR-017-AC-3 | A head that differs from the starting commit only under `reviews/`, by a passing rebase record, or by a recorded one-line fix is covered; a two-line fix, a failed rebase check, an unrecorded change and a broken chain are not. | Test |
-| FR-017-AC-4 | A waiver record naming one rule removes its pull request from that rule's queries that exclude waived pull requests and from no other query. | Test |
+| FR-017-AC-3 | A head that differs from the starting commit only under `reviews/`, by a passing rebase record, or by a recorded one-line fix is covered; a two-line fix, a failed rebase check, an unrecorded change and a broken chain are not. A disposition comment with an empty `dispositions` list makes its `head` the reviewed head. | Test |
+| FR-017-AC-4 | A waiver record naming one rule removes its pull request from that rule's queries that exclude waived pull requests and from no other query, and each such result lists the pull request and the waiver comment as evidence. | Test |
 | FR-017-AC-5 | Fixture transcripts yield the expected command matches, dispatcher, sends and coder reports, and an unreadable transcript yields `unavailable`. | Test |
-| FR-017-AC-6 | An unset `review_age_limit_hours` evaluates with a limit of one hour, and an unset `ready_state` makes the queries that read it `unavailable`. | Test |
+| FR-017-AC-6 | Settings are read from `eval.json` with `config.json` unchanged; an absent file or unset `review_age_limit_hours` evaluates with a limit of one hour, and an unset `ready_state` makes the queries that read it `unavailable`. | Test |
 | FR-017-AC-7 | The reviewer and code lead skills instruct each producer to post each marker with its required fields. | Inspection |
 
 ## Dependencies
 
 - [FR-006](FR-006-role-spec-format.md), the role specs whose queries these
   records serve, and [FR-001](FR-001-evidence-contract.md), honest unknowns.
-- ix-board `retro eval` (SWM-221), the reader.
+- ix-board `retro eval` (SWM-221), the reader of the records and of
+  `eval.json`.

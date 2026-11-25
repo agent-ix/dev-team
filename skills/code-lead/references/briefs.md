@@ -188,9 +188,12 @@ every finding. Note the handoff in the state record.
 
 ## Disposition-pass message
 
-Send to the original reviewer's agent ID, not a new agent, once the fix round
-has landed. Open with: "From code lead <name>, disposition pass <round> for
-PR #<N> (your original brief)." Then include:
+Send to the original reviewer's agent ID, not a new agent, once the fix round,
+or any other change the review does not cover, has landed. When there is no
+finding to re-check (for example a gate failure fixed after a clean review),
+name the last reviewed head and the new commits.
+Open with: "From code lead <name>, disposition pass <round> for PR #<N> (your
+original brief)." Then include:
 
 - **"Your role is `/reviewer` (dev-team plugin): invoke it and follow it
   end to end."** Same literal instruction as the review-pass dispatch, so the
@@ -218,8 +221,9 @@ PR #<N> (your original brief)." Then include:
   `## New findings (disposition pass N)` section, continuing the file's
   `FND-NNN` sequence.
 - Post the `reviewer-dispositions` comment(s) to the ticket, one per artifact
-  that had findings, every round — with no rows if nothing needed checking
-  that round — with this round's `round=` in the marker.
+  that has findings, every round — with no rows if nothing needed checking
+  that round, and one on the first review artifact when no artifact has
+  findings — with this round's `round=` and `head=` in the marker.
   Dedup keys on id + round, so an earlier round's comment never blocks this
   one.
 - Report any new or `still-open` finding from this pass separately; the leader
@@ -289,10 +293,10 @@ Subagents have quoted gate output they never ran. Check these yourself:
    a `<!-- reviewer ... pr=<repo>#<N> ... -->` comment per
    method that ran, where `pr=` is this PR. Required always, clean review
    included — a placeholder-only clean review still needs its per-method `reviewer` markers and its
-   committed SR files (item 6); what a clean review skips is only the
-   *dispositions* requirement below, since there's nothing to re-check and no
-   disposition pass runs. Where the review found real findings, additionally
-   require, for every `SR-NNN` named in those review markers, a `<!--
+   committed SR files (item 6); what a clean review that still covers the head
+   (item 7) skips is only the *dispositions* requirement below, since there's
+   nothing to re-check and no disposition pass runs. Where the review found real
+   findings, additionally require, for every `SR-NNN` that has findings, a `<!--
    reviewer-dispositions ... id=SR-NNN round=<N> ... -->` comment,
    matched by the SR id, not by the ticket alone, so a disposition on a
    different artifact never satisfies this one. A one-line final fix the lead
@@ -304,8 +308,9 @@ Subagents have quoted gate output they never ran. Check these yourself:
    send it back, don't merge on a bare "looks good".
 6. The SR files committed under `reviews/` (see
    [SR-file custody](#sr-file-custody)) match the reviewer's own latest
-   version — same findings, and a `## Dispositions` section (plus any
-   `## New findings` sections) reflecting every round's outcomes, not a stale
+   version — same findings, and, for an artifact with findings, a
+   `## Dispositions` section (plus any `## New findings` sections) reflecting
+   every round's outcomes, not a stale
    copy from before the last disposition round posted. Every finding, original
    and new, has a latest outcome (its most recent disposition row) that is
    neither `still-open` nor missing — an earlier `still-open` row superseded

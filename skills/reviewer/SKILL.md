@@ -42,10 +42,11 @@ Two passes, run as separate invocations of this skill:
 
 1. **Review pass** — before any fix lands. Run the methods, let each write its
    artifact, post one marked comment per method, add the `has-review` label.
-2. **Disposition pass** — after the coder's fix round lands. Re-check each
-   finding against the current code, record an explicit outcome for every one,
-   and post one dispositions comment per artifact that had findings. May run
-   more than once (a fix can regress, or introduce a new defect); each round
+2. **Disposition pass** — after the coder's fix round lands, or after any later
+   change the leader sends you. Re-check each finding against the current code,
+   record an explicit outcome for every one, and post one dispositions comment
+   per artifact that has findings, at least one per pass. May run more than
+   once (a fix can regress, or introduce a new defect); each round
    may add findings of its own, under their own section, and posts its own
    dispositions comment. Never touch the original finding text or the
    original comments to do this.
@@ -295,8 +296,10 @@ method's own contract:
 ## 5. Post one marked comment per method
 
 For each method that ran, post one comment to the ticket (REV-R04), within the
-review age limit of your dispatch (REV-R12): one hour, unless the team's
-`eval.review_age_limit_hours` sets another. The Linear command is shown; see
+review age limit of your dispatch (REV-R12): one hour, unless
+`review_age_limit_hours` in the team's
+`$TEAM_RETRO_HOME/<team>/eval.json` (default root `~/.local/state/team-retro`)
+sets another. The Linear command is shown; see
 [Other trackers](#10-other-trackers) for a different backend.
 Round-tripped through `linear issue comment list --json` and compared
 byte-for-byte, a first line reading `<!-- reviewer ... -->`, a Markdown table,
@@ -530,8 +533,10 @@ Skip even that when the PR title or body already contains the ticket id.
 ## 8. Disposition pass (after the coder's fix round)
 
 Run this as a second invocation once the coder has pushed fixes for the
-findings from step 5. Re-read each method's SR file and the current diff; do
-not trust a ticket comment's own claim that a finding is resolved — verify it
+findings from step 5, or once the leader sends you a later change, such as a
+gate failure fixed after a clean review. Review everything that changed since
+the `head=` of your latest comment. Re-read each method's SR file and the
+current diff; do not trust a ticket comment's own claim that a finding is resolved — verify it
 against the code and the fix commit yourself.
 
 This pass may run more than once — a coder's fix can itself introduce a
@@ -601,8 +606,11 @@ reaches a scratchpad file:
 quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
 ```
 
-Post **one dispositions comment per artifact that had findings, per round** —
-same marker style, `reviewer-dispositions` instead of `reviewer`, referencing
+Post **one dispositions comment per artifact that has findings, per round**. When
+no artifact has any, post one on the first review artifact you posted. A comment
+with nothing to re-check carries `dispositions: []`. Every pass posts at least
+one comment, because its `head=` records what you reviewed. Use the same
+marker style, `reviewer-dispositions` instead of `reviewer`, referencing
 that artifact's own `SR-NNN` and this round's number. `repo=`, `id=`,
 `round=`, `run=`, `head=` (the commit you checked) and `mergeable=` are never
 omitted (REV-R05):
@@ -692,7 +700,8 @@ block from the body **as Linear returned it**, and check:
      before it posts, so the file's current latest outcomes already include
      this round). The `fnd:` ids must be exactly the `FND-NNN` ids — from
      `## Findings` and every `## New findings` section — whose latest outcome
-     before this round was `still-open` or that had no outcome yet, and must
+     before this round was `still-open` or that had no outcome yet (an empty
+     list when there were none), and must
      equal the set of rows this round added to `## Dispositions`. The
      `new_findings:` ids must be exactly those of this round's `## New
      findings` section for that artifact.

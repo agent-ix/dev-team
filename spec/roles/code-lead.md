@@ -81,6 +81,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | linear.merged_prs_without_review_record | GitHub merged pull requests; `reviewer` field `pr` | Pull requests merged in the window with no `reviewer` comment on their ticket naming them | none |
 | linear.findings_open_at_merge | marker data blocks and `final-fix` records; GitHub merge time | Findings of pull requests merged in the window that were open at the merge time | none |
 | linear.gate_records | `lead-record` `kind=gate` comments | Gate records created in the window | none |
+| linear.waiver_records | `lead-record` `kind=waiver` comments | Waiver records created in the window | none |
 | linear.gate_runs_without_record | gate log lines; gate record `finished` | Lines of `retro.gate_log_runs` whose `finished_at` equals the `finished` of no gate record | none |
 | linear.redundant_gate_runs | gate records `head`, `exit`, `started`; GitHub commits | Gate records of the window whose head is covered from the head of an earlier record with `exit=0` on the same pull request, leaving out pull requests waived for LEAD-R06 | none |
 | linear.gate_runs_before_clean_review | gate record `started`; review markers | Gate records of the window at whose `started` time the pull request's review was not clean, leaving out pull requests waived for LEAD-R20 | none |
@@ -139,6 +140,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R18 | The code lead SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | LEAD-O01 | comms-noise | Status polls and progress messages between lanes, code-lead skill Communication |
 | LEAD-R19 | The code lead SHALL record each aggregate gate run on the pull request's ticket. | LEAD-O04 | gate-unrecorded | The gate log holds no commit and no exit status; code-lead verify before merge |
 | LEAD-R20 | Unless a repository or organization rule requires it, the code lead SHALL NOT start the aggregate gate while the pull request's review is not clean. | LEAD-O02 | early-gate | Rubric row Gate discipline: one final lead gate after review |
+| LEAD-R21 | The code lead SHALL post a waiver record only for a role rule that the repository, organization or direct user rule at its `ref` differs from. | LEAD-O04 | unfounded-waiver | A waiver the evaluated role posts removes a pull request from that rule's queries, FR-017 waived |
 
 ## Evaluations
 
@@ -163,6 +165,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R09-E2 | LEAD-R09 | github | github.merged_prs | judgement | rubric-code-lead@1#merge-safety | team-retro | >= | 2 | score | daily |
 | LEAD-R10-E1 | LEAD-R10 | linear | github.merged_prs | deterministic | linear.merged_prs_without_review_record | evaluator | = | 0 | pull_requests | 3h |
 | LEAD-R11-E1 | LEAD-R11 | github | github.merged_prs | deterministic | github.merges_without_covering_gate | evaluator | = | 0 | pull_requests | 3h |
+| LEAD-R11-E2 | LEAD-R11 | github | github.merged_prs | judgement | rubric-code-lead@1#gate-safety | team-retro | >= | 2 | score | daily |
 | LEAD-R12-E1 | LEAD-R12 | transcript | hooks.role_turns | deterministic | transcript.lead_extra_trees | evaluator | = | 0 | trees | session-end |
 | LEAD-R12-E2 | LEAD-R12 | transcript | hooks.role_turns | judgement | rubric-code-lead@1#one-directory | team-retro | >= | 2 | score | daily |
 | LEAD-R13-E1 | LEAD-R13 | ix-board-metric | hooks.role_turns | deterministic | retro.host_overcommit_units_max | evaluator | = | 0 | units | 3h |
@@ -172,25 +175,28 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R15-E1 | LEAD-R15 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@1#delivery | team-retro | >= | 2 | score | daily |
 | LEAD-R16-E1 | LEAD-R16 | transcript | hooks.role_turns | deterministic | transcript.lead_authored_edits | evaluator | = | 0 | edits | session-end |
 | LEAD-R17-E1 | LEAD-R17 | github | github.prs_ready_to_merge | deterministic | github.ready_prs_unmerged_over_hour | evaluator | = | 0 | pull_requests | 3h |
+| LEAD-R17-E2 | LEAD-R17 | github | github.prs_ready_to_merge | judgement | rubric-code-lead@1#merge-latency | team-retro | >= | 2 | score | daily |
 | LEAD-R18-E1 | LEAD-R18 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@1#comms | team-retro | >= | 2 | score | daily |
 | LEAD-R19-E1 | LEAD-R19 | ix-board-metric | retro.gate_log_runs | deterministic | linear.gate_runs_without_record | evaluator | = | 0 | runs | 3h |
 | LEAD-R20-E1 | LEAD-R20 | linear | linear.gate_records | deterministic | linear.gate_runs_before_clean_review | evaluator | = | 0 | runs | 3h |
+| LEAD-R21-E1 | LEAD-R21 | linear | linear.waiver_records | judgement | rubric-code-lead@1#waivers | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
 Each row of the former team-retro code lead rubric maps to rules here and to a
-check of [rubric-code-lead](../rubrics/rubric-code-lead.md). The `comms` check
-grades the code-lead skill's Communication section, which had no row.
+check of [rubric-code-lead](../rubrics/rubric-code-lead.md). Two checks had no
+row: `comms` grades the code-lead skill's Communication section, and `waivers`
+grades the waiver records.
 
 | Rubric row | Rules | Checks |
 |---|---|---|
 | Gate progress | LEAD-R01 | gate-progress |
-| Review and flow | LEAD-R02, LEAD-R17 | review-flow |
+| Review and flow | LEAD-R02, LEAD-R17 | review-flow, merge-latency |
 | Honest state | LEAD-R03, LEAD-R04 | honest-state |
 | Fix rounds | LEAD-R05 | fix-rounds |
 | Gate discipline | LEAD-R06, LEAD-R19, LEAD-R20 | gate-discipline |
 | Pin discipline | LEAD-R07 | pin-discipline |
-| Merge safety | LEAD-R08, LEAD-R09, LEAD-R10, LEAD-R11 | open-findings, merge-safety |
+| Merge safety | LEAD-R08, LEAD-R09, LEAD-R10, LEAD-R11 | open-findings, merge-safety, gate-safety |
 | One directory | LEAD-R12 | one-directory |
 | Resources | LEAD-R13 | resources |
 | Agent recovery | LEAD-R14 | agent-recovery |
@@ -199,14 +205,19 @@ grades the code-lead skill's Communication section, which had no row.
 ## Evaluation notes
 
 - Judgement-only rules, graded by team-retro and flagged under dev-team FR-006:
-  LEAD-R15 (whether a statement claims delivery) and LEAD-R18 (message kind).
-  Each depends on the meaning of prose, which no recorded fact states.
+  LEAD-R15 (whether a statement claims delivery), LEAD-R18 (message kind) and
+  LEAD-R21 (whether the cited rule differs). Each depends on the meaning of
+  prose, which no recorded fact states.
 - A failed gate, and a change after a passing gate that coverage does not allow,
   both leave the head uncovered, so the next run is not redundant.
 - LEAD-R01 is `n.a.` when the window opens with no unblocked gate-path ticket;
   the check `gate-progress` then grades whether the blocker has an owner.
-- LEAD-R04, LEAD-R10, LEAD-R11, LEAD-R16, LEAD-R17, LEAD-R19 and LEAD-R20 have
-  no judgement evaluation of their own.
+- LEAD-R04, LEAD-R10, LEAD-R16, LEAD-R19 and LEAD-R20 have no judgement
+  evaluation of their own; the checks `honest-state` and `gate-discipline` grade
+  LEAD-R03 and LEAD-R06 only.
+- A deterministic result that leaves out a waived pull request lists it as
+  evidence (FR-017). LEAD-R21 grades every waiver, including one that covers
+  another role's rule.
 - LEAD-R14: `WAITING` and `RECENT` agents are observed without nudging and are
   not idle. File ages, token totals and worker counts alone establish neither
   idle state nor capacity.

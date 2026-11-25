@@ -202,7 +202,8 @@ universal destination from another team's instructions.
    review, fix rounds and the final aggregate gate; freeze is not completion.
 5. **Review:** dispatch the reviewer within the review age limit of the PR
    becoming ready for review (LEAD-R02): one hour, unless the team's
-   `eval.review_age_limit_hours` sets another. One reviewer per PR, scoped to
+   `review_age_limit_hours` in `$TEAM_RETRO_HOME/<team>/eval.json` (default root
+   `~/.local/state/team-retro`) sets another. One reviewer per PR, scoped to
    `git diff origin/main...HEAD`,
    no edits. Name `/reviewer` and the PR number in the dispatch. It reviews the
    spec commit and the code in one pass and posts findings to the tracker with
@@ -210,8 +211,12 @@ universal destination from another team's instructions.
 6. **Fix:** resume the same coder with ALL findings, lows included. Gap-analysis
    gaps get real tests. Confined checks only in fix rounds
    ([fix-round message](references/briefs.md#fix-round-message)).
-7. **Disposition:** skip if the review found nothing. Otherwise resume the
-   same reviewer for the disposition pass over the fix commits
+7. **Disposition:** skip if the review found nothing and still covers the head
+   you will merge ([verification](references/briefs.md#verify-before-merge) item
+   7). A change it does not cover, such as a gate failure fixed after a clean
+   review, goes back to the same reviewer, which reviews it and records the new
+   head (LEAD-R09). For findings, resume the same reviewer for the disposition
+   pass over the fix commits
    ([message](references/briefs.md#disposition-pass-message)), round 1, then
    2, 3 after each further fix round, until every finding's latest outcome is
    neither `still-open` nor missing and the reviewer reports the PR mergeable.
@@ -263,10 +268,11 @@ passing gate that covers the merged head (LEAD-R11): the gated head itself, or
 one that differs only by committed review files, a passing overlap rebase or a
 recorded one-line final fix. Earlier fix rounds, re-pins and cross-repo checks
 use confined checks only. A PR with only spec markdown skips the gate (if a
-test embeds the edited file, tell that file's owner). A repo or org rule that
-differs wins; record it for the PR with a
-[waiver record](references/lead-records.md#waiver) naming the rule it
-replaces. Merge within one hour of the PR becoming ready to merge, which is the
+test embeds the edited file, tell that file's owner). A repo, org or direct user
+rule that differs wins; record it for the PR with a
+[waiver record](references/lead-records.md#waiver) naming the rule it replaces
+and the text that states the difference. Post none without such a rule
+(LEAD-R21). Merge within one hour of the PR becoming ready to merge, which is the
 latest of the clean review, the passing covering gate and any later rebase
 check, unless a repo, org or user rule holds it (LEAD-R17).
 

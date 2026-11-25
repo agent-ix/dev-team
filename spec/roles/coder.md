@@ -116,7 +116,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R12 | The coder SHALL NOT push to a reported pull request branch unless its dispatcher has since sent it work on that branch: a fix round, an overlap rebase or the review-file commit. | CODE-O02 | frozen-diff-changed | A branch changed mid-review leaves the reviewed diff stale, code-lead freeze step |
 | CODE-R13 | A coder running as a fleet lane SHALL take up the exact ticket its latest order expects by the order's deadline. | CODE-O01 | order-not-taken-up | Queued relay orders treated as delivered, MONITORING-DESIGN |
 | CODE-R14 | The coder SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | CODE-O01 | comms-noise | Status polls and progress messages between lanes, coder skill Communication |
-| CODE-R15 | The coder SHALL NOT open a new ticket for a finding on its open pull request, other than for a gap another repository or lane owns. | CODE-O02 | finding-deferred | Findings filed as new tickets, code-lead never list |
+| CODE-R15 | The coder SHALL NOT open a new ticket for a finding on its open pull request. | CODE-O02 | finding-deferred | Findings filed as new tickets, code-lead never list |
 
 ## Evaluations
 
@@ -131,7 +131,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R04-E2 | CODE-R04 | linear | github.authored_prs | judgement | rubric-coder@1#rounds | team-retro | >= | 2 | score | daily |
 | CODE-R05-E1 | CODE-R05 | linear | linear.fix_round_findings | deterministic | linear.fix_round_findings_returned_still_open | evaluator | = | 0 | findings | 3h |
 | CODE-R05-E2 | CODE-R05 | linear | linear.fix_round_findings | judgement | rubric-coder@1#rework-cause | team-retro | >= | 2 | score | daily |
-| CODE-R06-E1 | CODE-R06 | github | linear.fix_round_findings | deterministic | github.second_prs_during_review | evaluator | = | 0 | pull_requests | 3h |
+| CODE-R06-E1 | CODE-R06 | github | github.second_prs_during_review | judgement | rubric-coder@1#finding-pull-request | team-retro | >= | 2 | score | daily |
 | CODE-R07-E1 | CODE-R07 | transcript | github.authored_prs | judgement | rubric-coder@1#false-done | team-retro | >= | 2 | score | daily |
 | CODE-R08-E1 | CODE-R08 | transcript | github.authored_prs | judgement | rubric-coder@1#honest-report | team-retro | >= | 2 | score | daily |
 | CODE-R09-E1 | CODE-R09 | transcript | github.authored_prs | judgement | rubric-coder@1#report-timing | team-retro | >= | 2 | score | daily |
@@ -153,7 +153,7 @@ coder skill's Communication section, which had no row.
 | Size | CODE-R03 | size |
 | Scope | CODE-R02 | scope |
 | Rounds | CODE-R04 | rounds |
-| Rework cause | CODE-R05, CODE-R06, CODE-R15 | rework-cause, finding-ticket |
+| Rework cause | CODE-R05, CODE-R06, CODE-R15 | rework-cause, finding-pull-request, finding-ticket |
 | One directory | CODE-R01 | one-directory |
 | Honest report | CODE-R07, CODE-R08 | false-done, honest-report |
 | Stalls | CODE-R09 | report-timing |
@@ -161,7 +161,8 @@ coder skill's Communication section, which had no row.
 ## Evaluation notes
 
 - Judgement-only rules, graded by team-retro and flagged under dev-team FR-006:
-  CODE-R02 (ticket scope), CODE-R07 (whether a report claims done), CODE-R08
+  CODE-R02 (ticket scope), CODE-R06 (whether a second pull request is for a
+  finding), CODE-R07 (whether a report claims done), CODE-R08
   (report completeness), CODE-R09 (which checks a report cites), CODE-R14
   (message kind) and CODE-R15 (whether a ticket is for a finding). Each depends
   on the meaning of prose, which no recorded fact states.

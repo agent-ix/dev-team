@@ -102,9 +102,9 @@ Missing or unclear input goes in the report, not a guess. Keep working on everyt
 
 The leader resumes you with the reviewer's findings. The reviewer's findings are on the ticket.
 
-- Fix every finding, lows included, inside the same PR and branch, so the next disposition round returns none still-open (CODE-R05). Never open a second PR for one (CODE-R06) or a new ticket for one (CODE-R15). A gap another repo or lane owns is filed as step 2 describes. One pusher per branch.
+- Fix every finding, lows included, inside the same PR and branch, so the next disposition round returns none still-open (CODE-R05). Never open a second PR for one (CODE-R06) or a new ticket for one (CODE-R15). One pusher per branch.
 - Aim for a clean review within the current review round policy: fix the whole of each finding in one round (CODE-R04).
-- Report only items too big for this PR or owned by another repo or lane, with your reason. The leader files those.
+- Report only items too big for this PR or owned by another repo or lane, with your reason. The leader files those, including a spec gap a finding reports; step 2's filing covers only gaps you find while coding.
 - A gap-analysis gap gets a real test.
 - Copy each reviewer SR file, from the scratchpad path in the message, over the matching file under `reviews/` in your fix commit. Never write or edit an SR file yourself.
 - Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Unless a repo or org rule requires it, do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change (CODE-R10). The code lead runs it once before merge, subject to explicit repo or org rules.

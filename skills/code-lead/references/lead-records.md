@@ -45,7 +45,8 @@ A larger change goes back to the coder and the reviewer.
 
 ## Waiver
 
-When a repo, org or direct user rule differs from a role rule for this PR:
+When a repo, org or direct user rule differs from a role rule for this PR, and
+only then. `ref` points at the text that states the differing rule:
 
 ```
 <!-- lead-record repo=<owner>/<repo> pr=<repo>#<n> kind=waiver covers=<rule id> ref=<file or message that states the rule> -->

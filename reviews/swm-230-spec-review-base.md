@@ -40,3 +40,35 @@ Checks run with spec-artifacts-process 9f4f514 and spec-artifacts-iso origin/mai
 | FND-012 | low | ledger.need_ready_tickets_unanswered does not exclude requests younger than a day at a daily run, names no stored ready count to measure 'gained', and reads as net growth: a planner that supplies the tickets while lanes consume them can fail PLAN-R14. | spec/roles/planner.md:82 |
 | FND-013 | low | The producer column says the named ticket owns each missing producer. SWM-261 lists only minder and orchestrator references, and ix-board FR-039 defers the order_focus_at_deadline table behind ledger.lane_orders_due to SWM-255. Rows also say none while saying a requirement specifies the series or table, which contradicts the definition of none. | spec/roles/coder.md:73 |
 | FND-014 | low | LEAD-R01 with a trigger of 'unblocked at some time in the window' fails a lead when a gate-path ticket unblocks minutes before the daily window ends. | spec/roles/code-lead.md:121 |
+
+## New findings (disposition pass 1)
+
+Found in the fix diff 9cba2bd..388ee6a.
+
+| ID | Severity | Summary | Refs |
+|---|---|---|---|
+| FND-015 | medium | FR-017 puts new eval keys in the ix-board retro configuration, which ix-board origin/main parses with deny_unknown_fields (src/retro/config.rs, RetroConfig). A team that follows the skills and sets eval.review_age_limit_hours, or sets eval.ready_state so PLAN-R14 can be evaluated, makes retro snapshot, delta and backfill fail to load the configuration. No ix-board change or dependency is stated. | spec/functional/FR-017-role-evaluation-records.md:124 |
+| FND-016 | medium | The rewritten check scores 0 for an ungated change and measures against a gated head, but only LEAD-R09-E2 cites it. A Markdown-only PR, or a repo with a LEAD-R11 waiver, has no gated head, so a compliant merge can score below 2 against the review-coverage rule, and a real gate breach names LEAD-R09 instead of LEAD-R11. review-flow likewise now grades merge-within-an-hour, ignores waivers, and is cited only by LEAD-R02-E2. | spec/rubrics/rubric-code-lead.md:35 |
+| FND-017 | low | A waiver comment posted by the code lead, the role being evaluated, removes the pull request from that rule's queries, and nothing checks that ref names a real differing rule. LEAD-R11, LEAD-R17 and LEAD-R20 have no judgement evaluation of their own, so an ungated merge with a self-written waiver passes LEAD-R11-E1. | spec/functional/FR-017-role-evaluation-records.md:100 |
+| FND-018 | low | The query counts any second PR of the same repository and ticket opened while a reviewed one is open, while CODE-R06 forbids only one opened for a finding. A stacked part of a split oversize change opened after the first part got its review fails the coder. | spec/roles/coder.md:75 |
+
+## Dispositions
+
+Round 1, head 388ee6a1f08aa61eb88da49e83883f61635b190a.
+
+| FND | outcome | reason |
+|---|---|---|
+| FND-001 | fixed | spec/roles/code-lead.md:91 |
+| FND-002 | fixed | spec/roles/code-lead.md:90 |
+| FND-003 | fixed | spec/roles/code-lead.md:89 |
+| FND-004 | fixed | spec/roles/coder.md:72 |
+| FND-005 | fixed | spec/roles/code-lead.md:93 |
+| FND-006 | fixed | spec/roles/reviewer.md:60 |
+| FND-007 | fixed | spec/functional/FR-017-role-evaluation-records.md:128 |
+| FND-008 | fixed | spec/functional/FR-017-role-evaluation-records.md:106-111 |
+| FND-009 | fixed | spec/rubrics/rubric-reviewer.md:34 |
+| FND-010 | fixed | spec/roles/coder.md:110 |
+| FND-011 | fixed | spec/rubrics/rubric-planner.md:40 |
+| FND-012 | fixed | spec/roles/planner.md:78 |
+| FND-013 | fixed | spec/roles/coder.md:58-61 |
+| FND-014 | fixed | spec/roles/code-lead.md:122 |
