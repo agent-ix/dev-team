@@ -42,5 +42,8 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | FND-002 | fixed | The note now refers to ORCH-R20. |
 | FND-003 | still-open | The trigger of ORCH-R20-E1 is still the current-candidate view unrecorded_hosts_ready_for_discovery (latest sample per host at most 600 s old, as of now). FR-006 gives n.a. when a trigger has no row in the window, so with no current candidate at evaluation time earlier misses stay invisible. Trigger on ledger.unrecorded_hosts_with_demand (ix-board FR-041, per sample) in the E1 paragraph, the E1 row and the SWM-217 producer row. The violation query itself is now per sample. |
 | FND-004 | fixed | ORCH-R20, the Start bullet, both skill files and the rubric exclude an active cool-off. |
+| FND-003 | fixed | The E1 paragraph, E1 row and SWM-217 producer row now trigger on the per-sample unrecorded_hosts_with_demand view. |
 
 The rows added last are round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886.
+
+Round 3 rows, checked at fa58cdc58e31a4e1b0bcac445812e655ad2d88c6: FND-003.

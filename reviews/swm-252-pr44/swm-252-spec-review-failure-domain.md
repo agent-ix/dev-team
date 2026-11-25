@@ -48,5 +48,8 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | FND-002 | fixed | Any assigned ticket not completed, canceled or duplicate supplies a lane, backlog types included. |
 | FND-003 | fixed | The zero-lane gate counts tickets queued behind the first ticket of reachable lanes, as Amendment 2 words it, in R20, both skill files and the rubric. |
 | FND-004 | fixed | ORCH-R17, the Valid window bullet, the reference and the rubric require a reachable lane and bar the zero-lane rule from step windows. |
+| FND-005 | fixed | The zero-lane formula is floored at zero in the role spec (3 places), both skill files and the rubric. |
 
 The rows added last are round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886.
+
+Round 3 rows, checked at fa58cdc58e31a4e1b0bcac445812e655ad2d88c6: FND-005.

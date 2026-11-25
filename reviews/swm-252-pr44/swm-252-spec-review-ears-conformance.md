@@ -34,5 +34,8 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | FND     | outcome | reason |
 | ------- | ------- | ------ |
 | FND-001 | fixed   | "Usable sample" is gone; ORCH-R17 and the Valid window bullet both require every sample to carry evidence and cover demand, with covering samples spanning at least 90%. |
+| FND-002 | fixed | The ORCH-R20 SHALL sentence requires covered demand again. |
 
 Round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886: no earlier finding was open.
+
+Round 3 rows, checked at fa58cdc58e31a4e1b0bcac445812e655ad2d88c6: FND-002.
