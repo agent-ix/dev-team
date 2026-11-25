@@ -35,3 +35,6 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | ------- | ------- | ------ |
 | FND-001 | fixed   | The Capacity discovery section now defines supplied lanes and each host's ready share as Amendment 1 states them. |
 | FND-002 | still-open | found in this pass. Needs a fix. |
+| FND-002 | fixed | Zero-lane hosts no longer receive one distinct ticket each; the positive-lane test is scoped to a positive lane count. |
+
+The rows added last are round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886.

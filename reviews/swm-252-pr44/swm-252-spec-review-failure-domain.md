@@ -29,6 +29,12 @@ Ticket: SWM-252. Whether the new demand gate can be met by an orchestrator that 
 | FND-003 | medium   | Hole left in Amendment 1: a host with no reachable lane needs buffer minus unsupplied lanes of at least 1, but ORCH-R06 queues every unowned ticket on other hosts' lanes. A restarted host with 0 lanes beside 4 supplied lanes holding 2 tickets each sees a buffer of 0 and never starts, although queued tickets could be moved to it. | spec/roles/orchestrator.md:138, spec/roles/orchestrator.md:283 |
 | FND-004 | medium   | ORCH-R17 and the Valid window bullet let the zero-lane bootstrap test cover a step sample. A step at 5 lanes whose lanes all become unreachable while the lease stays current and a ticket is spare is judged valid, and its collapsed output reads as a knee. | spec/roles/orchestrator.md:280, spec/roles/orchestrator.md:155 |
 
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+| -- | -------- | ------- | ---- |
+| FND-005 | medium | The zero-lane formula has no floor at zero, while ix-board FR-041 (the producer) computes max(0, ready_buffer - all_hosts_unsupplied_lanes) + queued_behind_first. With buffer 0, 2 unsupplied lanes elsewhere and 2 queued tickets the text gives 0 (no start) and FR-041 gives 2, so the host is listed as a start candidate and an orchestrator following the role spec fails ORCH-R20-E1. Same text in the Capacity discovery paragraph, the Start bullet, both skill files and the rubric. | spec/roles/orchestrator.md:289 |
+
 ## Dispositions
 
 Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
@@ -39,3 +45,8 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | FND-002 | still-open | found in this pass. Needs a fix. |
 | FND-003 | still-open | found in this pass. Needs an amendment or an accepted-no-change decision. |
 | FND-004 | still-open | found in this pass. Needs a fix. |
+| FND-002 | fixed | Any assigned ticket not completed, canceled or duplicate supplies a lane, backlog types included. |
+| FND-003 | fixed | The zero-lane gate counts tickets queued behind the first ticket of reachable lanes, as Amendment 2 words it, in R20, both skill files and the rubric. |
+| FND-004 | fixed | ORCH-R17, the Valid window bullet, the reference and the rubric require a reachable lane and bar the zero-lane rule from step windows. |
+
+The rows added last are round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886.

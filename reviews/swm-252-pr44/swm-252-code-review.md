@@ -43,3 +43,7 @@ Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
 | FND-004 | fixed   | ownership.md says version 6. |
 | FND-005 | still-open | found in this pass. Needs a fix. |
 | FND-006 | still-open | found in this pass. Needs a fix. |
+| FND-005 | fixed | Reference step 1 now says SHALL start discovery. |
+| FND-006 | fixed | The five comment files are deleted; quire validate over reviews/swm-252-pr44 exits 0. |
+
+The rows added last are round 2, checked at fc263a5c55fe5f1e8c4befb348ddac4ddd34b886.

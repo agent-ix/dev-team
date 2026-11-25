@@ -138,9 +138,9 @@ host's ready share is apportioned by its unsupplied-lane count using largest
 remainder, host ID for ties, and a cap at that count. Shares never exceed the
 global buffer. For a zero-lane host with a current registry lease, the
 discovery-start demand gate is met when the ready buffer minus all hosts'
-unsupplied lanes, plus the tickets queued behind the first ticket of any
-reachable lane's assignment list, is at least one. This zero-lane rule does
-not cover a capacity-step window.
+unsupplied lanes, taken as zero when negative, plus the tickets queued behind
+the first ticket of any reachable lane's assignment list, is at least one.
+This zero-lane rule does not cover a capacity-step window.
 
 - **Start.** A host with no recorded level starts discovery when its latest
   saturation sample is no older than 10 minutes, its registry lease is current,
@@ -149,10 +149,11 @@ not cover a capacity-step window.
   run. For a positive lane count, demand is covered when supplied lanes plus
   the host's ready share cover every current reachable lane. For a zero-lane
   host with a current registry lease, the discovery-start demand gate is met
-  when the ready buffer minus all hosts' unsupplied lanes, plus the tickets
-  queued behind the first ticket of any reachable lane's assignment list, is
-  at least one. A positive target-buffer deficit may still exist. `fleet tick`
-  suppresses `add_lane` for a host while its discovery run is active (SWM-256).
+  when the ready buffer minus all hosts' unsupplied lanes, taken as zero when
+  negative, plus the tickets queued behind the first ticket of any reachable
+  lane's assignment list, is at least one. A positive target-buffer deficit
+  may still exist. `fleet tick` suppresses `add_lane` for a host while its
+  discovery run is active (SWM-256).
 - **Step.** Add one lane. A run takes at most 8 steps; a run that reaches the
   bound records the last valid level.
 - **Hold.** Keep each level for a measurement window (default 2 hours,
@@ -233,7 +234,7 @@ that reads it names its producer here:
 | SWM-288 (`orchestrator_addressed_actions` view) | Open actions of every kind the orchestrator executes (the kind list in Action delivery, selected by kind), readable with `fleet ledger query`: the backstop to the minder's relay messages | ORCH-R10-E1 |
 | SWM-212 (`fleet plan-coverage`) | Unowned ready tickets, short queues and stale assignments, with the `owner_unreachable` note | ORCH-R06-E1 |
 | SWM-213 (drift, ix-board FR-037) | Drift findings `not_assigned`, `not_in_plan`, `priority_inversion` | ORCH-R13-E1, ORCH-M05 |
-| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit`, per-host ready-buffer, active, supplied and unsupplied lane samples, ready share, zero-lane bootstrap-pool evidence, `ledger.unrecorded_hosts_ready_for_discovery`, per-sample `ledger.unrecorded_hosts_without_discovery_run`, and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
+| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit`, per-host ready-buffer, active, supplied and unsupplied lane samples, ready share, zero-lane bootstrap-pool evidence, `ledger.unrecorded_hosts_with_demand`, per-sample `ledger.unrecorded_hosts_without_discovery_run`, and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
 | SWM-216 (`fleet capacity` calibrate) | Discovery runs and their recorded levels, into the SWM-252 capacity history | ORCH-R16-E1 to ORCH-R29-E1 |
 | SWM-257 (`fleet assign`) | `--expect-ticket` set to the first ticket; order id on FR-072 transitions | ORCH-R01-E1, ORCH-R02-E1 |
 | SWM-252 (capacity history; scope extended in its ticket comment) | Discovery steps; per-step host output with per-lane attribution of tickets closed, pull requests merged and commits pushed from Linear and GitHub; valid and inconclusive windows; knee; run end reasons; recorded level; draining marks and drain completion; step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
@@ -286,7 +287,7 @@ that reads it names its producer here:
 | ORCH-R17 | A discovery step SHALL be judged only when every saturation sample in the window has complete ready-buffer, assignment, lane and registry evidence, at least one reachable lane, and supplied lanes plus ready share cover the step lane count, with covering sample intervals spanning at least 90% of the window; zero-lane bootstrap evidence never covers a step, missing evidence is `deficit_coverage`, short demand is `demand_short`, positive deficit is allowed, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
 | ORCH-R18 | Capacity discovery SHALL stop at the first knee signal and step the host back one lane. | ORCH-O06 | capacity-unknown | Titan thermal limits found by hand, plan W6 |
 | ORCH-R19 | The orchestrator SHALL record each host's found level, with the measurements it was found at, in the capacity history. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R20 | A host with no recorded level SHALL be put into discovery when its latest saturation sample is no older than 10 minutes, its registry lease is current, no run is open, fewer than two runs have started that UTC day, no step-down cool-off is active, and capacity history is available to record the run. For a positive lane count, demand is covered when supplied lanes plus its ready share cover its current reachable lanes. For a zero-lane host with a current registry lease, the discovery-start demand gate is met when the ready buffer minus all hosts' unsupplied lanes, plus the tickets queued behind the first ticket of any reachable lane's assignment list, is at least one. A positive target-buffer deficit does not prevent discovery. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
+| ORCH-R20 | A host with no recorded level SHALL be put into discovery when its latest saturation sample is no older than 10 minutes, its registry lease is current, its demand is covered, no run is open, fewer than two runs have started that UTC day, no step-down cool-off is active, and capacity history is available to record the run. For a positive lane count, demand is covered when supplied lanes plus its ready share cover its current reachable lanes. For a zero-lane host with a current registry lease, the discovery-start demand gate is met when the ready buffer minus all hosts' unsupplied lanes, taken as zero when negative, plus the tickets queued behind the first ticket of any reachable lane's assignment list, is at least one. A positive target-buffer deficit does not prevent discovery. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R21 | The orchestrator SHALL NOT run a host above its recorded level except during a discovery run of at most 8 steps. | ORCH-O06 | capacity-unknown | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R22 | A host throttled above 5% for an hour at its recorded level SHALL be stepped down one lane, and re-discovered when the daily discovery cap (ORCH-R24) allows. | ORCH-O06 | capacity-unknown | Titan thermal handoff, plan W6 |
 | ORCH-R23 | After a step-down, the orchestrator SHALL NOT raise the host above the stepped-down level before the cool-off ends. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
@@ -302,12 +303,13 @@ that reads it names its producer here:
 
 ## Evaluations
 
-ORCH-R20-E1 triggers on `ledger.unrecorded_hosts_ready_for_discovery`. Each
-current start-candidate sample is tracked for a 10-minute response window. A
-start for that host at or after the sample time and within those 10 minutes
-satisfies that sample. The sample is ineligible only if a run was already open
-at sample time, two starts had already occurred by sample time on that sample's
-UTC day, or a step-down cool-off was active at sample time.
+ORCH-R20-E1 triggers on `ledger.unrecorded_hosts_with_demand`, the saturation
+samples of unrecorded hosts that show covered demand. Each such sample is
+tracked for a 10-minute response window. A start for that host at or after the
+sample time and within those 10 minutes satisfies that sample. The sample is
+ineligible only if a run was already open at sample time, two starts had
+already occurred by sample time on that sample's UTC day, or a step-down
+cool-off was active at sample time.
 `ledger.unrecorded_hosts_without_discovery_run` is the per-sample historical
 query: it returns each mature eligible sample without such a start, so later
 samples do not erase earlier misses.
@@ -340,7 +342,7 @@ samples do not erase earlier misses.
 | ORCH-R18-E1 | ORCH-R18 | ledger | ledger.discovery_knee_signals | deterministic | ledger.discovery_raised_past_knee | evaluator | = | 0 | steps | daily |
 | ORCH-R18-E2 | ORCH-R18 | transcript | ledger.discovery_knee_signals | judgement | rubric-orchestrator@2#capacity-knee | director | >= | 2 | score | weekly |
 | ORCH-R19-E1 | ORCH-R19 | ledger | ledger.discovery_runs_ended | deterministic | ledger.discovery_runs_without_recorded_level | evaluator | = | 0 | runs | daily |
-| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_ready_for_discovery | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
+| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_with_demand | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
 | ORCH-R21-E1 | ORCH-R21 | ledger | ledger.hosts_with_recorded_level | deterministic | ledger.host_minutes_above_recorded_level_outside_bounded_discovery | evaluator | = | 0 | minutes | daily |
 | ORCH-R22-E1 | ORCH-R22 | ix-board-metric | prom.hosts_throttled_at_recorded_level | deterministic | prom.throttled_hosts_without_step_down | evaluator | = | 0 | hosts | daily |
 | ORCH-R23-E1 | ORCH-R23 | ledger | ledger.host_step_downs | deterministic | ledger.raises_during_cool_off | evaluator | = | 0 | raises | daily |
