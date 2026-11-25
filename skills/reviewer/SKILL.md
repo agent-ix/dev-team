@@ -169,6 +169,20 @@ acceptance-criteria-to-tests check. Record exactly what was unavailable and whic
 audit steps remain incomplete; do not represent that fallback as a full gap audit.
 Do not invoke the deprecated `implementation-gap-analysis` skill.
 
+### Requirement links, related code, and dependency moves
+
+For Agent IX repositories, apply the exact requirements in the session's
+`AGENTS.md` instructions under **Requirement tags and changing untagged code**
+and **Dependency version moves** (on Codex, `~/.codex/AGENTS.md`). Use those
+sections as the shared authority; do not copy or paraphrase their procedure in
+this skill.
+
+When requirement specs and a trace library apply, check the changed functions'
+criterion links, new tests' trace tags, related code examined, and the PR's list
+of criteria and tests. For a dependency version move, check the old and new
+revisions, changed files and public items, local references, focused tests, and
+the PR's comparison of those results.
+
 ## 3. One artifact per method — allocate or reuse its id
 
 The `spec-artifacts-process` skeleton is explicit: "One SpecReview document per
