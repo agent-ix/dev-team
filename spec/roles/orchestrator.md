@@ -130,24 +130,37 @@ Each host's sustainable lane count is unknown until measured. Discovery ramps
 lanes only; build slots are computed by the build scheduler from live
 headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
 
+For demand evidence, a supplied lane is reachable and has at least one
+unfinished assigned ticket in progress or queued (`Started` or `Unstarted`);
+other reachable lanes are unsupplied. The global ready buffer counts ready,
+unassigned, unstarted tickets. Each host's ready share is apportioned by its
+unsupplied-lane count using largest remainder, host ID for ties, and a cap at
+that count. Shares never exceed the global buffer. A zero-lane host with a
+current registry lease may use one distinct bootstrap ticket from the buffer
+remaining after all hosts' unsupplied lanes; zero-lane hosts receive these in
+host-ID order.
+
 - **Start.** A host with no recorded level starts discovery when its registry
-  lease is current and its ready buffer covers at least one ticket or its
-  current reachable lane count, whichever is greater. Thus a zero-lane host
-  can bootstrap its first lane only when a ready ticket exists; a stale host
-  has no bootstrap evidence. A positive target-buffer deficit may still exist.
-  `fleet tick` suppresses `add_lane` for a host
-  while its discovery run is active (SWM-256). A host runs at most 2
-  discovery runs a day, first runs and re-discoveries counted together.
+  lease is current, demand is covered, no run is open, fewer than two runs
+  have started that UTC day, and capacity history can record the run. Demand
+  is covered when supplied lanes plus the host's ready share cover every
+  current reachable lane; a zero-lane host needs a distinct bootstrap ticket.
+  A positive target-buffer deficit may still exist. `fleet tick` suppresses
+  `add_lane` for a host while its discovery run is active (SWM-256).
 - **Step.** Add one lane. A run takes at most 8 steps; a run that reaches the
   bound records the last valid level.
 - **Hold.** Keep each level for a measurement window (default 2 hours,
   configurable). The first 30 minutes after a lane is added are ramp-up and
   are excluded from the measurement.
-- **Valid window.** Demand-covering saturation samples span at least 90% of the
-  window and every usable sample shows ready-buffer tickets at least equal to
-  the step's lane count, so ready work was available to every lane. A positive
-  target-buffer deficit does not invalidate a window. Otherwise the step is
-  inconclusive and its window is repeated. After 2 inconclusive windows in a
+- **Valid window.** Every sample in the window has complete ready-buffer,
+  assignment, lane and registry evidence and covers demand: supplied lanes
+  plus ready share at least equal the step lane count, or a zero-lane host has
+  current registry evidence and a distinct bootstrap ticket. Covering samples
+  span at least 90% of the window. Missing evidence is `deficit_coverage`; any
+  sample that falls short is `demand_short`. Duty, `lanes_needed` and deficit
+  availability do not affect demand coverage; a positive target-buffer deficit
+  is compatible with a valid window. Otherwise the step is inconclusive and
+  its window is repeated. After 2 inconclusive windows in a
   row the run ends with reason `inconclusive_no_demand`, recorded in the
   capacity history (SWM-252), and the host returns to the last level measured
   on a valid window. The deficit itself is sent to the planners as
@@ -214,7 +227,7 @@ that reads it names its producer here:
 | SWM-288 (`orchestrator_addressed_actions` view) | Open actions of every kind the orchestrator executes (the kind list in Action delivery, selected by kind), readable with `fleet ledger query`: the backstop to the minder's relay messages | ORCH-R10-E1 |
 | SWM-212 (`fleet plan-coverage`) | Unowned ready tickets, short queues and stale assignments, with the `owner_unreachable` note | ORCH-R06-E1 |
 | SWM-213 (drift, ix-board FR-037) | Drift findings `not_assigned`, `not_in_plan`, `priority_inversion` | ORCH-R13-E1, ORCH-M05 |
-| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit`, per-host ready-buffer and active-lane samples, bootstrap buffer evidence for a zero-lane host, `ledger.unrecorded_hosts_with_demand`, and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
+| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit`, per-host ready-buffer, active, supplied and unsupplied lane samples, ready share, bootstrap buffer evidence for a zero-lane host, `ledger.unrecorded_hosts_with_demand`, `ledger.unrecorded_hosts_without_discovery_run` (the latest sample no older than 10 minutes, no open run, and fewer than two runs started on the current UTC day), and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
 | SWM-216 (`fleet capacity` calibrate) | Discovery runs and their recorded levels, into the SWM-252 capacity history | ORCH-R16-E1 to ORCH-R29-E1 |
 | SWM-257 (`fleet assign`) | `--expect-ticket` set to the first ticket; order id on FR-072 transitions | ORCH-R01-E1, ORCH-R02-E1 |
 | SWM-252 (capacity history; scope extended in its ticket comment) | Discovery steps; per-step host output with per-lane attribution of tickets closed, pull requests merged and commits pushed from Linear and GitHub; valid and inconclusive windows; knee; run end reasons; recorded level; draining marks and drain completion; step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
@@ -264,10 +277,10 @@ that reads it names its producer here:
 | ORCH-R14 | A positive ready-buffer deficit SHALL be sent to each owning planner as a request for the stated number of ready tickets in the cycle it appears. | ORCH-O02 | parked-unowned-work | Plan W6: saturation drives planning upstream |
 | ORCH-R15 | When the owner asks who owns a ticket, lane, host, defect or decision, the orchestrator SHALL answer with a named role and lane address, read from the ix-board `[fleet_tick]` settings `orchestrator`, `minder` and `leads` and from the relay lane registry. | ORCH-O03 | unowned-work | Owner's "who owns X" questions, plan W4 |
 | ORCH-R16 | Capacity discovery SHALL add one lane per step and hold each step for the measurement window. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R17 | A discovery step SHALL be judged only on a window with at least 90% saturation-sample coverage and ready-buffer tickets at least equal to the step's lane count in every usable sample; a positive target-buffer deficit does not invalidate demand coverage, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
+| ORCH-R17 | A discovery step SHALL be judged only when every saturation sample in the window has complete ready-buffer, assignment, lane and registry evidence and covers demand (supplied lanes plus ready share cover the step lane count, or a zero-lane host has a current lease and distinct bootstrap ticket), and covering samples span at least 90% of the window; a missing-evidence window is `deficit_coverage`, a short-demand window is `demand_short`, positive deficit is allowed, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
 | ORCH-R18 | Capacity discovery SHALL stop at the first knee signal and step the host back one lane. | ORCH-O06 | capacity-unknown | Titan thermal limits found by hand, plan W6 |
 | ORCH-R19 | The orchestrator SHALL record each host's found level, with the measurements it was found at, in the capacity history. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R20 | A host with no recorded level SHALL be put into discovery when its registry lease is current, its ready buffer is at least the greater of one ticket or its current reachable lane count, and the capacity history is available to record the run; a positive target-buffer deficit does not prevent discovery. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
+| ORCH-R20 | A host with no recorded level SHALL be put into discovery when its latest saturation sample is no older than 10 minutes and shows a current registry lease and covered demand (supplied lanes plus its ready share cover its current reachable lanes, or a zero-lane host has a distinct bootstrap ticket), no run is open, fewer than two runs have started on the current UTC day, and capacity history is available to record the run; a positive target-buffer deficit does not prevent discovery. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R21 | The orchestrator SHALL NOT run a host above its recorded level except during a discovery run of at most 8 steps. | ORCH-O06 | capacity-unknown | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R22 | A host throttled above 5% for an hour at its recorded level SHALL be stepped down one lane, and re-discovered when the daily discovery cap (ORCH-R24) allows. | ORCH-O06 | capacity-unknown | Titan thermal handoff, plan W6 |
 | ORCH-R23 | After a step-down, the orchestrator SHALL NOT raise the host above the stepped-down level before the cool-off ends. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
@@ -387,7 +400,9 @@ that reads it names its producer here:
 - ORCH-R17 and ORCH-R28 together bound repeated windows: a run can repeat at
   most one inconclusive window before it ends.
 - ORCH-R27 is `n.a.` for a host until its level is recorded: before that the
-  host waits for ready-buffer demand to cover its current lanes or is in discovery (ORCH-R20), and `fleet
+  host waits for a current registry lease and supplied lanes plus ready share
+  (or a distinct zero-lane bootstrap ticket) to cover demand, or is in discovery
+  when its UTC-day cap is available (ORCH-R20), and `fleet
   tick` suppresses `add_lane` for it during a run (SWM-256).
 - The knee compares total host output between levels, so a cold added lane
   does not read as a knee on its own; the 30-minute ramp-up is excluded and

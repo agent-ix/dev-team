@@ -16,4 +16,4 @@ This table is the orchestrator's answer to the owner's "who owns X" questions (O
 | Landing an assigned ticket (spec, code, review, merge) | the lane's code lead |
 | Evaluating orchestrator and minders | director |
 
-Source: the Ownership section of the orchestrator role spec, version 5.
+Source: the Ownership section of the orchestrator role spec, version 6.

@@ -8,7 +8,7 @@ role_spec_version: 6
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 5. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 6. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 ## Tool availability
 
@@ -139,7 +139,7 @@ A positive ready-buffer deficit (`ix_fleet_ready_buffer_deficit`) is sent to eac
 Capacity discovery and the step-down rules are in [references/capacity-discovery.md](references/capacity-discovery.md). Each cycle, for every host:
 
 - No host runs above its recorded level, except in a discovery run of at most 8 steps (ORCH-R21).
-- A host with no recorded level enters discovery when its registry lease is current and its ready buffer is at least the greater of one ticket or its current lane count; a positive target-buffer deficit does not prevent discovery (ORCH-R20). A zero-lane host uses bootstrap ready-buffer evidence. While `fleet capacity` is not installed no run starts (Interim mode).
+- A host with no recorded level enters discovery when its latest saturation sample is no older than 10 minutes and shows a current registry lease and covered demand, no run is open, fewer than two runs started on the current UTC day, and capacity history can record the run; a zero-lane host needs a distinct bootstrap ticket. A positive target-buffer deficit does not prevent discovery (ORCH-R20). While `fleet capacity` is not installed or capacity history is unavailable no run starts (Interim mode).
 - Lower a host's lane count for a thermal or memory reason only with scheduler evidence at that time: an active pause, an admission block, a build abort, or memory headroom below reserve (ORCH-R12).
 
 ### 10. Answer "who owns X"
