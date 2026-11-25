@@ -69,8 +69,16 @@ views read the same report model that a future plugin or desktop view can read.
 | [IT-001](integration/IT-001-incident-replay.md) | Generalization and adverse-case replay |
 | [Minder role](roles/minder.md) | Minder objectives, rules and paired evaluations |
 | [Orchestrator role](roles/orchestrator.md) | Orchestrator objectives, rules, ownership and capacity discovery |
+| [Coder role](roles/coder.md) | Coder objectives, rules and paired evaluations |
+| [Reviewer role](roles/reviewer.md) | Reviewer objectives, rules and paired evaluations |
+| [Code lead role](roles/code-lead.md) | Code lead objectives, rules and paired evaluations |
+| [Planner role](roles/planner.md) | Planner objectives, rules and paired evaluations |
 | [Minder rubric](rubrics/rubric-minder.md) | Judgement checks for minder evaluations and retros |
 | [Orchestrator rubric](rubrics/rubric-orchestrator.md) | Judgement checks for orchestrator evaluations |
+| [Coder rubric](rubrics/rubric-coder.md) | Judgement checks for coder evaluations and retros |
+| [Reviewer rubric](rubrics/rubric-reviewer.md) | Judgement checks for reviewer evaluations and retros |
+| [Code lead rubric](rubrics/rubric-code-lead.md) | Judgement checks for code lead evaluations and retros |
+| [Planner rubric](rubrics/rubric-planner.md) | Judgement checks for planner evaluations and retros |
 
 ## 5. Requirement Classes
 
