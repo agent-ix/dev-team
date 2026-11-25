@@ -123,26 +123,53 @@ stale notices and route corrections through its owner without disrupting builds.
 
 ## Dashboard work reports
 
-When a session monitor is assigned to this lead, report its scope after
-loading the plan. Check `agent-msg work --help` for the installed syntax. Run
-reports in the lead's own pane, or pass `--lead <server:workspace:tab>` and
-`--session <native-session-id>`.
+Every code lead, Claude or Codex, always publishes these reports; no monitor
+assignment or request is needed. Check `agent-msg work --help` for the
+installed syntax. Run them in the lead's own pane, or put
+`--lead <server:workspace:tab>` and `--session <native-session-id>` between
+`work` and the subcommand.
+
+| When | Report |
+|---|---|
+| Plan loaded, on every start or resume | `scope`, `focus`, and `agent` for each ticket in flight |
+| Plan scope changes | `scope` |
+| A subagent is dispatched or resumed | `agent` with `running`, then `focus` |
+| A subagent changes stage or finishes | `agent` with `waiting`, `done`, `failed` or `canceled`, then `focus` |
+| Focus changes | `focus` |
+| 30 minutes since the last `focus`, while work is in flight | `focus`, changed or not, then `agent-msg work show` |
 
 ```bash
-agent-msg work scope --initiative <initiative-id>
-agent-msg work scope --project <project-id> --project <other-project-id>
-agent-msg work focus "Reviewing the credential-store implementation" --ticket TEAM-12
+agent-msg work scope --project <project-id> --project <other-project-id>   # or --initiative, --ticket, --all-team
+agent-msg work focus "Reviewing the credential-store implementation" --ticket TEAM-12 --ticket TEAM-13
 agent-msg work agent <subagent-id> --name <name> --ticket TEAM-12 --role coder --status running
-agent-msg work agent <subagent-id> --name <name> --ticket TEAM-12 --role coder --status done
 agent-msg work remove <subagent-id>
 ```
 
-Each `scope` report replaces the previous one. Update focus when it changes
-and upsert each dispatched agent at stage changes and completion, repeating
-the ticket, name and role. For a herdr pane agent add
-`--worker <server:workspace:tab:pane>`. `done` does not complete the ticket.
-Only the lead writes these reports. If one fails, surface the error and
-continue; never report a success you did not observe.
+- `focus` names every ticket in flight with `--ticket`. The Work tab lists a
+  lead's tickets from `agent` entries only, so each ticket in flight keeps at
+  least one, with its latest status, until the ticket closes, even with no
+  subagent running (use the last subagent's ID; if the ticket has had none, use
+  the ticket ID with `--role lead --status waiting`, and `remove` that entry
+  once a subagent has one for the ticket). A subagent covering several tickets
+  gets one entry per ticket, with ID `<subagent-id>:<ticket>`.
+- `scope` replaces the previous scope. `agent` replaces that subagent's entry,
+  so repeat the ticket, name and role. `<subagent-id>` is the Claude agent ID
+  or the Codex session ID. For a herdr pane agent add
+  `--worker <server:workspace:tab:pane>`. `done` does not complete the ticket;
+  `remove` an entry when its ticket closes, and a `failed` or `canceled` one
+  once its replacement has an entry.
+- Reports belong to one agent process: a restart starts empty, and a failed
+  report is not resent by itself. When `agent-msg work show` prints `null`,
+  lacks `scope`, or lacks or misstates a ticket's `agent` entry, publish what is
+  missing.
+- Make sure something wakes you for the 30-minute `focus`. Cap each blocking
+  wait on a subagent or gate below the time left. Where the harness wakes you
+  only when work finishes (a Claude Code background subagent), keep one
+  `sleep 1500` running as a background command while work is in flight, and make
+  the 30-minute report each time it ends.
+- Only the lead writes these reports. Give each call a 150-second time limit.
+  A failed report never blocks the work: surface the error, continue and send it
+  again with the next report. Never report a success you did not observe.
 
 ## Work kinds
 

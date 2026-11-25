@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "code-lead",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "files": [
         "SKILL.md",
         "references/briefs.md",
