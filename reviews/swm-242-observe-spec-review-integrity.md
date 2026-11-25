@@ -1,47 +1,61 @@
 ---
-id: SR-066
-title: "Integrity analysis of the SWM-242 observe contract wording"
+id: SR-055
+title: "Integrity analysis of SWM-242 observe mode"
 type: SpecReview
 analysis: integrity
-scope: "agent-ix/dev-team; spec/functional/FR-015-build-metrics-export.md (PR #43 diff, head 890d7a78a4a68ac64fc5e89a8bd257f4112e7b67), checked against agent-ix/dev-tools locked-build at bce5f4a7a20000a56275e3bc49b290fc1053732d"
+scope: "agent-ix/dev-team; spec/functional/FR-015-build-metrics-export.md (PR #41 diff, head 078c982b9bf6ffdabd4c9d373d64819bb7f79212); related FR-005, FR-009, FR-010, FR-011, FR-016, NFR-002"
 review_set: subset
 ---
 
 ## Summary
 
-Ticket: SWM-242. Checked the changed statements for testability and agreement with AC-21. The post-exit bound is now conditional on an undefined path.
+Ticket: SWM-242. Traced observed commands through FR-005, FR-010 and FR-011; the new text limits only the observe process and only one direction of store mixing.
 
 ## Verdict
 
-**CONDITIONAL**: one medium finding.
+**FAIL**: one high and one medium finding. FR-015 keeps its existing user-story link and every new criterion names a verification method.
 
 ## Findings
 
 | ID | Severity | Summary | Refs |
 |---|---|---|---|
-| FND-001 | medium | The 1000 ms stdio bound now applies only on the normal forwarding path, which nothing defines, so any overrun can be called off that path. The real exceptions are a stopped observer and a warning blocked on a full stderr pipe (reproduced: a fail-open observe still running after 3 s). | spec/functional/FR-015-build-metrics-export.md:55, spec/functional/FR-015-build-metrics-export.md:95 |
+| FND-001 | high | Nothing says an observed record is not an FR-005 lease. The governor, watchdog, hold, cancel and recover may pause, signal or terminate leased process groups under FR-005 and FR-010, here the caller's own group; AC-13 constrains only the observer's decisions. | spec/functional/FR-015-build-metrics-export.md:47, spec/functional/FR-015-build-metrics-export.md:87 |
+| FND-002 | medium | A store must never mix modes, but only observe is told what to do; run or another admitting command against an observed store has no defined refusal and no criterion. | spec/functional/FR-015-build-metrics-export.md:49 |
 
 ## Replacement Text
 
 ### FND-001
 
-spec/functional/FR-015-build-metrics-export.md:55, replace the last sentence with:
+spec/functional/FR-015-build-metrics-export.md:47, insert after the sentence ending "or terminates the observed command.":
 
 ```text
-Unless a signal has stopped the observer or its warning write to the caller's standard error blocks, no observer process keeps the command's stdio open more than 1000 ms after the command exits.
+An observed command is not an FR-005 request or lease: FR-005, FR-010 and FR-011 admission, ordering, hold, throttling, recovery signalling and termination do not apply to it. No locked-build process or command (`observe`, `serve`, a watchdog, `hold`, `resume`, `cancel`, `recover` or `prune`) originates a signal to the observed command or its process group.
 ```
 
-spec/functional/FR-015-build-metrics-export.md:95, replace the last sentence of the AC-15 cell with:
+spec/functional/FR-015-build-metrics-export.md:87, replace the FR-015-AC-13 row with:
 
 ```text
-Unless a signal has stopped the observer or its warning write to the caller's standard error blocks, no observer process holds the command's pipes open more than 1000 ms after command exit.
+| FR-015-AC-13 | `observe` starts a wrapper-admitted command even when busy slots equal or exceed configured slots, and `ix_build_slots_busy` reports the actual count. With a governor serving the observed store while a thermal or memory limit is breached, after `hold_ms` has elapsed, and across `hold --pause`, `cancel`, `recover` and `prune`, no process in the command's group is signalled, paused or terminated by locked-build. | Test |
 ```
 
+### FND-002
+
+spec/functional/FR-015-build-metrics-export.md:49, insert after the sentence ending "runs the command without changing the store.":
+
+```text
+`run` and every other command that queues or admits work refuse an observed store with a request error and change nothing. The first recorded request fixes the store's mode, and `prune` does not reset it.
+```
+
+Append this row after FR-015-AC-20:
+
+```text
+| FR-015-AC-22 | `run` against an observed store, including one emptied by `prune`, is refused with a request error and leaves the store unchanged; concurrent first `observe` and `run` invocations on an empty store leave it holding one mode only. | Test |
+```
 
 ## Dispositions
 
-Applied by the dev-team #43 follow-up at head `002c2f1b0519adda61fac278a03c79e78e3ede54`.
-
 | FND | outcome | reason |
-| --- | ------- | ------ |
-| FND-001 | fixed | AC-15 now names the only exceptions to the 1000 ms stdio release bound: a stopped observer or a warning write blocked on stderr. |
+|---|---|---|
+| FND-001 | fixed | Round 1, head 193bf7d: line 49 excludes observed commands from FR-005, FR-010 and FR-011 behavior and AC-13 is replaced. |
+| FND-002 | still-open | Round 1, head 193bf7d: AC-22 landed, but the Behavior sentences are absent. Nothing requires every other queueing or admitting command to refuse an observed store, or says the first recorded request fixes the mode. Insert the FND-002 text after "runs the command without changing the store." in line 57. |
+| FND-002 | fixed | Round 2, head 07761f1: line 57 requires run and every other queueing or admitting command to refuse an observed store, and fixes the store mode at the first recorded request. |
