@@ -1,14 +1,14 @@
 ---
 name: fleet-orchestrator
 description: Run the fleet orchestrator loop. Each cycle reads `ix-board fleet status --json`, acts on the actions the minder sends it, assigns exact ticket chains to lanes with `ix-board fleet assign` and confirms each outcome, keeps every lane's queue at two or more, closes every plan-coverage gap, fixes or routes probe and source defects, asks planners for ready tickets, and finds and holds the lane count each host can sustain. Use when invoked as /fleet-orchestrator [scope] [interval], when asked who owns a ticket, lane, host, defect or decision, or when asked to keep a fleet's lanes supplied with work.
-role_spec_version: 5
+role_spec_version: 6
 ---
 
 # Fleet Orchestrator
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 5. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 6. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 ## Tool availability
 
@@ -139,7 +139,7 @@ A positive ready-buffer deficit (`ix_fleet_ready_buffer_deficit`) is sent to eac
 Capacity discovery and the step-down rules are in [references/capacity-discovery.md](references/capacity-discovery.md). Each cycle, for every host:
 
 - No host runs above its recorded level, except in a discovery run of at most 8 steps (ORCH-R21).
-- A host with no recorded level enters discovery when the ready-buffer deficit is zero and the capacity history is available to record the run (ORCH-R20). While `fleet capacity` is not installed no run starts (Interim mode).
+- A host with no recorded level enters discovery when its latest saturation sample is no older than 10 minutes and shows a current registry lease and covered demand, no run is open, fewer than two runs started that UTC day, no step-down cool-off is active, and capacity history can record the run. For a positive lane count, demand uses supplied lanes plus the host's ready share. For a zero-lane host with a current registry lease, the discovery-start demand gate is met when the ready buffer minus all hosts' unsupplied lanes, taken as zero when negative, plus the tickets queued behind the first ticket of any reachable lane's assignment list, is at least one. Zero-lane bootstrap does not cover a capacity-step window. A positive target-buffer deficit does not prevent discovery (ORCH-R20). While `fleet capacity` is not installed or capacity history is unavailable no run starts (Interim mode).
 - Lower a host's lane count for a thermal or memory reason only with scheduler evidence at that time: an active pause, an admission block, a build abort, or memory headroom below reserve (ORCH-R12).
 
 ### 10. Answer "who owns X"
