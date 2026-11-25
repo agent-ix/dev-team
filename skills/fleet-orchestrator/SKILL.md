@@ -1,7 +1,7 @@
 ---
 name: fleet-orchestrator
 description: Run the fleet orchestrator loop. Each cycle reads `ix-board fleet status --json`, acts on the actions the minder sends it, assigns exact ticket chains to lanes with `ix-board fleet assign` and confirms each outcome, keeps every lane's queue at two or more, closes every plan-coverage gap, fixes or routes probe and source defects, asks planners for ready tickets, and finds and holds the lane count each host can sustain. Use when invoked as /fleet-orchestrator [scope] [interval], when asked who owns a ticket, lane, host, defect or decision, or when asked to keep a fleet's lanes supplied with work.
-role_spec_version: 5
+role_spec_version: 6
 ---
 
 # Fleet Orchestrator
@@ -139,7 +139,7 @@ A positive ready-buffer deficit (`ix_fleet_ready_buffer_deficit`) is sent to eac
 Capacity discovery and the step-down rules are in [references/capacity-discovery.md](references/capacity-discovery.md). Each cycle, for every host:
 
 - No host runs above its recorded level, except in a discovery run of at most 8 steps (ORCH-R21).
-- A host with no recorded level enters discovery when the ready-buffer deficit is zero and the capacity history is available to record the run (ORCH-R20). While `fleet capacity` is not installed no run starts (Interim mode).
+- A host with no recorded level enters discovery when its registry lease is current and its ready buffer is at least the greater of one ticket or its current lane count; a positive target-buffer deficit does not prevent discovery (ORCH-R20). A zero-lane host uses bootstrap ready-buffer evidence. While `fleet capacity` is not installed no run starts (Interim mode).
 - Lower a host's lane count for a thermal or memory reason only with scheduler evidence at that time: an active pause, an admission block, a build abort, or memory headroom below reserve (ORCH-R12).
 
 ### 10. Answer "who owns X"

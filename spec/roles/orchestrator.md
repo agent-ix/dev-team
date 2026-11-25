@@ -1,7 +1,7 @@
 ---
 id: ORCH
 role: orchestrator
-version: 5
+version: 6
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -130,8 +130,12 @@ Each host's sustainable lane count is unknown until measured. Discovery ramps
 lanes only; build slots are computed by the build scheduler from live
 headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
 
-- **Start.** A host with no recorded level starts discovery when the
-  ready-buffer deficit is zero. `fleet tick` suppresses `add_lane` for a host
+- **Start.** A host with no recorded level starts discovery when its registry
+  lease is current and its ready buffer covers at least one ticket or its
+  current reachable lane count, whichever is greater. Thus a zero-lane host
+  can bootstrap its first lane only when a ready ticket exists; a stale host
+  has no bootstrap evidence. A positive target-buffer deficit may still exist.
+  `fleet tick` suppresses `add_lane` for a host
   while its discovery run is active (SWM-256). A host runs at most 2
   discovery runs a day, first runs and re-discoveries counted together.
 - **Step.** Add one lane. A run takes at most 8 steps; a run that reaches the
@@ -139,9 +143,10 @@ headroom and read from `ix_build_slots_sustainable`. The procedure, per host:
 - **Hold.** Keep each level for a measurement window (default 2 hours,
   configurable). The first 30 minutes after a lane is added are ramp-up and
   are excluded from the measurement.
-- **Valid window.** A window counts only when the ready-buffer deficit
-  (`ix_fleet_ready_buffer_deficit`, ix-board FR-041) was zero for the whole
-  window, so ready work was available to every lane. Otherwise the step is
+- **Valid window.** Demand-covering saturation samples span at least 90% of the
+  window and every usable sample shows ready-buffer tickets at least equal to
+  the step's lane count, so ready work was available to every lane. A positive
+  target-buffer deficit does not invalidate a window. Otherwise the step is
   inconclusive and its window is repeated. After 2 inconclusive windows in a
   row the run ends with reason `inconclusive_no_demand`, recorded in the
   capacity history (SWM-252), and the host returns to the last level measured
@@ -209,7 +214,7 @@ that reads it names its producer here:
 | SWM-288 (`orchestrator_addressed_actions` view) | Open actions of every kind the orchestrator executes (the kind list in Action delivery, selected by kind), readable with `fleet ledger query`: the backstop to the minder's relay messages | ORCH-R10-E1 |
 | SWM-212 (`fleet plan-coverage`) | Unowned ready tickets, short queues and stale assignments, with the `owner_unreachable` note | ORCH-R06-E1 |
 | SWM-213 (drift, ix-board FR-037) | Drift findings `not_assigned`, `not_in_plan`, `priority_inversion` | ORCH-R13-E1, ORCH-M05 |
-| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit` and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
+| SWM-217 (`fleet saturation`, ix-board FR-041) | `ix_fleet_ready_buffer_deficit`, per-host ready-buffer and active-lane samples, bootstrap buffer evidence for a zero-lane host, `ledger.unrecorded_hosts_with_demand`, and the `need_ready_tickets` action | ORCH-R14-E1, ORCH-R17-E1, ORCH-R20-E1, ORCH-M02 |
 | SWM-216 (`fleet capacity` calibrate) | Discovery runs and their recorded levels, into the SWM-252 capacity history | ORCH-R16-E1 to ORCH-R29-E1 |
 | SWM-257 (`fleet assign`) | `--expect-ticket` set to the first ticket; order id on FR-072 transitions | ORCH-R01-E1, ORCH-R02-E1 |
 | SWM-252 (capacity history; scope extended in its ticket comment) | Discovery steps; per-step host output with per-lane attribution of tickets closed, pull requests merged and commits pushed from Linear and GitHub; valid and inconclusive windows; knee; run end reasons; recorded level; draining marks and drain completion; step-downs and their reasons | ORCH-M06, ORCH-R12-E1, ORCH-R16-E1 to ORCH-R26-E1, ORCH-R28-E1 to ORCH-R30-E1 |
@@ -259,10 +264,10 @@ that reads it names its producer here:
 | ORCH-R14 | A positive ready-buffer deficit SHALL be sent to each owning planner as a request for the stated number of ready tickets in the cycle it appears. | ORCH-O02 | parked-unowned-work | Plan W6: saturation drives planning upstream |
 | ORCH-R15 | When the owner asks who owns a ticket, lane, host, defect or decision, the orchestrator SHALL answer with a named role and lane address, read from the ix-board `[fleet_tick]` settings `orchestrator`, `minder` and `leads` and from the relay lane registry. | ORCH-O03 | unowned-work | Owner's "who owns X" questions, plan W4 |
 | ORCH-R16 | Capacity discovery SHALL add one lane per step and hold each step for the measurement window. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R17 | A discovery step SHALL be judged only on a window in which the ready-buffer deficit was zero throughout, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
+| ORCH-R17 | A discovery step SHALL be judged only on a window with at least 90% saturation-sample coverage and ready-buffer tickets at least equal to the step's lane count in every usable sample; a positive target-buffer deficit does not invalidate demand coverage, and an inconclusive window SHALL be repeated. | ORCH-O06 | capacity-unknown | False knees from missing demand, capacity review |
 | ORCH-R18 | Capacity discovery SHALL stop at the first knee signal and step the host back one lane. | ORCH-O06 | capacity-unknown | Titan thermal limits found by hand, plan W6 |
 | ORCH-R19 | The orchestrator SHALL record each host's found level, with the measurements it was found at, in the capacity history. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
-| ORCH-R20 | A host with no recorded level SHALL be put into discovery when the ready-buffer deficit is zero and the capacity history is available to record the run. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
+| ORCH-R20 | A host with no recorded level SHALL be put into discovery when its registry lease is current, its ready buffer is at least the greater of one ticket or its current reachable lane count, and the capacity history is available to record the run; a positive target-buffer deficit does not prevent discovery. | ORCH-O06 | capacity-unknown | Capacity unset on all 4 hosts, plan W0 |
 | ORCH-R21 | The orchestrator SHALL NOT run a host above its recorded level except during a discovery run of at most 8 steps. | ORCH-O06 | capacity-unknown | 46 builds frozen when the heat guard died, plan W6 |
 | ORCH-R22 | A host throttled above 5% for an hour at its recorded level SHALL be stepped down one lane, and re-discovered when the daily discovery cap (ORCH-R24) allows. | ORCH-O06 | capacity-unknown | Titan thermal handoff, plan W6 |
 | ORCH-R23 | After a step-down, the orchestrator SHALL NOT raise the host above the stepped-down level before the cool-off ends. | ORCH-O06 | capacity-oscillation | Re-discovery oscillation, capacity review |
@@ -284,29 +289,29 @@ that reads it names its producer here:
 | ORCH-R02-E1 | ORCH-R02 | relay-receipts | relay.orchestrator_orders | deterministic | relay.orchestrator_orders_not_via_fleet_assign | evaluator | = | 0 | orders | 3h |
 | ORCH-R03-E1 | ORCH-R03 | ledger | ledger.lanes_with_ready_work | deterministic | ledger.short_queue_open_cycles_max | evaluator | <= | 1 | cycles | tick |
 | ORCH-R04-E1 | ORCH-R04 | ledger | ledger.unconfirmed_assign_results | deterministic | ledger.unconfirmed_assignments_without_followup | evaluator | = | 0 | assignments | tick |
-| ORCH-R04-E2 | ORCH-R04 | transcript | ledger.unconfirmed_assign_results | judgement | rubric-orchestrator@1#confirmation | director | >= | 2 | score | daily |
+| ORCH-R04-E2 | ORCH-R04 | transcript | ledger.unconfirmed_assign_results | judgement | rubric-orchestrator@2#confirmation | director | >= | 2 | score | daily |
 | ORCH-R05-E1 | ORCH-R05 | ledger | ledger.assignments_sent | deterministic | ledger.assignment_confirm_latency_max | evaluator | <= | 5 | minutes | 3h |
 | ORCH-R06-E1 | ORCH-R06 | ledger | ledger.plan_coverage_gap_rows | deterministic | ledger.plan_coverage_gap_open_cycles_max | evaluator | <= | 1 | cycles | tick |
 | ORCH-R07-E1 | ORCH-R07 | transcript | transcript.fleet_health_claims | deterministic | transcript.in_target_claims_without_complete_status | evaluator | = | 0 | claims | session-end |
-| ORCH-R07-E2 | ORCH-R07 | transcript | transcript.fleet_health_claims | judgement | rubric-orchestrator@1#in-target-claim | director | >= | 2 | score | daily |
+| ORCH-R07-E2 | ORCH-R07 | transcript | transcript.fleet_health_claims | judgement | rubric-orchestrator@2#in-target-claim | director | >= | 2 | score | daily |
 | ORCH-R08-E1 | ORCH-R08 | linear | ledger.defect_rows | deterministic | linear.defects_neither_fixed_nor_routed_after_one_cycle | evaluator | = | 0 | defects | tick |
-| ORCH-R08-E2 | ORCH-R08 | transcript | ledger.defect_rows | judgement | rubric-orchestrator@1#failed-probe | director | >= | 2 | score | daily |
+| ORCH-R08-E2 | ORCH-R08 | transcript | ledger.defect_rows | judgement | rubric-orchestrator@2#failed-probe | director | >= | 2 | score | daily |
 | ORCH-R09-E1 | ORCH-R09 | ledger | ledger.idle_lane_with_ready_work_ticks | deterministic | ledger.idle_lane_episode_with_ready_work_max | evaluator | <= | 1 | cycles | tick |
 | ORCH-R10-E1 | ORCH-R10 | ledger | ledger.orchestrator_rungs_emitted | deterministic | ledger.orchestrator_rung_open_cycles_max | evaluator | <= | 1 | cycles | tick |
-| ORCH-R10-E2 | ORCH-R10 | transcript | ledger.orchestrator_rungs_emitted | judgement | rubric-orchestrator@1#dismissed-evidence | director | >= | 2 | score | daily |
+| ORCH-R10-E2 | ORCH-R10 | transcript | ledger.orchestrator_rungs_emitted | judgement | rubric-orchestrator@2#dismissed-evidence | director | >= | 2 | score | daily |
 | ORCH-R11-E1 | ORCH-R11 | ledger | prom.host_build_pause_intervals | deterministic | ledger.idle_lane_minutes_during_build_pause | evaluator | <= | 10 | minutes | 3h |
 | ORCH-R12-E1 | ORCH-R12 | ledger | ledger.lane_count_reductions | deterministic | ledger.lane_reductions_without_throttle_evidence | evaluator | = | 0 | reductions | daily |
-| ORCH-R12-E2 | ORCH-R12 | transcript | ledger.lane_count_reductions | judgement | rubric-orchestrator@1#thermal-excuse | director | >= | 2 | score | daily |
+| ORCH-R12-E2 | ORCH-R12 | transcript | ledger.lane_count_reductions | judgement | rubric-orchestrator@2#thermal-excuse | director | >= | 2 | score | daily |
 | ORCH-R13-E1 | ORCH-R13 | ledger | ledger.drift_findings | deterministic | ledger.drift_finding_open_cycles_max | evaluator | <= | 1 | cycles | 3h |
 | ORCH-R14-E1 | ORCH-R14 | relay-receipts | ledger.need_ready_tickets_actions | deterministic | relay.need_ready_tickets_without_planner_order | evaluator | = | 0 | actions | tick |
 | ORCH-R15-E1 | ORCH-R15 | transcript | transcript.owner_ownership_questions | deterministic | transcript.ownership_answers_without_lane_address | evaluator | = | 0 | answers | session-end |
-| ORCH-R15-E2 | ORCH-R15 | transcript | transcript.owner_ownership_questions | judgement | rubric-orchestrator@1#who-owns | director | >= | 2 | score | daily |
+| ORCH-R15-E2 | ORCH-R15 | transcript | transcript.owner_ownership_questions | judgement | rubric-orchestrator@2#who-owns | director | >= | 2 | score | daily |
 | ORCH-R16-E1 | ORCH-R16 | ledger | ledger.discovery_steps | deterministic | ledger.discovery_steps_violating_ramp | evaluator | = | 0 | steps | daily |
 | ORCH-R17-E1 | ORCH-R17 | ledger | ledger.discovery_steps | deterministic | ledger.discovery_steps_judged_without_demand | evaluator | = | 0 | steps | daily |
 | ORCH-R18-E1 | ORCH-R18 | ledger | ledger.discovery_knee_signals | deterministic | ledger.discovery_raised_past_knee | evaluator | = | 0 | steps | daily |
-| ORCH-R18-E2 | ORCH-R18 | transcript | ledger.discovery_knee_signals | judgement | rubric-orchestrator@1#capacity-knee | director | >= | 2 | score | weekly |
+| ORCH-R18-E2 | ORCH-R18 | transcript | ledger.discovery_knee_signals | judgement | rubric-orchestrator@2#capacity-knee | director | >= | 2 | score | weekly |
 | ORCH-R19-E1 | ORCH-R19 | ledger | ledger.discovery_runs_ended | deterministic | ledger.discovery_runs_without_recorded_level | evaluator | = | 0 | runs | daily |
-| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_at_zero_deficit | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
+| ORCH-R20-E1 | ORCH-R20 | ledger | ledger.unrecorded_hosts_with_demand | deterministic | ledger.unrecorded_hosts_without_discovery_run | evaluator | = | 0 | hosts | daily |
 | ORCH-R21-E1 | ORCH-R21 | ledger | ledger.hosts_with_recorded_level | deterministic | ledger.host_minutes_above_recorded_level_outside_bounded_discovery | evaluator | = | 0 | minutes | daily |
 | ORCH-R22-E1 | ORCH-R22 | ix-board-metric | prom.hosts_throttled_at_recorded_level | deterministic | prom.throttled_hosts_without_step_down | evaluator | = | 0 | hosts | daily |
 | ORCH-R23-E1 | ORCH-R23 | ledger | ledger.host_step_downs | deterministic | ledger.raises_during_cool_off | evaluator | = | 0 | raises | daily |
@@ -382,7 +387,7 @@ that reads it names its producer here:
 - ORCH-R17 and ORCH-R28 together bound repeated windows: a run can repeat at
   most one inconclusive window before it ends.
 - ORCH-R27 is `n.a.` for a host until its level is recorded: before that the
-  host waits for a zero deficit or is in discovery (ORCH-R20), and `fleet
+  host waits for ready-buffer demand to cover its current lanes or is in discovery (ORCH-R20), and `fleet
   tick` suppresses `add_lane` for it during a run (SWM-256).
 - The knee compares total host output between levels, so a cold added lane
   does not read as a knee on its own; the 30-minute ramp-up is excluded and
