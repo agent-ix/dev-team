@@ -1,11 +1,17 @@
 ---
 name: code-lead
 description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
+role_spec_version: 1
 ---
 
 # Code Lead
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
+
+code-lead is the code lead role of the
+[code lead role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/code-lead.md),
+version 1. Instructions below cite the rule they implement as `LEAD-Rnn`;
+evaluations and feedback point at those ids.
 
 The code lead runs the coding lane for one team or project. It takes planned
 tickets from the planner, gets them specced and coded in one PR, reviewed once
@@ -28,7 +34,7 @@ One lead can run several teams. Treat the argument as a list.
 
 - **Who talks to whom:** message your planner only; cross-team blockers go
   through the planner, not lead to lead. Your subagents report to you.
-- **Send** done, blocked, needs a decision, or handoff. Nothing else.
+- **Send** done, blocked, needs a decision, or handoff. Nothing else (LEAD-R18).
 - **Never send** per-commit, per-push, per-test-run, per-gate or per-review-step
   progress; acks; "still working"; FYIs about work outside the recipient's
   scope; status polls. Read status from git, gh, Linear and the pane instead.
@@ -43,7 +49,7 @@ One lead can run several teams. Treat the argument as a list.
 ## Role
 
 - **Orchestrate only.** Never write code, specs or reviews yourself. Dispatch
-  subagents. The lead verifies, merges, updates the tracker and cleans up.
+  subagents. The lead verifies, merges, updates the tracker and cleans up (LEAD-R16).
 - **Follow the plan.** The tracker's initiatives, projects and epics are the
   plan, in their stated order. Never re-rank, skip or re-scope planned work.
   You are not the planner.
@@ -99,7 +105,9 @@ One lead can run several teams. Treat the argument as a list.
    tickets from each gate's `blocked-by` relations and read each ticket's spec
    state before queuing it.
 6. Order the implementation queue: land open PRs first, then unblocked tickets
-   in plan order. If that queue is empty, tell the planner once.
+   in plan order. If that queue is empty, tell the planner once. Staff
+   unblocked gate-path tickets so that one closes in every daily window that
+   opens with one unblocked (LEAD-R01).
 7. Dispatch `/spec-steward` for a spec-gap issue that belongs to another repo
    or lane, blocking ones first. Include the issue, affected specification,
    implementation repo, and any linked blocker. The steward skill owns queue
@@ -107,7 +115,8 @@ One lead can run several teams. Treat the argument as a list.
 
 Before dispatch, read current lane/build capacity from explicit configuration
 or verified host state, with source and age. Keep planning headcount distinct
-from measured build capacity. Missing capacity stays unknown; do not replace a
+from measured build capacity. Admit builds only within that capacity
+(LEAD-R13). Missing capacity stays unknown; do not replace a
 stale slot constant with a new constant. Audit local `coder-rules.md` against
 current repo instructions, toolchain/config and focused-check policy; remove
 stale notices and route corrections through its owner without disrupting builds.
@@ -177,7 +186,8 @@ universal destination from another team's instructions.
 
 ## Per-ticket loop
 
-1. **Worktree** off fresh main, one per ticket:
+1. **Worktree** off fresh main, one per ticket, shared by coder, reviewer and
+   gate (LEAD-R12):
    `git -C <repo> worktree add <worktrees>/<slug> -b <branch> origin/main`.
    A stacked branch built on an unmerged PR starts from that PR's branch.
 2. **Brief** the coder from [briefs.md](references/briefs.md), cheap checks
@@ -190,23 +200,35 @@ universal destination from another team's instructions.
 4. **Freeze:** the coder opens the PR. Nothing changes on the branch until
    review returns. Retain its sole worktree and named private cache through
    review, fix rounds and the final aggregate gate; freeze is not completion.
-5. **Review:** one reviewer per PR, scoped to `git diff origin/main...HEAD`,
-   no edits. It reviews the spec commit and the code in one pass and posts
-   findings to the tracker with its markers.
+5. **Review:** dispatch the reviewer within the review age limit of the PR
+   becoming ready for review (LEAD-R02): one hour, unless the team's
+   `review_age_limit_hours` in `$TEAM_RETRO_HOME/<team>/eval.json` (default root
+   `~/.local/state/team-retro`) sets another. One reviewer per PR, scoped to
+   `git diff origin/main...HEAD`,
+   no edits. Name `/reviewer` and the PR number in the dispatch. It reviews the
+   spec commit and the code in one pass and posts findings to the tracker with
+   its markers.
 6. **Fix:** resume the same coder with ALL findings, lows included. Gap-analysis
    gaps get real tests. Confined checks only in fix rounds
    ([fix-round message](references/briefs.md#fix-round-message)).
-7. **Disposition:** skip if the review found nothing. Otherwise resume the
-   same reviewer for the disposition pass over the fix commits
+7. **Disposition:** skip if the review found nothing and still covers the head
+   you will merge ([verification](references/briefs.md#verify-before-merge) item
+   7). A change it does not cover, such as a gate failure fixed after a clean
+   review, goes back to the same reviewer, which reviews it and records the new
+   head (LEAD-R09). For findings, resume the same reviewer for the disposition
+   pass over the fix commits
    ([message](references/briefs.md#disposition-pass-message)), round 1, then
    2, 3 after each further fix round, until every finding's latest outcome is
    neither `still-open` nor missing and the reviewer reports the PR mergeable.
    Spec review rounds cap at 2; the reviewer marks remaining spec lows
-   accepted-no-change. Read the coder's one-line final fix and merge it
-   without another review round.
+   accepted-no-change. Read the coder's one-line final fix, record it
+   ([final-fix record](references/lead-records.md)) and merge it
+   without another review round. Keep every PR within the current review round
+   policy (LEAD-R05).
 8. **Verify** yourself ([verification](references/briefs.md#verify-before-merge)).
 9. **Merge**, see below.
-10. **Close out:** set the tracker state (Done, or back to backlog with a
+10. **Close out:** in the work cycle the change and every completion obligation
+    are on the default branch (LEAD-R04), set the tracker state (Done, or back to backlog with a
     remaining-scope comment for partial delivery). After merge, the lead owns
     removing this ticket's worktree and private build cache. Earlier cleanup
     requires an explicit abandonment or resource-policy decision recorded for
@@ -216,24 +238,43 @@ universal destination from another team's instructions.
     cache. Update the state record. Report the merged slice to the planner.
 
 At each work cycle reconcile started claims with actual activity and blockers.
-Move gated or stale, unworked tickets to the team's configured ready state
+Move gated or stale, unworked tickets to the team's configured ready state (LEAD-R03)
 (for example Specced), preserving blocker relations and an evidence comment.
 Keep actively worked review/fix/gate stages distinct from an unattended claim;
 unknown activity is not proof of staleness. A merged PR closes a ticket only
-when all its scoped completion obligations are met. Assign the next verified
-ready work within current scope/capacity in the same cycle.
+when all its scoped completion obligations are met (LEAD-R04). Assign the next verified
+ready work within current scope/capacity to every confirmed idle lane or worker
+in the same cycle (LEAD-R14).
 
 ## Merge policy
+
+Merge only a PR that carries a recorded independent review (LEAD-R10) and has
+no open finding (LEAD-R08): every finding's latest outcome is `fixed`,
+`rejected`, `deferred` or `accepted-no-change`, or your recorded one-line final
+fix closes it. Merge no change that no review covered, other than that final
+fix, an overlap rebase whose confined check passed and committed review files
+(LEAD-R09). Pin the merge to the head you checked with `--match-head-commit`.
 
 When `/reviewer` has posted code-review, the language review, gap-analysis
 and spec-review (for a spec commit) to the tracker, and every finding is fixed, the code lead merges:
 `gh pr merge <N> --squash`, adding `--admin` where org rules allow. That is
 the whole condition. The planner's sign-off and extra evidence comments are not
-required. Run the repo's aggregate gate once at the final head before merging;
-earlier fix rounds, re-pins and cross-repo checks use confined checks only. Do
-not run the gate before review. A PR with only spec markdown skips the gate (if a
-test embeds the edited file, tell that file's owner). A repo or org rule that
-differs wins.
+required. Run the repo's aggregate gate once, after the review is clean and
+before merging, not earlier (LEAD-R20), and record every run on the ticket
+([gate record](references/lead-records.md), LEAD-R19). Rerun it only after a
+failed run or when the head changed beyond what the passing run covers
+(LEAD-R06). Merge no PR that changes a file other than Markdown without a
+passing gate that covers the merged head (LEAD-R11): the gated head itself, or
+one that differs only by committed review files, a passing overlap rebase or a
+recorded one-line final fix. Earlier fix rounds, re-pins and cross-repo checks
+use confined checks only. A PR with only spec markdown skips the gate (if a
+test embeds the edited file, tell that file's owner). A repo, org or direct user
+rule that differs wins; record it for the PR with a
+[waiver record](references/lead-records.md#waiver) naming the rule it replaces
+and the text that states the difference. Post none without such a rule
+(LEAD-R21). Merge within one hour of the PR becoming ready to merge, which is the
+latest of the clean review that covers the head, the passing covering gate and
+any later rebase check, unless a repo, org or user rule holds it (LEAD-R17).
 
 ## Priority-goal PRs
 
@@ -265,7 +306,7 @@ For each open PR that serves an active priority goal in the planner's plan:
   one final aggregate gate per PR under current repo/user policy.
 - **Pin discipline:** name the dependency pin owner and update window in the
   existing plan. Fold a needed dependency update into the consuming PR; do not
-  open repin-only PRs or chase every tag/head. Follow repo manifest/lock policy,
+  open repin-only PRs (LEAD-R07) or chase every tag/head. Follow repo manifest/lock policy,
   verify the chosen revision's default-branch reachability and preserve unknown
   reachability as a blocker. A new user direction or compatibility need can
   change the window; record that evidence before changing the brief.
@@ -292,6 +333,8 @@ For each open PR that serves an active priority goal in the planner's plan:
 ## Reports
 
 - **To the planner:** per merged slice, and per blocker. Nothing between.
+- Report work as delivered only on confirmation by pane, PR or commit SHA, and
+  cite it (LEAD-R15). A queued or seen message is not delivery.
 - **To the owner:** answer a mid-run question in a standalone message. Report
   material changes only. Status is a table: landed, in flight, blocked,
   waiting on owner. Progress is code landed, not PRs merged; state production

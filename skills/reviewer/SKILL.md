@@ -1,18 +1,31 @@
 ---
 name: reviewer
 description: Run a PR's review stage as the dedicated reviewer role — run every applicable review method (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses) in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
+role_spec_version: 1
 ---
 
 # Reviewer
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
+reviewer is the reviewer role of the
+[reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
+version 1. Instructions below cite the rule they implement as `REV-Rnn`;
+evaluations and feedback point at those ids. A tracked PR gets one reviewer,
+resumed for disposition passes. Each method is reviewed by one reviewer run
+only (REV-R01): a retried or replacement dispatch posts the methods not yet on
+the ticket and re-reviews none. Never review a PR you authored (REV-R02). The
+record fields the evaluator reads are defined in
+[FR-017](https://github.com/agent-ix/dev-team/blob/main/spec/functional/FR-017-role-evaluation-records.md).
+
 The reviewer role is a sibling of `skills/code-lead/` — one skill per role. A
 code lead (or any orchestrator) dispatches one reviewer subagent per tracked
 PR through `/reviewer`, for the review pass and again for dispositions. The
 method skills (`/code-review`, `/quoin:spec-review`, and applicable language
 and gap analyses) run inside this role; they are not separate reviewer
-dispatches. The subagent is reviewer-only, with no code edits. This skill's
+dispatches. The subagent is reviewer-only, with no code edits: never commit or
+push to the branch under review (REV-R03), and revert any temporary mutation
+made to show that a test fails before the pass ends. This skill's
 job stops at reporting: it never fixes a finding and never merges. It runs
 every review method the change needs, lets each write its own artifact, and
 posts the review to the project's **ticket tracker** so the data outlives the
@@ -29,10 +42,11 @@ Two passes, run as separate invocations of this skill:
 
 1. **Review pass** — before any fix lands. Run the methods, let each write its
    artifact, post one marked comment per method, add the `has-review` label.
-2. **Disposition pass** — after the coder's fix round lands. Re-check each
-   finding against the current code, record an explicit outcome for every one,
-   and post one dispositions comment per artifact that had findings. May run
-   more than once (a fix can regress, or introduce a new defect); each round
+2. **Disposition pass** — after the coder's fix round lands, or after any later
+   change the leader sends you. Re-check each finding against the current code,
+   record an explicit outcome for every one, and post one dispositions comment
+   per artifact that has findings, at least one per pass. May run more than
+   once (a fix can regress, or introduce a new defect); each round
    may add findings of its own, under their own section, and posts its own
    dispositions comment. Never touch the original finding text or the
    original comments to do this.
@@ -49,7 +63,7 @@ outcomes go in the comment itself. See
 ## Communication
 
 - **Who talks to whom:** report to your code-lead only.
-- **Send** done, blocked, needs a decision, or handoff. Nothing else.
+- **Send** done, blocked, needs a decision, or handoff. Nothing else (REV-R14).
 - **Never send** per-commit, per-push, per-test-run, per-gate or per-review-step
   progress; acks; "still working"; FYIs about work outside the recipient's
   scope; status polls. Read status from git, gh, Linear and the pane instead.
@@ -108,12 +122,15 @@ don't refuse pre-emptively.
 Separately and unconditionally: **never post findings, excerpts, or a SpecReview
 section to the GitHub PR or issue itself**, on any repo. This is absolute on a
 public repo — check `gh repo view --json visibility -q .visibility` — and
-still the rule on a private one, so behavior does not depend on remembering to
+still the rule on a private one (REV-R06), so behavior does not depend on remembering to
 check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 
 ## 2. Decide which methods apply
 
-Scope the diff to what the PR actually changed:
+Scope the diff to what the PR actually changed. A finding on a file outside the
+PR's file list, such as the same bug elsewhere or a stale reference the change
+leaves behind, needs a failing result observed at that path, recorded in the
+finding's `outside_diff_failure` (REV-R11):
 
 ```bash
 git diff --name-only origin/main...HEAD
@@ -278,8 +295,12 @@ method's own contract:
 
 ## 5. Post one marked comment per method
 
-For each method that ran, post one comment to the ticket (Linear command
-shown; see [Other trackers](#10-other-trackers) for a different backend).
+For each method that ran, post one comment to the ticket (REV-R04), within the
+review age limit of your dispatch (REV-R12): one hour, unless
+`review_age_limit_hours` in the team's
+`$TEAM_RETRO_HOME/<team>/eval.json` (default root `~/.local/state/team-retro`)
+sets another. The Linear command is shown; see
+[Other trackers](#10-other-trackers) for a different backend.
 Round-tripped through `linear issue comment list --json` and compared
 byte-for-byte, a first line reading `<!-- reviewer ... -->`, a Markdown table,
 a fenced ` ```yaml ` block, and a `+++ [title] ... +++` collapsible section
@@ -297,11 +318,15 @@ a fenced code block, never YAML frontmatter.
    readable — confirmed above to survive read-back unchanged, so there's no
    reason to leave it expanded.
 
-**Marker** (one line, exactly these fields):
+**Marker** (one line, exactly these fields; `repo=`, `id=`, `method=`, `pr=`,
+`run=` and `head=` are never omitted, REV-R05):
 
 ```
-<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> model=<model-id> run=<run-id> -->
+<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> head=<full commit hash reviewed> model=<model-id> run=<run-id> -->
 ```
+
+`head=` is the full hash of the commit you reviewed (`git rev-parse HEAD` in the
+review worktree). The code lead's merge check reads it.
 
 There is no `date=`: the date is the comment's own timestamp. `model=` is your
 exact model id (for example `claude-opus-5-5`); `run=` is an id for this
@@ -347,8 +372,14 @@ findings:
     excerpt: |-
       <exact text of the artifact_id unit, verbatim, <=600 chars>
     finding: "<the finding text, matching the SpecReview row's Summary>"
+    # outside_diff_failure: "<the failing result observed at path>"   # required when path is not in the PR's file list
 bindings: []   # optional; see "Trace findings and bindings" below
 ```
+
+**Every finding names a file or line and a failure scenario** (REV-R10): fill
+`path` and `lines`, and say in `finding` what goes wrong and when. A finding
+whose `path` the PR does not change also fills `outside_diff_failure`
+(REV-R11).
 
 **One primary unit per finding.** `artifact_id` is the smallest unit the
 defect is about: exactly one `FR-x-AC-y`, or the FR statement itself when the
@@ -396,7 +427,7 @@ Every `trace: wrong` binding has a matching `check: trace` finding.
 **Compact example — review comment:**
 
 ````
-<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 model=<model-id> run=<run-id> -->
+<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 head=<full-commit-hash> model=<model-id> run=<run-id> -->
 
 | FND | Severity | Check | Summary |
 | --- | --- | --- | --- |
@@ -502,15 +533,18 @@ Skip even that when the PR title or body already contains the ticket id.
 ## 8. Disposition pass (after the coder's fix round)
 
 Run this as a second invocation once the coder has pushed fixes for the
-findings from step 5. Re-read each method's SR file and the current diff; do
-not trust a ticket comment's own claim that a finding is resolved — verify it
+findings from step 5, or once the leader sends you a later change, such as a
+gate failure fixed after a clean review. Review everything that changed since
+the `head=` of your latest comment. Re-read each method's SR file and the
+current diff; do not trust a ticket comment's own claim that a finding is resolved — verify it
 against the code and the fix commit yourself.
 
 This pass may run more than once — a coder's fix can itself introduce a
 regression, and a leader may resume the same reviewer for a second, third,
 … disposition round. Track the round number `N` (1 for the first disposition
 pass after the first fix round, 2 after the second, and so on); it goes in
-the marker below.
+the marker below. Report everything you can see in each pass, so the PR reaches
+a clean disposition within the current review round policy (REV-R09).
 
 If this pass finds a defect that isn't an existing `FND-NNN` row — a
 regression the fix introduced, or something the review pass missed — append
@@ -522,7 +556,7 @@ stays exactly as the review pass wrote it. A new finding found this way is
 routed back to the coder for another fix round, the same as any other
 finding, and gets its own outcome in a later disposition pass.
 
-A finding is judged by its **latest** disposition row, not its first: decide
+A finding is judged by its **latest** disposition row, not its first (REV-R07): decide
 an outcome for every `FND-NNN` — from `## Findings` and from any
 `## New findings` section, including one added by this round or a previous
 round — whose latest outcome is `still-open`, plus every one that has no
@@ -550,7 +584,12 @@ Choose one outcome per finding checked:
   another fix round rather than merging. A later round's row for the same
   finding — `fixed`, `rejected`, `deferred`, or `accepted-no-change` —
   supersedes it; the earlier `still-open` row stays in the file unedited, it
-  is just no longer the latest.
+  is just no longer the latest. Never report the PR mergeable while any
+  finding's latest outcome is `still-open` or missing (REV-R08).
+
+The comment's `mergeable=` field records that statement, `yes` or `no` for the
+whole pull request after this pass, with the same value on every comment of the
+pass.
 
 Add these rows to (never edit or remove an existing row in) a `##
 Dispositions` section on the **same** SR file, appending it if it doesn't yet
@@ -567,13 +606,22 @@ reaches a scratchpad file:
 quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
 ```
 
-Post **one dispositions comment per artifact that had findings, per round** —
-same marker style, `reviewer-dispositions` instead of `reviewer`, referencing
-that artifact's own `SR-NNN` and this round's number:
+Post **one dispositions comment per artifact that has findings, per round**. When
+no artifact has any, post one on the first review artifact you posted. A comment
+with nothing to re-check carries `dispositions: []`. Every pass posts at least
+one comment, because its `head=` records what you reviewed. Use the same
+marker style, `reviewer-dispositions` instead of `reviewer`, referencing
+that artifact's own `SR-NNN` and this round's number. `repo=`, `id=`,
+`round=`, `run=`, `head=` (the commit you checked) and `mergeable=` are never
+omitted (REV-R05):
 
 ```
-<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N head=<full commit hash checked> mergeable=<yes|no> model=<model-id> run=<run-id> -->
 ```
+
+A pass that found a new defect also lists it in that artifact's comment under
+`new_findings:`, with every field of a review finding. An artifact whose first
+defect appears in this pass gets a comment too.
 
 ```yaml
 dispositions:
@@ -584,6 +632,8 @@ dispositions:
   - fnd: FND-002
     outcome: rejected
     reason: "Tautological only in the fixture; the production path asserts a real value."
+# new_findings:   # only when this pass found a defect; fields as in a review finding
+#   - {fnd: FND-003, severity: low, confidence: high, method: code-review, check: code-bug, artifact_id: "<id>", path: "<path>", lines: "<lines>", excerpt: "<text>", finding: "<text>"}
 ```
 
 Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
@@ -592,7 +642,7 @@ Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
 **Compact example — dispositions comment:**
 
 ````
-<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 head=<full-commit-hash> mergeable=yes model=<model-id> run=<run-id> -->
 
 | FND | Outcome | Reason |
 | --- | --- | --- |
@@ -619,7 +669,8 @@ one.
 
 ## 9. Read back and self-check every comment you posted
 
-Posting is not done until you have read the comment back. An audit of 123
+Posting is not done until you have read the comment back and repaired any data
+block that does not parse or lacks a required field (REV-R13). An audit of 123
 reviewer comments found 3 with a yaml block that did not parse, and 19 of 65
 `fixed` rows with no `after_excerpt` although step 8 requires one. Nothing
 else enforces these, so this step does. Run it after **every** post, review
@@ -649,12 +700,17 @@ block from the body **as Linear returned it**, and check:
      before it posts, so the file's current latest outcomes already include
      this round). The `fnd:` ids must be exactly the `FND-NNN` ids — from
      `## Findings` and every `## New findings` section — whose latest outcome
-     before this round was `still-open` or that had no outcome yet, and must
-     equal the set of rows this round added to `## Dispositions`.
+     before this round was `still-open` or that had no outcome yet (an empty
+     list when there were none), and must
+     equal the set of rows this round added to `## Dispositions`. The
+     `new_findings:` ids must be exactly those of this round's `## New
+     findings` section for that artifact.
 3. **Every row is complete.** Each `outcome: fixed` entry carries a non-empty
    `after_excerpt`. Each `rejected`, `deferred`,
    `accepted-no-change` and `still-open` entry carries a non-empty `reason`
-   (the same `reason:` field the `rejected` example in step 8 shows).
+   (the same `reason:` field the `rejected` example in step 8 shows). The
+   marker line carries every field step 5 or step 8 requires, and a finding
+   outside the PR's file list carries `outside_diff_failure`.
 
 On any failed check, **edit the comment you posted** to fix it (never post a
 second copy, which creates exactly the duplicate the dedup in steps 5 and 8

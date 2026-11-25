@@ -122,7 +122,7 @@ replacement's end-to-end test passes.
   acceptance-criteria-to-tests check if quoin isn't installed), and
   `/quoin:spec-review` with its applicable sub-analyses for the spec commit.
   A spec-only PR runs only the spec review.
-- Reviewer only: make no edits.
+- Reviewer only: commit and push nothing, and leave no edit behind.
 - Check test-oracle strength, not just coverage: for each new or changed test,
   does its failure case truly exercise the intended path, and would it catch
   the defect it claims to guard against — or would it also pass on a setup
@@ -135,7 +135,8 @@ replacement's end-to-end test passes.
   record — never a PR comment, never filed as a new ticket, never a new PR.
 - Before adding a "same bug elsewhere" finding, establish an observable
   failing result at that path. Dead or unreachable code alone does not prove
-  the reported behavior.
+  the reported behavior. On a file outside the PR's file list, record that
+  result in the finding's `outside_diff_failure`.
 - Run the focused checks the review actually needs and report log paths and
   exit codes. Do not run the aggregate gate during review; the code lead runs
   it once before merge.
@@ -187,9 +188,12 @@ every finding. Note the handoff in the state record.
 
 ## Disposition-pass message
 
-Send to the original reviewer's agent ID, not a new agent, once the fix round
-has landed. Open with: "From code lead <name>, disposition pass <round> for
-PR #<N> (your original brief)." Then include:
+Send to the original reviewer's agent ID, not a new agent, once the fix round,
+or any other change the review does not cover, has landed. When there is no
+finding to re-check (for example a gate failure fixed after a clean review),
+name the last reviewed head and the new commits.
+Open with: "From code lead <name>, disposition pass <round> for PR #<N> (your
+original brief)." Then include:
 
 - **"Your role is `/reviewer` (dev-team plugin): invoke it and follow it
   end to end."** Same literal instruction as the review-pass dispatch, so the
@@ -217,8 +221,9 @@ PR #<N> (your original brief)." Then include:
   `## New findings (disposition pass N)` section, continuing the file's
   `FND-NNN` sequence.
 - Post the `reviewer-dispositions` comment(s) to the ticket, one per artifact
-  that had findings, every round — with no rows if nothing needed checking
-  that round — with this round's `round=` in the marker.
+  that has findings, every round — with no rows if nothing needed checking
+  that round, and one on the first review artifact when no artifact has
+  findings — with this round's `round=` and `head=` in the marker.
   Dedup keys on id + round, so an earlier round's comment never blocks this
   one.
 - Report any new or `still-open` finding from this pass separately; the leader
@@ -259,8 +264,12 @@ reviewer commit:
 
 Run the repo's aggregate gate exactly once before merge. The code lead owns
 this check, after review and all fix rounds finish. Do not run an aggregate
-gate before review or during a fix round. Follow an explicit repo or org rule
-when it overrides this default. Record the gate result and any build-lock wait
+gate before review or during a fix round. Rerun it only after a failed run, or
+when the head changed beyond what the passing run covers (committed review
+files, a passing overlap rebase and a one-line final fix are covered). Follow
+an explicit repo or org rule when it overrides this default, and post a
+[waiver record](lead-records.md#waiver) for the rule it replaces. Record every
+gate run with a [gate record](lead-records.md#gate), and any build-lock wait,
 in the ticket's state record. Fix rounds, dependency re-pins, and cross-repo
 checks use confined checks only.
 
@@ -273,7 +282,8 @@ Subagents have quoted gate output they never ran. Check these yourself:
    `git diff --name-only <base> origin/main` (`<base>` is
    `git merge-base <branch> origin/main`) against the PR's files. Overlap means
    rebase and rerun the confined check — send the rebase to the branch's
-   coder; one pusher per branch.
+   coder; one pusher per branch — then post a
+   [rebase record](lead-records.md#rebase) with the check's exit status.
 4. A PR outside a spec-only directory has the full-gate evidence required by
    the repo's policy. Tests can
    embed docs. A markdown-only spec PR that touches no embedded file skips
@@ -283,24 +293,32 @@ Subagents have quoted gate output they never ran. Check these yourself:
    a `<!-- reviewer ... pr=<repo>#<N> ... -->` comment per
    method that ran, where `pr=` is this PR. Required always, clean review
    included — a placeholder-only clean review still needs its per-method `reviewer` markers and its
-   committed SR files (item 6); what a clean review skips is only the
-   *dispositions* requirement below, since there's nothing to re-check and no
-   disposition pass runs. Where the review found real findings, additionally
-   require, for every `SR-NNN` named in those review markers, a `<!--
+   committed SR files (item 6); what a clean review that still covers the head
+   (item 7) skips is only the *dispositions* requirement below, since there's
+   nothing to re-check and no disposition pass runs. Where the review found real
+   findings, additionally require, for every `SR-NNN` that has findings, a `<!--
    reviewer-dispositions ... id=SR-NNN round=<N> ... -->` comment,
    matched by the SR id, not by the ticket alone, so a disposition on a
    different artifact never satisfies this one. A one-line final fix the lead
-   read and merged without another round needs no further disposition marker.
+   read and merged without another round needs no further disposition marker;
+   it needs a [final-fix record](lead-records.md#final-fix) naming the
+   findings it closes.
    Missing a required marker
    means the reviewer skipped its role skill or a round is still outstanding —
    send it back, don't merge on a bare "looks good".
 6. The SR files committed under `reviews/` (see
    [SR-file custody](#sr-file-custody)) match the reviewer's own latest
-   version — same findings, and a `## Dispositions` section (plus any
-   `## New findings` sections) reflecting every round's outcomes, not a stale
+   version — same findings, and, for an artifact with findings, a
+   `## Dispositions` section (plus any `## New findings` sections) reflecting
+   every round's outcomes, not a stale
    copy from before the last disposition round posted. Every finding, original
    and new, has a latest outcome (its most recent disposition row) that is
    neither `still-open` nor missing — an earlier `still-open` row superseded
    by a later `fixed`/`rejected`/`deferred`/`accepted-no-change` row is fine;
    one with no later row, or whose latest row is still `still-open`, means a
-   fix round is still owed, not a PR ready to merge.
+   fix round is still owed, not a PR ready to merge, unless your final-fix
+   record names it.
+7. The head you merge is covered: it is the `head=` of the latest reviewer or
+   disposition marker and of a passing gate record, or differs from each only by
+   committed review files, a passing rebase record or a final-fix record
+   ([lead records](lead-records.md)).
