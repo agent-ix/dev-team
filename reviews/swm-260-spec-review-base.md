@@ -21,3 +21,12 @@ Base checklist over the FR-015 diff at e6a1b6880c4b4b5b616722261cf31a98d96e5d84 
 | ------- | -------- | ------- | ---- |
 | FND-001 | medium   | The `cancelled` row covers a request cancelled while queued or running, but AC-8 asks for one request ending in `cancelled`. A scheduler that increments the counter only when a lease is released passes AC-8 with a running cancel and never counts a queued-to-cancelled request; AC-1 does not require a queued cancel either. Require one cancel of each kind. | spec/functional/FR-015-build-metrics-export.md:72, spec/functional/FR-015-build-metrics-export.md:49 |
 | FND-002 | low      | "Only the resource-limit aborts begin with `aborted_`" uses an undefined term. `rss_cap` is also a termination for exceeding a resource limit and does not begin with `aborted_`, so a consumer author can read `aborted_.*` as covering RSS kills and miss them. Say the `abort_above` aborts. | spec/functional/FR-015-build-metrics-export.md:59 |
+
+## Dispositions
+
+Round 1, checked at beed47004ea594ad6363e714dfad886f0ae56a5d.
+
+| FND     | outcome | reason |
+| ------- | ------- | ------ |
+| FND-001 | fixed   | FR-015-AC-8 now requires one queued cancel and one running cancel, each counted once under `cancelled`. |
+| FND-002 | fixed   | The sentence names the `abort_above` aborts and says the regex does not select `rss_cap`. |

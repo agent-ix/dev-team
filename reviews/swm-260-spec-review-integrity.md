@@ -21,3 +21,12 @@ Checked the closed outcome set and FR-015-AC-8 at e6a1b6880c4b4b5b616722261cf31a
 | ------- | -------- | ------- | ---- |
 | FND-001 | medium   | FR-015 declares a closed set, but nothing limits the reasons that can reach it. FR-009 gives every `[[limit]]` free `abort_above` and `reason` keys and refuses neither value, and FR-010 records `aborted_<reason>`. A loadable profile with a package-power limit carrying `abort_above` and reason `power` yields `aborted_power`, so the exporter must break AC-8 or drop or mislabel the request. Have FR-009 or FR-010 refuse `abort_above` outside memory, swap, compressor, host_load and thermal. | spec/functional/FR-015-build-metrics-export.md:43, spec/functional/FR-009-host-profile-sustainable-slots.md:35, spec/functional/FR-010-scheduler-owned-throttling.md:25 |
 | FND-002 | low      | AC-8 opens with "the scheduler's FR-010 reason set", which FR-010 does not define: it gives the template `aborted_<reason>` and names `rss_cap` and `pause_exceeded` in prose. The AC then repeats seven literals, so a test hardcodes them and a reason added to the scheduler later is not detected. Name the enumerable source the test iterates, or drop the first clause. | spec/functional/FR-015-build-metrics-export.md:72, spec/functional/FR-010-scheduler-owned-throttling.md:25 |
+
+## Dispositions
+
+Round 1, checked at beed47004ea594ad6363e714dfad886f0ae56a5d.
+
+| FND     | outcome | reason |
+| ------- | ------- | ------ |
+| FND-001 | fixed   | FR-009 limits `reason` to thermal, memory, swap, compressor and host_load and refuses any other or a missing value at load (FR-009-AC-11); FR-010 builds `aborted_<reason>` from that field. |
+| FND-002 | fixed   | FR-010 tables the termination reasons as one enumerated type and FR-015-AC-8 iterates that type. |
