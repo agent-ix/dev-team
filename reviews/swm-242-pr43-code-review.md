@@ -67,3 +67,9 @@ Round 1, head 2b91f17ad9c7ab4bb52b5f55d38dda2f26584cb2. The FR-015 text equals t
 | FND-001 | fixed | Both statements list the forwarded set, matching the code at fd77413. |
 | FND-002 | fixed | An in-flight preflight write and its row removal are allowed. |
 | FND-003 | still-open | Found in this pass; restore the #41 records and rename the #43 files. |
+
+Round 2, head 985b805e4c5672afb2f9934e8aa3345ad2b587f5.
+
+| FND | outcome | reason |
+| --- | ------- | ------ |
+| FND-003 | fixed | The five #41 files equal origin/main and the #43 records are added under swm-242-pr43- names; the diff is those five files and FR-015. |
