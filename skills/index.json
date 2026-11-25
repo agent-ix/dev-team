@@ -11,6 +11,7 @@
         "references/never.md",
         "references/workflows.md",
         "references/gate-log.md",
+        "references/lead-records.md",
         "scripts/team-gate",
         "tests/team-gate-test.sh"
       ]

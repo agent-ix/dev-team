@@ -11,17 +11,21 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 reviewer is the reviewer role of the
 [reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
 version 1. Instructions below cite the rule they implement as `REV-Rnn`;
-evaluations and feedback point at those ids. A tracked PR gets reviews from
-exactly one reviewer run (REV-R01): use one `run=` for the review pass and
-resume that run for dispositions. Never review a PR you authored (REV-R02).
+evaluations and feedback point at those ids. A tracked PR gets one reviewer,
+resumed for disposition passes. Each method is reviewed by one reviewer run
+only (REV-R01): a retried or replacement dispatch posts the methods not yet on
+the ticket and re-reviews none. Never review a PR you authored (REV-R02). The
+record fields the evaluator reads are defined in
+[FR-017](https://github.com/agent-ix/dev-team/blob/main/spec/functional/FR-017-role-evaluation-records.md).
 
 The reviewer role is a sibling of `skills/code-lead/` — one skill per role. A
 code lead (or any orchestrator) dispatches one reviewer subagent per tracked
 PR through `/reviewer`, for the review pass and again for dispositions. The
 method skills (`/code-review`, `/quoin:spec-review`, and applicable language
 and gap analyses) run inside this role; they are not separate reviewer
-dispatches. The subagent is reviewer-only, with no code edits: never edit,
-commit or push to the branch under review (REV-R03). This skill's
+dispatches. The subagent is reviewer-only, with no code edits: never commit or
+push to the branch under review (REV-R03), and revert any temporary mutation
+made to show that a test fails before the pass ends. This skill's
 job stops at reporting: it never fixes a finding and never merges. It runs
 every review method the change needs, lets each write its own artifact, and
 posts the review to the project's **ticket tracker** so the data outlives the
@@ -122,8 +126,10 @@ check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 
 ## 2. Decide which methods apply
 
-Scope the diff to what the PR actually changed; every finding is on a file in
-the PR's file list (REV-R11):
+Scope the diff to what the PR actually changed. A finding on a file outside the
+PR's file list, such as the same bug elsewhere or a stale reference the change
+leaves behind, needs a failing result observed at that path, recorded in the
+finding's `outside_diff_failure` (REV-R11):
 
 ```bash
 git diff --name-only origin/main...HEAD
@@ -289,8 +295,9 @@ method's own contract:
 ## 5. Post one marked comment per method
 
 For each method that ran, post one comment to the ticket (REV-R04), within the
-configured review age limit of your dispatch (REV-R12). The Linear command is
-shown; see [Other trackers](#10-other-trackers) for a different backend.
+review age limit of your dispatch (REV-R12): one hour, unless the team's
+`eval.review_age_limit_hours` sets another. The Linear command is shown; see
+[Other trackers](#10-other-trackers) for a different backend.
 Round-tripped through `linear issue comment list --json` and compared
 byte-for-byte, a first line reading `<!-- reviewer ... -->`, a Markdown table,
 a fenced ` ```yaml ` block, and a `+++ [title] ... +++` collapsible section
@@ -308,12 +315,15 @@ a fenced code block, never YAML frontmatter.
    readable — confirmed above to survive read-back unchanged, so there's no
    reason to leave it expanded.
 
-**Marker** (one line, exactly these fields; `id=`, `method=`, `pr=` and `run=`
-are never omitted, REV-R05):
+**Marker** (one line, exactly these fields; `repo=`, `id=`, `method=`, `pr=`,
+`run=` and `head=` are never omitted, REV-R05):
 
 ```
-<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> model=<model-id> run=<run-id> -->
+<!-- reviewer repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN method=<rust-review|code-review|gap-analysis|spec-review/<sub-analysis>|review-react> lang=<rust|ts|py|spec> pr=<repo>#<n> head=<full commit hash reviewed> model=<model-id> run=<run-id> -->
 ```
+
+`head=` is the full hash of the commit you reviewed (`git rev-parse HEAD` in the
+review worktree). The code lead's merge check reads it.
 
 There is no `date=`: the date is the comment's own timestamp. `model=` is your
 exact model id (for example `claude-opus-5-5`); `run=` is an id for this
@@ -359,11 +369,14 @@ findings:
     excerpt: |-
       <exact text of the artifact_id unit, verbatim, <=600 chars>
     finding: "<the finding text, matching the SpecReview row's Summary>"
+    # outside_diff_failure: "<the failing result observed at path>"   # required when path is not in the PR's file list
 bindings: []   # optional; see "Trace findings and bindings" below
 ```
 
 **Every finding names a file or line and a failure scenario** (REV-R10): fill
-`path` and `lines`, and say in `finding` what goes wrong and when.
+`path` and `lines`, and say in `finding` what goes wrong and when. A finding
+whose `path` the PR does not change also fills `outside_diff_failure`
+(REV-R11).
 
 **One primary unit per finding.** `artifact_id` is the smallest unit the
 defect is about: exactly one `FR-x-AC-y`, or the FR statement itself when the
@@ -411,7 +424,7 @@ Every `trace: wrong` binding has a matching `check: trace` finding.
 **Compact example — review comment:**
 
 ````
-<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 model=<model-id> run=<run-id> -->
+<!-- reviewer repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 method=code-review lang=py pr=example-repo#42 head=<full-commit-hash> model=<model-id> run=<run-id> -->
 
 | FND | Severity | Check | Summary |
 | --- | --- | --- | --- |
@@ -569,6 +582,10 @@ Choose one outcome per finding checked:
   is just no longer the latest. Never report the PR mergeable while any
   finding's latest outcome is `still-open` or missing (REV-R08).
 
+The comment's `mergeable=` field records that statement, `yes` or `no` for the
+whole pull request after this pass, with the same value on every comment of the
+pass.
+
 Add these rows to (never edit or remove an existing row in) a `##
 Dispositions` section on the **same** SR file, appending it if it doesn't yet
 exist. The table is `FND | outcome | reason`, one row per finding checked
@@ -586,11 +603,17 @@ quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
 
 Post **one dispositions comment per artifact that had findings, per round** —
 same marker style, `reviewer-dispositions` instead of `reviewer`, referencing
-that artifact's own `SR-NNN` and this round's number:
+that artifact's own `SR-NNN` and this round's number. `repo=`, `id=`,
+`round=`, `run=`, `head=` (the commit you checked) and `mergeable=` are never
+omitted (REV-R05):
 
 ```
-<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=<owner>/<repo> visibility=<public|private> quoin=<quoin --version output> module=<module>@<ref> id=SR-NNN round=N head=<full commit hash checked> mergeable=<yes|no> model=<model-id> run=<run-id> -->
 ```
+
+A pass that found a new defect also lists it in that artifact's comment under
+`new_findings:`, with every field of a review finding. An artifact whose first
+defect appears in this pass gets a comment too.
 
 ```yaml
 dispositions:
@@ -601,6 +624,8 @@ dispositions:
   - fnd: FND-002
     outcome: rejected
     reason: "Tautological only in the fixture; the production path asserts a real value."
+# new_findings:   # only when this pass found a defect; fields as in a review finding
+#   - {fnd: FND-003, severity: low, confidence: high, method: code-review, check: code-bug, artifact_id: "<id>", path: "<path>", lines: "<lines>", excerpt: "<text>", finding: "<text>"}
 ```
 
 Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
@@ -609,7 +634,7 @@ Every non-`fixed` outcome (`rejected`, `deferred`, `accepted-no-change`,
 **Compact example — dispositions comment:**
 
 ````
-<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 model=<model-id> run=<run-id> -->
+<!-- reviewer-dispositions repo=example-org/example-repo visibility=private quoin=<version> module=<module>@<version> id=SR-014 round=1 head=<full-commit-hash> mergeable=yes model=<model-id> run=<run-id> -->
 
 | FND | Outcome | Reason |
 | --- | --- | --- |
@@ -668,11 +693,15 @@ block from the body **as Linear returned it**, and check:
      this round). The `fnd:` ids must be exactly the `FND-NNN` ids — from
      `## Findings` and every `## New findings` section — whose latest outcome
      before this round was `still-open` or that had no outcome yet, and must
-     equal the set of rows this round added to `## Dispositions`.
+     equal the set of rows this round added to `## Dispositions`. The
+     `new_findings:` ids must be exactly those of this round's `## New
+     findings` section for that artifact.
 3. **Every row is complete.** Each `outcome: fixed` entry carries a non-empty
    `after_excerpt`. Each `rejected`, `deferred`,
    `accepted-no-change` and `still-open` entry carries a non-empty `reason`
-   (the same `reason:` field the `rejected` example in step 8 shows).
+   (the same `reason:` field the `rejected` example in step 8 shows). The
+   marker line carries every field step 5 or step 8 requires, and a finding
+   outside the PR's file list carries `outside_diff_failure`.
 
 On any failed check, **edit the comment you posted** to fix it (never post a
 second copy, which creates exactly the duplicate the dedup in steps 5 and 8

@@ -17,7 +17,9 @@ TEAM="$TEAM" "$DEV_TEAM_ROOT/skills/code-lead/scripts/team-gate" repin --pr "$PR
 
 Each line carries `pr`, `kind` (`gate` or `repin`), `requested_lock_at`,
 `acquired_lock_at`, `started_at` and `finished_at` in UTC. It carries no commit
-hash. Lock wait is `acquired_lock_at` minus `requested_lock_at`; set
+hash and no exit status, so record each gate run on the ticket with a
+[gate record](lead-records.md#gate).
+Lock wait is `acquired_lock_at` minus `requested_lock_at`; set
 `TEAM_GATE_LOCK` to the command that waits for a build slot, otherwise the wait
 is zero. The wrapper returns the gate command's exit status unchanged.
 The repin event records a dependency update folded into the consuming PR; it

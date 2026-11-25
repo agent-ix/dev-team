@@ -59,8 +59,8 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
   Do not add workspace-wide feature sweeps or duplicate target directories to
   the brief by habit. The lead runs one final aggregate gate after review.
 - Before opening the PR, compare the change with the configured PR size limit.
-  Split a change above it before review and record the split on the ticket; if
-  it cannot be split, record why on the ticket (CODE-R03).
+  Split a change above it before review and record the split on the ticket
+  (CODE-R03).
 - Read build admission/capacity from the brief's current config or verified
   host source. Never embed a slot count or infer spare slots from agents.
   Report missing capacity or a stale coder-rule/toolchain notice to the lead;
@@ -69,7 +69,7 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 
 ## 3. Focused checks before review
 
-Before opening the PR, run only the focused tests, lint, and compile checks for the change. Do not run the aggregate gate before review (CODE-R10). The code lead runs the aggregate gate once before merge, subject to explicit repo or org rules.
+Before opening the PR, run only the focused tests, lint, and compile checks for the change. Unless a repo or org rule requires it, do not run the aggregate gate before review or during a fix round (CODE-R10). The code lead runs the aggregate gate once before merge, subject to explicit repo or org rules.
 
 - Markdown-only spec diff, no code or tests (a spec-only ticket): no gate. If the edit touches a file a test embeds, tell the leader instead of skipping.
 - Validate the spec commit with the repo's spec workflow and artifact validation.
@@ -79,8 +79,8 @@ Before opening the PR, run only the focused tests, lint, and compile checks for 
 
 Report at PR open, when a fix round is done, or when blocked. Nothing between.
 
-1. After focused tests, lint, and compile pass, push the branch and open the PR (`gh pr create --head <branch>`). Never run the aggregate gate before review and never merge.
-2. Stop changing the branch. Push to it again only in a fix round the leader sends (CODE-R12). This frozen diff, spec commit and code, is what the one reviewer reviews.
+1. After focused tests, lint, and compile pass, push the branch and open the PR (`gh pr create --head <branch>`). Never merge.
+2. Stop changing the branch. This frozen diff, spec commit and code, is what the one reviewer reviews. Push to it again only for work the leader has since sent you on it: a fix round, an overlap rebase or the review-file commit (CODE-R12). For a rebase, run the confined checks it asks for and report the old head, the new head and the exit status.
 3. Retain the worktree and its named private build cache (`target/`,
    `*-target/`, or `node_modules/`) through review, fix rounds and the leader's
    final aggregate gate. PR freeze and review handback are not ticket
@@ -102,12 +102,12 @@ Missing or unclear input goes in the report, not a guess. Keep working on everyt
 
 The leader resumes you with the reviewer's findings. The reviewer's findings are on the ticket.
 
-- Fix every finding, lows included, inside the same PR and branch, so the next disposition round returns none still-open (CODE-R05). Never open a new PR or a new ticket for one (CODE-R06). One pusher per branch.
+- Fix every finding, lows included, inside the same PR and branch, so the next disposition round returns none still-open (CODE-R05). Never open a second PR for one (CODE-R06) or a new ticket for one (CODE-R15). A gap another repo or lane owns is filed as step 2 describes. One pusher per branch.
 - Aim for a clean review within the current review round policy: fix the whole of each finding in one round (CODE-R04).
-- Report only items too big for this PR or owned by another repo, with your reason. The leader files those.
+- Report only items too big for this PR or owned by another repo or lane, with your reason. The leader files those.
 - A gap-analysis gap gets a real test.
 - Copy each reviewer SR file, from the scratchpad path in the message, over the matching file under `reviews/` in your fix commit. Never write or edit an SR file yourself.
-- Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change (CODE-R10). The code lead runs it once before merge, subject to explicit repo or org rules.
+- Run confined checks only in every fix round: build, lint, touched tests, and affected integration tests. Unless a repo or org rule requires it, do not run the aggregate gate during a fix round, even when docs, generated artifacts, or test oracles change (CODE-R10). The code lead runs it once before merge, subject to explicit repo or org rules.
 - Reuse the retained private cache in the same worktree. Freeze and report
   again after the fix; leave cleanup to the leader under step 4.
 

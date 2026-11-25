@@ -122,7 +122,7 @@ replacement's end-to-end test passes.
   acceptance-criteria-to-tests check if quoin isn't installed), and
   `/quoin:spec-review` with its applicable sub-analyses for the spec commit.
   A spec-only PR runs only the spec review.
-- Reviewer only: make no edits.
+- Reviewer only: commit and push nothing, and leave no edit behind.
 - Check test-oracle strength, not just coverage: for each new or changed test,
   does its failure case truly exercise the intended path, and would it catch
   the defect it claims to guard against — or would it also pass on a setup
@@ -135,7 +135,8 @@ replacement's end-to-end test passes.
   record — never a PR comment, never filed as a new ticket, never a new PR.
 - Before adding a "same bug elsewhere" finding, establish an observable
   failing result at that path. Dead or unreachable code alone does not prove
-  the reported behavior.
+  the reported behavior. On a file outside the PR's file list, record that
+  result in the finding's `outside_diff_failure`.
 - Run the focused checks the review actually needs and report log paths and
   exit codes. Do not run the aggregate gate during review; the code lead runs
   it once before merge.
@@ -259,8 +260,12 @@ reviewer commit:
 
 Run the repo's aggregate gate exactly once before merge. The code lead owns
 this check, after review and all fix rounds finish. Do not run an aggregate
-gate before review or during a fix round. Follow an explicit repo or org rule
-when it overrides this default. Record the gate result and any build-lock wait
+gate before review or during a fix round. Rerun it only after a failed run, or
+when the head changed beyond what the passing run covers (committed review
+files, a passing overlap rebase and a one-line final fix are covered). Follow
+an explicit repo or org rule when it overrides this default, and post a
+[waiver record](lead-records.md#waiver) for the rule it replaces. Record every
+gate run with a [gate record](lead-records.md#gate), and any build-lock wait,
 in the ticket's state record. Fix rounds, dependency re-pins, and cross-repo
 checks use confined checks only.
 
@@ -273,7 +278,8 @@ Subagents have quoted gate output they never ran. Check these yourself:
    `git diff --name-only <base> origin/main` (`<base>` is
    `git merge-base <branch> origin/main`) against the PR's files. Overlap means
    rebase and rerun the confined check — send the rebase to the branch's
-   coder; one pusher per branch.
+   coder; one pusher per branch — then post a
+   [rebase record](lead-records.md#rebase) with the check's exit status.
 4. A PR outside a spec-only directory has the full-gate evidence required by
    the repo's policy. Tests can
    embed docs. A markdown-only spec PR that touches no embedded file skips
@@ -290,7 +296,9 @@ Subagents have quoted gate output they never ran. Check these yourself:
    reviewer-dispositions ... id=SR-NNN round=<N> ... -->` comment,
    matched by the SR id, not by the ticket alone, so a disposition on a
    different artifact never satisfies this one. A one-line final fix the lead
-   read and merged without another round needs no further disposition marker.
+   read and merged without another round needs no further disposition marker;
+   it needs a [final-fix record](lead-records.md#final-fix) naming the
+   findings it closes.
    Missing a required marker
    means the reviewer skipped its role skill or a round is still outstanding —
    send it back, don't merge on a bare "looks good".
@@ -303,4 +311,9 @@ Subagents have quoted gate output they never ran. Check these yourself:
    neither `still-open` nor missing — an earlier `still-open` row superseded
    by a later `fixed`/`rejected`/`deferred`/`accepted-no-change` row is fine;
    one with no later row, or whose latest row is still `still-open`, means a
-   fix round is still owed, not a PR ready to merge.
+   fix round is still owed, not a PR ready to merge, unless your final-fix
+   record names it.
+7. The head you merge is covered: it is the `head=` of the latest reviewer or
+   disposition marker and of a passing gate record, or differs from each only by
+   committed review files, a passing rebase record or a final-fix record
+   ([lead records](lead-records.md)).
