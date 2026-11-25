@@ -23,3 +23,23 @@ Ticket: SWM-252. PR dev-team#44, diff origin/main...bcbaf7fc20497e47aa7b99b4b1ba
 | FND-002 | low      | The skill and the reference say "current lane count" where the role spec and ORCH-R20 say "current reachable lane count". With 2 reachable and 2 unreachable lanes and 3 ready tickets the spec starts discovery and the skill reading does not. | skills/fleet-orchestrator/SKILL.md:142, skills/fleet-orchestrator/references/capacity-discovery.md:7 |
 | FND-003 | low      | The frontmatter moved to role_spec_version 6 while the body still says the skill is the role "version 5". | skills/fleet-orchestrator/SKILL.md:11 |
 | FND-004 | low      | The ownership reference still names role spec version 5 after the spec moved to 6. | skills/fleet-orchestrator/references/ownership.md:19 |
+
+## New findings (disposition pass 1)
+
+| ID      | Severity | Summary | Refs |
+| ------- | -------- | ------- | ---- |
+| FND-005 | low      | Reference step 1 now says a run "starts only when" the conditions hold, a necessary condition, so a reader is never required to start one, while ORCH-R20 says SHALL. | skills/fleet-orchestrator/references/capacity-discovery.md:7 |
+| FND-006 | low      | Five Linear comment bodies are committed under reviews/. They are not SpecReview documents, and quire validate over reviews/swm-252-pr44 fails all five for a missing frontmatter type. | reviews/swm-252-pr44/code-review.comment.md:1 |
+
+## Dispositions
+
+Round 1, checked at faf8cfa0fc545c689d87cbc3b169f3af6b41cdc0.
+
+| FND     | outcome | reason |
+| ------- | ------- | ------ |
+| FND-001 | fixed   | Both skill files now require writable capacity history before a run. |
+| FND-002 | fixed   | SKILL.md refers to covered demand and the reference says current reachable lanes. |
+| FND-003 | fixed   | SKILL.md body says version 6. |
+| FND-004 | fixed   | ownership.md says version 6. |
+| FND-005 | still-open | found in this pass. Needs a fix. |
+| FND-006 | still-open | found in this pass. Needs a fix. |
