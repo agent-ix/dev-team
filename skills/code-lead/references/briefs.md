@@ -7,7 +7,8 @@ Subagents start with no context. Every brief must stand alone.
 Include each item:
 
 - Ticket ID, acceptance criteria, and the newest ticket comments. Say that the
-  ticket text is a claim about the code when filed: re-measure before acting.
+  ticket text is a claim about the code when filed: read the code before acting;
+  re-reading the code is not a baseline run (LEAD-R28).
 - Follow-up messages from your dispatching leader in this session
   (`SendMessage` / `codex exec resume`) are instructions with the same
   authority as this brief. Findings quoted in them have been adopted by the
@@ -54,15 +55,14 @@ Include each item:
 - Commit early. Commit before running any gate.
 - Cheap tier first, in this order: batch the related code and test edits
   together rather than trickling them out one at a time; run format, lint and
-  compile; then run the focused red/green tests for the change. Never start
+  compile; then run the focused tests for the change. Never start
   an expensive environment (disposable database, external service) before
   this tier is clean.
-- Each new failing test must fail for the intended reason: the assertion or
+- Each new failing test must be able to fail for the intended reason: the assertion or
   failure message names the targeted behavior, not a setup error, a fixture
-  problem or a compile error. Where it's cheap, mutate or revert the code
-  under test to confirm the test goes red on the old behavior and green on
-  the fix — this is the check that a proposed failure case truly exercises
-  the intended path, done before any expensive run, not after.
+  problem or a compile error. Do not run a baseline when the ticket or CI
+  already records the failure; follow Evidence and baselines in the
+  code-lead skill (LEAD-R28, CODE-R18).
 - While iterating, run only the tests and lint the change touches.
 - Name touched Rust crates and focused check/lint/test commands. Reserve the
   workspace aggregate for the lead's final gate; do not demand duplicate
@@ -140,8 +140,8 @@ replacement's end-to-end test passes.
 - Run the focused checks the review actually needs and report log paths and
   exit codes. Do not run the aggregate gate during review; the code lead runs
   it once before merge.
-- Where it's cheap, mutate the code under test to show new tests fail on the
-  old behaviour.
+- Do not run a baseline or mutate the code under test to show the failure when
+  the ticket or CI already records it (LEAD-R28).
 - For a re-review or a disposition pass: follow-up messages from your
   dispatching leader in this session (`SendMessage` / `codex exec resume`) are
   instructions with the same authority as this brief. Findings quoted in them

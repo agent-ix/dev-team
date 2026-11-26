@@ -1,7 +1,7 @@
 ---
 name: code-lead
 description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
-role_spec_version: 3
+role_spec_version: 4
 ---
 
 # Code Lead
@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 code-lead is the code lead role of the
 [code lead role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/code-lead.md),
-version 3. Instructions below cite the rule they implement as `LEAD-Rnn`;
+version 4. Instructions below cite the rule they implement as `LEAD-Rnn`;
 evaluations and feedback point at those ids.
 
 The code lead runs the coding lane for one team or project. It takes planned
@@ -181,8 +181,8 @@ owner overrides the class default**; cite it on the ticket.
 
 | Class | What it is | Default strategy |
 |---|---|---|
-| Point | One defect or one local change | One PR per ticket |
-| Batch | Like tickets touching the same files or requirement files | One PR per batch |
+| Point | One defect or one local change | One PR per ticket; baselines per Evidence and baselines (LEAD-R28) |
+| Batch | Like tickets touching the same files or requirement files | One PR per batch; baselines per Evidence and baselines (LEAD-R28) |
 | Block | A large or complex coherent change: a redesign, consolidation, migration or subsystem change where one definition or shared mechanism changes across several routes, crates or repos | One branch and one PR per repo, steps as commits, one design owner, one verification; the spec and code of the block ride together. Only an urgent crash or a genuinely independent must-fix piece is separate |
 | Sweep | A mechanical wide change (rename, format, move) | One PR, mechanical review |
 
@@ -204,10 +204,11 @@ one the Block is:
   types the tickets share, how the pieces compose, which existing structure is
   reused or changed, and the order of steps. Say why the structure serves all
   tickets and what a later ticket in the same area would add.
-- **Bug Block:** reproduce each ticket with a focused measured test, find the
-  common cause class (the shared mechanism, data structure, rule or missing
-  definition) and grep the repo for the same pattern in neighbouring code.
-  Choose a general fix and say what other sites it fixes.
+- **Bug Block:** take each ticket's recorded failure as its evidence (LEAD-R28;
+  with no record, one run each on the fixed code and the parent commit, same
+  slot). Find the common cause class (the shared mechanism, data structure, rule
+  or missing definition) and grep the repo for the same pattern in neighbouring
+  code. Choose a general fix and say what other sites it fixes.
 - **Mixed Block:** both, in one note: architecture for the new parts, cause
   class for the defects.
 
@@ -241,6 +242,38 @@ Steps:
    independent step.
 7. **Idle is a defect.** A lead idle or waiting over 20 minutes with no named
    wait is a defect the minder routes ([team-minder](../team-minder/SKILL.md)).
+
+### Evidence and baselines
+
+This section applies to every work class (LEAD-R28, CODE-R18).
+
+A defect has evidence when the ticket or CI names a failing test, a command and
+a head, or the default branch records the failure. That evidence is the
+baseline. Do not run it again before the fix.
+
+Workflow:
+
+1. Read the evidence on the ticket or CI.
+2. Write the fix and the test.
+3. Run the focused test once on the fixed code. That run is the green.
+4. No failing evidence on the ticket or CI: also run the same focused test
+   once on the parent commit, in the same build slot as step 3, to show red.
+   With evidence, this step does not exist.
+
+Barred:
+
+- (a) Rerunning a baseline the ticket or CI already records.
+- (b) Repeated or looped baseline runs. An N-run loop is allowed only for an
+  intermittent failure when one run takes under a minute.
+- (c) A baseline that waits for a build slot. Write the fix and the test first
+  and run once when the slot frees.
+- (d) A whole-suite, whole-crate or multi-crate run as a baseline.
+- (e) Re-baselining after main moved.
+- (f) A lead or planner brief that tells a coder to measure or baseline before
+  coding.
+
+A measurement belongs in a design note only where a number decides the design,
+for example peak memory.
 
 On shared hosts run test binaries with `--test-threads=4` and cargo `-j 4`;
 heavy gates follow the host policy in the owner's instructions.

@@ -81,6 +81,8 @@ Test: several tickets sharing one cause, the same files or modules, or a goal su
 
 When you group tickets as a Block, name the suspected shared structure (features) or common cause (bugs) in the parent ticket so the lead has a starting point (PLAN-R18). If you can name neither, plan Points, unless the owner, ticket or project explicitly says Block (PLAN-R17). If you group a Block on the same-files or goal test and cannot name the structure or cause, write that on the parent ticket as the open design question for the lead.
 
+Do not put a measure-or-baseline-before-coding step in a handoff or ticket. The failing test, command and head on the ticket are the baseline; a measurement belongs in a design note only where a number decides the design (LEAD-R28, see [Evidence and baselines](../code-lead/SKILL.md#evidence-and-baselines)).
+
 Keep ticket content proportional to the work. Link a relevant specification or
 design when one exists, but do not paste a generic required-spec-cycle
 checklist or require a per-ticket reviewed-revision record. Do not create
