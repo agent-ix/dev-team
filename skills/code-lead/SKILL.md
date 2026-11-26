@@ -1,7 +1,7 @@
 ---
 name: code-lead
 description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
-role_spec_version: 2
+role_spec_version: 3
 ---
 
 # Code Lead
@@ -248,11 +248,18 @@ ticks all delay landing. Behave as follows.
 On shared hosts run test binaries with `--test-threads=4` and cargo `-j 4`;
 heavy gates follow the host policy in the owner's instructions.
 
-Builds use the PATH `cargo` shim or `locked-build run --owner <lane>
---ticket <ticket> --class <must-fix|point|block|periodic> -- <command>`.
-Choose the class from the work being admitted and the host policy; do not route
-builds through lane wrappers or pass numeric priorities when a named class is
-available.
+Builds use the PATH `cargo` shim or `locked-build run --class
+<must-fix|point|block|periodic> -- cargo ...`. Choose the class from the work
+being admitted and the host policy. Memory admission charges each lease's cap
+against the sum of active lease caps and the configured memory budget.
+Do not route builds through project wrappers or pass numeric priorities when a
+named class is available.
+
+For a Block with a mechanical gap list, keep one branch, worktree and PR for
+the repo. Fan out disjoint file or row slices to coders in parallel, naming
+each slice and its completion check. Coders work only in their assigned slice;
+one designated pusher integrates and commits completed slices in sequence on
+the shared branch. Review the combined change once, not one PR per gap.
 
 **Spec check, every ticket:** before dispatching a coder, read the spec and
 confirm whether a requirement owns the behavior. The tracker state alone is not

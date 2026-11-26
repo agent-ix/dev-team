@@ -18,13 +18,13 @@ annotations such as ix-relay `ServerCapacity.max_agents` are not measured build
 slots and cannot substitute for the configured/verified capacity source.
 
 The default memory-admission mode SHALL be `lease_accounted`.
-`live_available` remains selectable through host policy. In `lease_accounted` mode, admission SHALL
-account for each active lease's `memory_cap_bytes` against the host's
-`memory_budget_bytes`, using a per-class override from `memory_cap_by_class`
-when configured. It SHALL NOT gate admission on a free-memory floor or raw
-`MemAvailable`. In `live_available` mode, admission uses live available memory
-and the configured reserve. When the host runs Linux, the scheduler SHALL launch
-the child group under `systemd-run` with `MemoryMax` set to its cap and
+`live_available` remains selectable through host policy. In `lease_accounted`
+mode, admission SHALL account for each active lease's `memory_cap_bytes` against
+the host's `memory_budget_bytes`, using a per-class override from
+`memory_cap_by_class` when configured. Each running child group SHALL be
+enforced at its lease cap. In `live_available` mode, admission uses live
+available memory and the configured reserve. When the host runs Linux, the
+scheduler SHALL launch the child group under `systemd-run` with `MemoryMax` set to its cap and
 `MemorySwapMax=0`; exceeding the cap is reported as the existing `rss_cap`
 outcome. When the host runs macOS, the scheduler SHALL enforce the cap with its
 RSS watchdog.
@@ -90,7 +90,7 @@ RSS watchdog fallback.
 | FR-005-AC-6 | Logic is Rust in a shared tool with a thin Make invocation; consumers migrate from project wrappers rather than copying shell/Python arbitration into Rust repositories. | Inspection |
 | FR-005-AC-7 | A child returning 75 is invoked once and its status is propagated; a signaled child returns non-success. Neither outcome re-enters acquisition contention or silently reruns the build. | Test |
 | FR-005-AC-8 | On a host with total capacity two units, a queued two-unit request reaches the reservation threshold while one-unit jobs keep arriving. The request is reservation-eligible even with fewer than two free units; no newer job consumes subsequently released units, and the reserved request starts after both units are free. | Test |
-| FR-005-AC-9 | With the default `lease_accounted` mode, admission grants a request only when its cap plus the active lease caps fit `memory_budget_bytes`, without consulting `MemAvailable`; selecting `live_available` instead admits by live available memory and the reserve. Linux caps use `MemoryMax` and `MemorySwapMax=0`, and a cap kill is recorded as `rss_cap`; on macOS the RSS watchdog enforces the same cap. | Test |
+| FR-005-AC-9 | With the default `lease_accounted` mode, admission grants a request only when its cap plus the active lease caps fit `memory_budget_bytes`; a running lease is enforced at its own cap. Selecting `live_available` instead admits by live available memory and the configured reserve. Linux caps use `MemoryMax` and `MemorySwapMax=0`, and a cap kill is recorded as `rss_cap`; on macOS the RSS watchdog enforces the same cap. | Test |
 | FR-005-AC-10 | A request with explicit `-j`/`--jobs`, `--test-threads` or `RUST_TEST_THREADS` values keeps values at or below `cargo_build_jobs` or `rust_test_threads`, clamps only values above the corresponding maximum, and records each effective value on its lease. | Test |
 | FR-005-AC-11 | If Linux cannot provide the required cgroup, `on_missing_cgroup=refuse` records refusal and starts no child; `on_missing_cgroup=rss_watchdog` records the fallback and enforces the cap with the RSS watchdog. The lease/event record names the configured policy and outcome. | Test |
 

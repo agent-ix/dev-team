@@ -1,7 +1,7 @@
 ---
 name: coder
 description: Run a ticket's coding stage as the dedicated coder role. Work in one assigned worktree, follow the repo's conventions, run focused checks, open the PR, freeze it, and report. Fix review findings inside the same PR. The aggregate gate runs once before merge. Use when invoked as /coder or dispatched by `/code-lead`.
-role_spec_version: 2
+role_spec_version: 3
 ---
 
 # Coder
@@ -41,8 +41,10 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 ## 2. Build
 
 Run Cargo through the PATH `cargo` shim. For an explicit class, invoke
-`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`.
-Use the class selected for the work by the current host policy; do not use a
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+Use the class selected for the work by the current host policy. In
+`lease_accounted` mode, admission charges the requested lease cap against the
+sum of active lease caps and the configured memory budget; do not use a
 project or per-ticket shell wrapper to admit a build.
 
 - Behaviour only, backed by tests for the ticket's acceptance criteria. No exhaustive suites beyond them.

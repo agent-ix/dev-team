@@ -1,7 +1,7 @@
 ---
 id: REV
 role: reviewer
-version: 2
+version: 3
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -23,6 +23,12 @@ artifact, posts marked findings to the project's ticket tracker, and records an
 outcome for every finding in later disposition passes. It reads the frozen diff
 and never changes the branch. It does not fix findings or merge: the
 [coder](coder.md) fixes and the [code lead](code-lead.md) dispatches and merges.
+
+Review checks use the PATH `cargo` shim or
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+In `lease_accounted` mode, admission sums active lease caps with the requested
+cap against the configured memory budget, and enforces each running lease at
+its cap.
 
 Targets are initial values. The evaluator's role rows (dev-team FR-008) show
 whether a target is met and whether a rule moves its objective; the director

@@ -19,10 +19,15 @@ respectively. A caller may select the class with `locked-build run --class` or
 through the `LOCKED_BUILD_CLASS` cargo-shim setting; an unknown or unmapped
 class is refused. If direct `run` omits both `--class` and `--priority`, it
 uses base priority 0 and the effective class `periodic`; the cargo shim defaults
-to class `point`. A lane is the request's owner, written as the bounded lane
-address `server:workspace:tab`; a session id is not a lane and is refused. The
-scheduler SHALL keep one lane from monopolizing a host while
-other lanes wait, without weakening the FR-005 ordering and reservation guarantees.
+to class `point`. Direct runs derive the owner from user, host and worktree
+directory, and the ticket from the branch; `--owner`, `--ticket`,
+`LOCKED_BUILD_OWNER` and `LOCKED_BUILD_TICKET` override those defaults. The
+cargo shim uses the same owner derivation, defaults its ticket to `MANUAL`, and
+accepts `LOCKED_BUILD_OWNER`, `LOCKED_BUILD_TICKET` and
+`LOCKED_BUILD_CLASS` overrides. An owner is a bounded label; the shipped tool
+does not validate it as a relay lane address or enforce cross-lane fair share.
+Lane address attribution and fair-share behavior below remain requirements for
+the implementation that provides those features.
 
 ## Behavior
 

@@ -1,7 +1,7 @@
 ---
 id: LEAD
 role: code-lead
-version: 2
+version: 3
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -25,6 +25,11 @@ tickets in order, dispatches a [coder](coder.md) and one
 after review, merges, keeps the tracker true and keeps landing work. It
 orchestrates and does not author code, specs or reviews. Planning and order
 belong to the [planner](planner.md).
+
+Builds use the PATH `cargo` shim or
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+In `lease_accounted` mode, each lease is charged against the memory budget
+alongside active lease caps and enforced at its own cap.
 
 Work comes in classes with default strategies: a Point (one defect or local
 change) and a Batch (like tickets on the same files) each get one pull request

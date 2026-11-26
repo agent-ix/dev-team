@@ -1,7 +1,7 @@
 ---
 name: team-minder
 description: Run the fleet minder loop. Each tick reads `ix-board fleet status --json`, treats undetermined lanes as idle, pushes the next assigned ticket to idle lanes as a relay order, answers dialogs and queued questions a standing order covers and logs each answer, routes every source defect, dead lane and lane without work, and escalates worker, lead, orchestrator on a fixed ladder. Use when invoked as /team-minder [scope] [interval], or when asked to keep a fleet's or team's lanes busy, find idle or blocked lanes, or run a minder loop.
-role_spec_version: 7
+role_spec_version: 8
 ---
 
 # Team Minder
@@ -70,8 +70,10 @@ Execute the action for every row before the next tick, even if your own reading 
 When a lane reports waiting for build admission, use the shared `locked-build`
 queue state as the source of that wait. If a scheduled check must be launched,
 use the PATH `cargo` shim or
-`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
-do not launch a competing Cargo command through a lane wrapper.
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+Admission charges each lease cap against the sum of active lease caps and the
+configured memory budget in `lease_accounted` mode. Do not launch a competing
+Cargo command through a project wrapper.
 
 | Class | Action |
 |---|---|

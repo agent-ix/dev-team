@@ -14,9 +14,12 @@ relationships:
 
 The shared Rust tool SHALL provide the build admission and execution functions
 of the host and per-lane shell wrappers so those wrappers can be retired. Cargo
-commands SHALL enter through the PATH cargo shim or an explicit
-`locked-build run --class <class>` invocation. The tool is Rust only, with no
-Python and no logic-bearing shell.
+commands SHALL enter through the PATH `cargo` shim or an explicit
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`
+invocation. In `lease_accounted` mode, each lease is charged and enforced at
+its configured memory cap; admission fits the requested cap plus active lease
+caps within `memory_budget_bytes`. The tool is Rust only, with no Python and no
+logic-bearing shell.
 
 ## Behavior
 
@@ -35,8 +38,8 @@ Each retired function maps to a requirement:
 | Heat guard: stop at high Tctl, resume lower; memory stop | `sample`, `status`; FR-009 probe and FR-010 limit policy |
 | Health logger: Tctl, load, memory, fans every 30 s; HOT marker | `sample`, `metrics`; FR-015 probe series |
 | Host admission wrapper: FIFO/load gate and lane locks | `run`, `status`, `cancel`, `recover` |
-| Per-lane Cargo wrappers and cargo resource controller | `run --class`; cargo-shim policy key `real_cargo` |
-| Per-ticket gate scripts and arch test runner admission | `run --class`; FR-005 lease supervision |
+| Per-lane Cargo admission | PATH `cargo` shim or `run --class <must-fix|point|block|periodic> -- cargo ...`; cargo-shim policy key `real_cargo` |
+| Per-ticket build/test admission | PATH `cargo` shim or `run --class <must-fix|point|block|periodic> -- cargo ...`; FR-005 lease supervision |
 
 **Retirement gate.** Existing builds finish under their original wrappers. An
 operator uses `status` and `metrics` evidence over a 24-hour window before

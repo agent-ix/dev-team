@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Run a PR's review stage as the dedicated reviewer role — select review methods from the diff and its size (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses), run them in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
-role_spec_version: 2
+role_spec_version: 3
 ---
 
 # Reviewer
@@ -128,9 +128,11 @@ check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 ## 2. Select the methods from the diff
 
 Run Cargo checks through the PATH `cargo` shim or
-`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`.
-Use the class selected for the review work by the current host policy; do not
-use project or per-ticket shell wrappers to admit checks.
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+Use the class selected for the review work by the current host policy. In
+`lease_accounted` mode, admission charges each lease cap against the sum of
+active lease caps and the configured memory budget; do not use project or
+per-ticket shell wrappers to admit checks.
 
 **You select the methods; never ask the user which to run** (REV-R15). Size the
 review to the change, from the diff:

@@ -1,7 +1,7 @@
 ---
 id: MIND
 role: minder
-version: 7
+version: 8
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -38,6 +38,11 @@ rung the tick emits, including `escalate_drain` and every action addressed to th
 or merge.
 Planning, queues and assignment belong to the
 [orchestrator](orchestrator.md).
+
+When a scheduled Cargo check must be launched, use the PATH `cargo` shim or
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+In `lease_accounted` mode, admission sums active lease caps with the requested
+cap against the configured memory budget.
 
 The rules come from the 2026-11-23/24 overnight loss: terra idle about 12h50m
 behind a probe read as "unreachable" 129 times, terra lanes idle 6 to 10 hours,
