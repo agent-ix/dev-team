@@ -1,7 +1,7 @@
 ---
 id: LEAD
 role: code-lead
-version: 1
+version: 2
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -25,6 +25,14 @@ tickets in order, dispatches a [coder](coder.md) and one
 after review, merges, keeps the tracker true and keeps landing work. It
 orchestrates and does not author code, specs or reviews. Planning and order
 belong to the [planner](planner.md).
+
+Work comes in classes with default strategies: a Point (one defect or local
+change) and a Batch (like tickets on the same files) each get one pull request
+per ticket or batch; a Block (a redesign, consolidation, migration or subsystem
+change across routes, crates or repositories) gets one branch and one pull
+request per repository, with its steps as commits; a Sweep (a mechanical wide
+change) gets one pull request and a mechanical review. The task, ticket,
+project or owner instruction overrides the class default (LEAD-R22).
 
 A repository, organization or direct user rule that differs from a gate or merge
 rule here wins. The code lead records it as a `waiver` record
@@ -128,7 +136,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R06 | Unless a repository or organization rule requires it, the code lead SHALL NOT run the aggregate gate on a head that an earlier passing run already covers. | LEAD-O02 | repeated-gate | Rubric row Gate discipline; strategy "One gate per pull request" |
 | LEAD-R07 | The code lead SHALL fold a required dependency pin into the pull request that needs it, never into a repin-only pull request. | LEAD-O02 | repin-churn | Rubric row Pin discipline |
 | LEAD-R08 | The code lead SHALL NOT merge a pull request with a finding whose latest outcome is still-open or missing, other than a finding its one-line final fix closes. | LEAD-O04 | open-finding-merged | Rubric row Merge safety |
-| LEAD-R09 | The code lead SHALL NOT merge a change that no review covered, other than a one-line final fix it read, an overlap rebase whose confined check passed, or committed review files. | LEAD-O04 | unreviewed-change-merged | Rubric row Merge safety; code-lead verify before merge |
+| LEAD-R09 | The code lead SHALL NOT merge a change that no review covered, other than a one-line final fix it read, or an overlap rebase whose confined check passed. | LEAD-O04 | unreviewed-change-merged | Rubric row Merge safety; code-lead verify before merge |
 | LEAD-R10 | The code lead SHALL merge only a pull request that carries a recorded independent review. | LEAD-O04 | unreviewed-merge | Rubric row Merge safety; subagents quoted gate output they never ran, code-lead verification |
 | LEAD-R11 | Unless a repository or organization rule sets another gate requirement, the code lead SHALL NOT merge a pull request that changes a file other than Markdown without a passing aggregate gate that covers the merged head. | LEAD-O04 | ungated-merge | Never leave a repo red, code-lead never list |
 | LEAD-R12 | The code lead SHALL give each ticket one worktree, shared by coder, reviewer and gate. | LEAD-O02 | duplicate-worktree | Rubric row One directory |
@@ -141,45 +149,55 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R19 | The code lead SHALL record each aggregate gate run on the pull request's ticket. | LEAD-O04 | gate-unrecorded | The gate log holds no commit and no exit status; code-lead verify before merge |
 | LEAD-R20 | Unless a repository or organization rule requires it, the code lead SHALL NOT start the aggregate gate while the pull request's review is not clean. | LEAD-O02 | early-gate | Rubric row Gate discipline: one final lead gate after review |
 | LEAD-R21 | The code lead SHALL post a waiver record only for a role rule that the repository, organization or direct user rule at its `ref` differs from. | LEAD-O04 | unfounded-waiver | A waiver the evaluated role posts removes a pull request from that rule's queries, FR-017 waived |
+| LEAD-R22 | The code lead SHALL classify each group of tickets as Point, Batch, Block or Sweep and apply that class's default, unless the task, ticket, project or owner instruction says otherwise. | LEAD-O03 | work-class-ignored | Five consolidation leads split one redesign into one pull request per ticket step, 2026-11-26 |
+| LEAD-R23 | Before opening a pull request, the code lead SHALL fold the change into an open pull request of the same Block when one exists; a Block gets one branch and one pull request per repository, other than an urgent crash fix or a genuinely independent must-fix piece. | LEAD-O03 | block-split | Five consolidation leads split one redesign into one pull request per ticket step, 2026-11-26 |
+| LEAD-R24 | When a pull request has more than 2 review rounds, more than 15 commits, or has been open 3 hours with no movement, the code lead SHALL stop, consolidate or recut it, and write one line on the ticket saying why. | LEAD-O03 | tripwire-ignored | One pull request reached 10 review rounds, 2026-11-26 |
+| LEAD-R25 | A code lead that is waiting SHALL name the exact wait (build slot, review or decision) and start the next independent step in the same tick. | LEAD-O01 | unnamed-wait | Leads idle or waiting for hours with no named wait, 2026-11-26 |
+| LEAD-R26 | The code lead SHALL NOT rerun a merge check because main moved when the moved files do not overlap the files the pull request changes. | LEAD-O02 | repeated-merge-check | Merge checks rerun on every main move, 2026-11-26 |
 
 ## Evaluations
 
 | ID | Rule | Evidence source | Trigger | Method | Query or rubric | Evaluator | Comparator | Value | Unit | Cadence |
 |---|---|---|---|---|---|---|---|---|---|---|
 | LEAD-R01-E1 | LEAD-R01 | ix-board-metric | linear.path_tickets_unblocked_at_window_start | deterministic | retro.path_closed | evaluator | >= | 1 | issues | daily |
-| LEAD-R01-E2 | LEAD-R01 | linear | retro.path_remaining | judgement | rubric-code-lead@1#gate-progress | team-retro | >= | 2 | score | daily |
+| LEAD-R01-E2 | LEAD-R01 | linear | retro.path_remaining | judgement | rubric-code-lead@2#gate-progress | team-retro | >= | 2 | score | daily |
 | LEAD-R02-E1 | LEAD-R02 | github | github.review_ready_prs | deterministic | github.review_ready_prs_undispatched | evaluator | = | 0 | pull_requests | 3h |
-| LEAD-R02-E2 | LEAD-R02 | ix-board-metric | retro.prs_open | judgement | rubric-code-lead@1#review-flow | team-retro | >= | 2 | score | daily |
+| LEAD-R02-E2 | LEAD-R02 | ix-board-metric | retro.prs_open | judgement | rubric-code-lead@2#review-flow | team-retro | >= | 2 | score | daily |
 | LEAD-R03-E1 | LEAD-R03 | ix-board-metric | retro.wip_active | deterministic | retro.claims_without_movement | evaluator | = | 0 | issues | 3h |
-| LEAD-R03-E2 | LEAD-R03 | linear | retro.wip_active | judgement | rubric-code-lead@1#honest-state | team-retro | >= | 2 | score | daily |
+| LEAD-R03-E2 | LEAD-R03 | linear | retro.wip_active | judgement | rubric-code-lead@2#honest-state | team-retro | >= | 2 | score | daily |
 | LEAD-R04-E1 | LEAD-R04 | ix-board-metric | github.merged_prs | deterministic | retro.merged_open | evaluator | = | 0 | issues | 3h |
 | LEAD-R05-E1 | LEAD-R05 | ix-board-metric | retro.prs_open | deterministic | retro.review_round_policy_excess | evaluator | = | 0 | pull_requests | 3h |
-| LEAD-R05-E2 | LEAD-R05 | linear | retro.prs_open | judgement | rubric-code-lead@1#fix-rounds | team-retro | >= | 2 | score | daily |
+| LEAD-R05-E2 | LEAD-R05 | linear | retro.prs_open | judgement | rubric-code-lead@2#fix-rounds | team-retro | >= | 2 | score | daily |
 | LEAD-R06-E1 | LEAD-R06 | linear | linear.gate_records | deterministic | linear.redundant_gate_runs | evaluator | = | 0 | runs | 3h |
-| LEAD-R06-E2 | LEAD-R06 | linear | linear.gate_records | judgement | rubric-code-lead@1#gate-discipline | team-retro | >= | 2 | score | daily |
+| LEAD-R06-E2 | LEAD-R06 | linear | linear.gate_records | judgement | rubric-code-lead@2#gate-discipline | team-retro | >= | 2 | score | daily |
 | LEAD-R07-E1 | LEAD-R07 | ix-board-metric | retro.prs_open | deterministic | retro.repin_only_prs | evaluator | = | 0 | pull_requests | daily |
-| LEAD-R07-E2 | LEAD-R07 | github | retro.prs_open | judgement | rubric-code-lead@1#pin-discipline | team-retro | >= | 2 | score | daily |
+| LEAD-R07-E2 | LEAD-R07 | github | retro.prs_open | judgement | rubric-code-lead@2#pin-discipline | team-retro | >= | 2 | score | daily |
 | LEAD-R08-E1 | LEAD-R08 | linear | github.merged_prs | deterministic | linear.findings_open_at_merge | evaluator | = | 0 | findings | 3h |
-| LEAD-R08-E2 | LEAD-R08 | linear | github.merged_prs | judgement | rubric-code-lead@1#open-findings | team-retro | >= | 2 | score | daily |
+| LEAD-R08-E2 | LEAD-R08 | linear | github.merged_prs | judgement | rubric-code-lead@2#open-findings | team-retro | >= | 2 | score | daily |
 | LEAD-R09-E1 | LEAD-R09 | github | github.merged_prs | deterministic | github.merges_beyond_reviewed_change | evaluator | = | 0 | pull_requests | 3h |
-| LEAD-R09-E2 | LEAD-R09 | github | github.merged_prs | judgement | rubric-code-lead@1#merge-safety | team-retro | >= | 2 | score | daily |
+| LEAD-R09-E2 | LEAD-R09 | github | github.merged_prs | judgement | rubric-code-lead@2#merge-safety | team-retro | >= | 2 | score | daily |
 | LEAD-R10-E1 | LEAD-R10 | linear | github.merged_prs | deterministic | linear.merged_prs_without_review_record | evaluator | = | 0 | pull_requests | 3h |
 | LEAD-R11-E1 | LEAD-R11 | github | github.merged_prs | deterministic | github.merges_without_covering_gate | evaluator | = | 0 | pull_requests | 3h |
-| LEAD-R11-E2 | LEAD-R11 | github | github.merged_prs | judgement | rubric-code-lead@1#gate-safety | team-retro | >= | 2 | score | daily |
+| LEAD-R11-E2 | LEAD-R11 | github | github.merged_prs | judgement | rubric-code-lead@2#gate-safety | team-retro | >= | 2 | score | daily |
 | LEAD-R12-E1 | LEAD-R12 | transcript | hooks.role_turns | deterministic | transcript.lead_extra_trees | evaluator | = | 0 | trees | session-end |
-| LEAD-R12-E2 | LEAD-R12 | transcript | hooks.role_turns | judgement | rubric-code-lead@1#one-directory | team-retro | >= | 2 | score | daily |
+| LEAD-R12-E2 | LEAD-R12 | transcript | hooks.role_turns | judgement | rubric-code-lead@2#one-directory | team-retro | >= | 2 | score | daily |
 | LEAD-R13-E1 | LEAD-R13 | ix-board-metric | hooks.role_turns | deterministic | retro.host_overcommit_units_max | evaluator | = | 0 | units | 3h |
-| LEAD-R13-E2 | LEAD-R13 | ix-board-metric | hooks.role_turns | judgement | rubric-code-lead@1#resources | team-retro | >= | 2 | score | daily |
+| LEAD-R13-E2 | LEAD-R13 | ix-board-metric | hooks.role_turns | judgement | rubric-code-lead@2#resources | team-retro | >= | 2 | score | daily |
 | LEAD-R14-E1 | LEAD-R14 | ix-board-metric | prom.ix_team_ready_issues | deterministic | retro.idle_with_ready | evaluator | = | 0 | lanes | 3h |
-| LEAD-R14-E2 | LEAD-R14 | ix-board-metric | prom.ix_team_ready_issues | judgement | rubric-code-lead@1#agent-recovery | team-retro | >= | 2 | score | daily |
-| LEAD-R15-E1 | LEAD-R15 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@1#delivery | team-retro | >= | 2 | score | daily |
+| LEAD-R14-E2 | LEAD-R14 | ix-board-metric | prom.ix_team_ready_issues | judgement | rubric-code-lead@2#agent-recovery | team-retro | >= | 2 | score | daily |
+| LEAD-R15-E1 | LEAD-R15 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@2#delivery | team-retro | >= | 2 | score | daily |
 | LEAD-R16-E1 | LEAD-R16 | transcript | hooks.role_turns | deterministic | transcript.lead_authored_edits | evaluator | = | 0 | edits | session-end |
 | LEAD-R17-E1 | LEAD-R17 | github | github.prs_ready_to_merge | deterministic | github.ready_prs_unmerged_over_hour | evaluator | = | 0 | pull_requests | 3h |
-| LEAD-R17-E2 | LEAD-R17 | github | github.prs_ready_to_merge | judgement | rubric-code-lead@1#merge-latency | team-retro | >= | 2 | score | daily |
-| LEAD-R18-E1 | LEAD-R18 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@1#comms | team-retro | >= | 2 | score | daily |
+| LEAD-R17-E2 | LEAD-R17 | github | github.prs_ready_to_merge | judgement | rubric-code-lead@2#merge-latency | team-retro | >= | 2 | score | daily |
+| LEAD-R18-E1 | LEAD-R18 | transcript | transcript.outbound_messages | judgement | rubric-code-lead@2#comms | team-retro | >= | 2 | score | daily |
 | LEAD-R19-E1 | LEAD-R19 | ix-board-metric | retro.gate_log_runs | deterministic | linear.gate_runs_without_record | evaluator | = | 0 | runs | 3h |
 | LEAD-R20-E1 | LEAD-R20 | linear | linear.gate_records | deterministic | linear.gate_runs_before_clean_review | evaluator | = | 0 | runs | 3h |
-| LEAD-R21-E1 | LEAD-R21 | linear | linear.waiver_records | judgement | rubric-code-lead@1#waivers | team-retro | >= | 2 | score | daily |
+| LEAD-R21-E1 | LEAD-R21 | linear | linear.waiver_records | judgement | rubric-code-lead@2#waivers | team-retro | >= | 2 | score | daily |
+| LEAD-R22-E1 | LEAD-R22 | github | retro.prs_open | judgement | rubric-code-lead@2#work-class | team-retro | >= | 2 | score | daily |
+| LEAD-R23-E1 | LEAD-R23 | github | retro.prs_open | judgement | rubric-code-lead@2#fold-open-pr | team-retro | >= | 2 | score | daily |
+| LEAD-R24-E1 | LEAD-R24 | github | retro.prs_open | judgement | rubric-code-lead@2#tripwires | team-retro | >= | 2 | score | daily |
+| LEAD-R25-E1 | LEAD-R25 | transcript | hooks.role_turns | judgement | rubric-code-lead@2#named-wait | team-retro | >= | 2 | score | daily |
+| LEAD-R26-E1 | LEAD-R26 | github | github.merged_prs | judgement | rubric-code-lead@2#merge-check | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -201,6 +219,7 @@ grades the waiver records.
 | Resources | LEAD-R13 | resources |
 | Agent recovery | LEAD-R14 | agent-recovery |
 | Delivery | LEAD-R15 | delivery |
+| Work classes and churn | LEAD-R22, LEAD-R23, LEAD-R24, LEAD-R25, LEAD-R26 | work-class, fold-open-pr, tripwires, named-wait, merge-check |
 
 ## Evaluation notes
 
@@ -221,3 +240,7 @@ grades the waiver records.
 - LEAD-R14: `WAITING` and `RECENT` agents are observed without nudging and are
   not idle. File ages, token totals and worker counts alone establish neither
   idle state nor capacity.
+- LEAD-R22 to LEAD-R26 are judgement-only: class, fold, tripwire, wait and
+  merge-check decisions depend on ticket and transcript prose, which no recorded
+  fact states. An explicit task, ticket, project or owner instruction that
+  differs from a class default is the evidence for a score of 2.

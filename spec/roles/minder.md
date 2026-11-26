@@ -1,7 +1,7 @@
 ---
 id: MIND
 role: minder
-version: 6
+version: 7
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -148,6 +148,8 @@ that reads it names its producer here:
 | MIND-R19 | The minder SHALL NOT send a relay message to a lane in BLOCKED. | MIND-O03 | blocked-pane-input | Ladder rung 1 to a blocked lane is pane input at a dialog, SWM-225 review |
 | MIND-R20 | An `escalate_drain` action SHALL be sent to its owner, the lane's lead, in the tick it is emitted. | MIND-O02 | drain-unescalated | Drain-cap escalation had no sender, SWM-227 review |
 | MIND-R21 | The minder SHALL send the orchestrator, as a relay message in the tick it is emitted, every action the orchestrator executes: `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the drain cap, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved`. | MIND-O02 | orchestrator-action-undelivered | Orchestrator cannot run `fleet tick` without consuming rungs, SWM-227 review |
+| MIND-R22 | The minder SHALL route a lead that is idle or waiting for more than 20 minutes without a named wait to that lead and, by the ladder, to the orchestrator. | MIND-O01 | lead-idle-unrouted | Leads idle or waiting for hours with no named wait, 2026-11-26 |
+| MIND-R23 | The minder SHALL route a pull request with more than 2 review rounds, more than 15 commits, or open 3 hours with no movement to its lead as a tripwire in the tick it is found. | MIND-O02 | pr-tripwire-unrouted | One pull request reached 10 review rounds, 2026-11-26 |
 
 ## Evaluations
 
@@ -155,7 +157,7 @@ that reads it names its producer here:
 |---|---|---|---|---|---|---|---|---|---|---|
 | MIND-R01-E1 | MIND-R01 | ledger | ledger.act_on_undetermined_actions | deterministic | ledger.act_on_undetermined_unexecuted_ticks | evaluator | = | 0 | ticks | tick |
 | MIND-R02-E1 | MIND-R02 | ledger | ledger.failed_probe_ticks | deterministic | ledger.probe_failure_without_routed_defect | evaluator | = | 0 | ticks | tick |
-| MIND-R02-E2 | MIND-R02 | transcript | ledger.failed_probe_ticks | judgement | rubric-minder@3#failed-probe | director | >= | 2 | score | daily |
+| MIND-R02-E2 | MIND-R02 | transcript | ledger.failed_probe_ticks | judgement | rubric-minder@4#failed-probe | director | >= | 2 | score | daily |
 | MIND-R03-E1 | MIND-R03 | relay-receipts | ledger.push_next_ticket_actions | deterministic | relay.push_next_ticket_unsent_in_tick | evaluator | = | 0 | actions | tick |
 | MIND-R04-E1 | MIND-R04 | ledger | ledger.ladder_rungs_emitted | deterministic | ledger.escalation_rung_send_latency_max | evaluator | <= | 1 | tick intervals | tick |
 | MIND-R05-E1 | MIND-R05 | ledger | ledger.ladder_rungs_emitted | deterministic | ledger.escalation_rungs_suppressed | evaluator | = | 0 | rungs | tick |
@@ -163,24 +165,26 @@ that reads it names its producer here:
 | MIND-R07-E1 | MIND-R07 | ledger | hooks.minder_turns | deterministic | ledger.minder_turns_without_committed_tick | evaluator | = | 0 | turns | tick |
 | MIND-R08-E1 | MIND-R08 | transcript | hooks.minder_turns | deterministic | transcript.minder_own_probe_commands | evaluator | = | 0 | commands | session-end |
 | MIND-R09-E1 | MIND-R09 | ledger | ledger.minder_addressed_actions | deterministic | ledger.tick_actions_unexecuted_by_minder | evaluator | = | 0 | actions | tick |
-| MIND-R09-E2 | MIND-R09 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@3#liveness | team-retro | >= | 2 | score | 3h |
+| MIND-R09-E2 | MIND-R09 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@4#liveness | team-retro | >= | 2 | score | 3h |
 | MIND-R10-E1 | MIND-R10 | ledger | ledger.minder_orders_unconfirmed_at_deadline | deterministic | ledger.unconfirmed_orders_not_resent_or_escalated | evaluator | = | 0 | orders | tick |
-| MIND-R10-E2 | MIND-R10 | transcript | ledger.minder_orders_unconfirmed_at_deadline | judgement | rubric-minder@3#overdue-order | team-retro | >= | 2 | score | 3h |
+| MIND-R10-E2 | MIND-R10 | transcript | ledger.minder_orders_unconfirmed_at_deadline | judgement | rubric-minder@4#overdue-order | team-retro | >= | 2 | score | 3h |
 | MIND-R11-E1 | MIND-R11 | ledger | ledger.answer_dialog_actions | deterministic | ledger.answer_dialog_latency_max | evaluator | <= | 1 | tick intervals | tick |
-| MIND-R11-E2 | MIND-R11 | transcript | ledger.answer_dialog_actions | judgement | rubric-minder@3#dialog-answer | team-retro | >= | 2 | score | 3h |
+| MIND-R11-E2 | MIND-R11 | transcript | ledger.answer_dialog_actions | judgement | rubric-minder@4#dialog-answer | team-retro | >= | 2 | score | 3h |
 | MIND-R12-E1 | MIND-R12 | transcript | ledger.answer_dialog_actions | deterministic | transcript.dialog_answers_missing_from_answer_log | evaluator | = | 0 | answers | session-end |
 | MIND-R13-E1 | MIND-R13 | relay-receipts | ledger.escalate_block_actions | deterministic | relay.escalate_block_without_lead_message | evaluator | = | 0 | actions | tick |
-| MIND-R13-E2 | MIND-R13 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@3#login-blocker | director | >= | 2 | score | daily |
+| MIND-R13-E2 | MIND-R13 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@4#login-blocker | director | >= | 2 | score | daily |
 | MIND-R14-E1 | MIND-R14 | transcript | ledger.escalate_block_actions | deterministic | transcript.answers_sent_while_escalate_block_open | evaluator | = | 0 | answers | session-end |
-| MIND-R14-E2 | MIND-R14 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@3#uncovered-answer | director | >= | 2 | score | daily |
+| MIND-R14-E2 | MIND-R14 | transcript | ledger.escalate_block_actions | judgement | rubric-minder@4#uncovered-answer | director | >= | 2 | score | daily |
 | MIND-R15-E1 | MIND-R15 | relay-receipts | relay.minder_orders | deterministic | relay.minder_orders_without_expect_ticket | evaluator | = | 0 | orders | tick |
 | MIND-R16-E1 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | deterministic | transcript.escalations_without_action_reference | evaluator | = | 0 | escalations | session-end |
-| MIND-R16-E2 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | judgement | rubric-minder@3#evidence-cited | team-retro | >= | 2 | score | 3h |
+| MIND-R16-E2 | MIND-R16 | transcript | ledger.ladder_rungs_emitted | judgement | rubric-minder@4#evidence-cited | team-retro | >= | 2 | score | 3h |
 | MIND-R17-E1 | MIND-R17 | relay-receipts | ledger.dead_lane_ticks | deterministic | relay.dead_lane_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
 | MIND-R18-E1 | MIND-R18 | relay-receipts | ledger.idle_empty_list_ticks | deterministic | relay.idle_empty_list_without_orchestrator_message | evaluator | = | 0 | lanes | tick |
 | MIND-R19-E1 | MIND-R19 | relay-receipts | ledger.blocked_lane_ticks | deterministic | relay.minder_sends_to_blocked_lane | evaluator | = | 0 | messages | tick |
 | MIND-R20-E1 | MIND-R20 | relay-receipts | ledger.escalate_drain_actions | deterministic | relay.escalate_drain_without_lead_message | evaluator | = | 0 | actions | tick |
 | MIND-R21-E1 | MIND-R21 | relay-receipts | ledger.orchestrator_addressed_actions | deterministic | relay.orchestrator_executed_actions_without_orchestrator_message | evaluator | = | 0 | actions | tick |
+| MIND-R22-E1 | MIND-R22 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@4#lead-wait | team-retro | >= | 2 | score | 3h |
+| MIND-R23-E1 | MIND-R23 | transcript | ledger.minder_addressed_actions | judgement | rubric-minder@4#pr-tripwire | team-retro | >= | 2 | score | 3h |
 
 ## Evaluation notes
 
@@ -219,3 +223,8 @@ that reads it names its producer here:
 - MIND-R19-E1 counts relay sends from the minder whose recipient lane is in a
   BLOCKED interval at send time. A standing-order answer is pane input through
   herdr, not a relay send, and is governed by MIND-R11 and MIND-R14.
+- MIND-R22 and MIND-R23 are judgement-only until `fleet tick` emits lead-wait
+  and PR-tripwire actions. The minder reads lead idle time from `fleet status`
+  `state_age_secs` and `focus`, and PR rounds, commits and last movement from
+  `gh pr view` and the tracker markers. A lead's named wait (build slot,
+  review or decision) in its focus or ticket comment is not idle.

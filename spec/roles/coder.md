@@ -1,7 +1,7 @@
 ---
 id: CODE
 role: coder
-version: 1
+version: 2
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -104,7 +104,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 |---|---|---|---|---|
 | CODE-R01 | The coder SHALL work only in the one worktree its brief names, creating no other worktree or clone of the repository for the ticket. | CODE-O02 | duplicate-worktree | Rubric row One directory; one worktree per ticket (spec.md section 15) |
 | CODE-R02 | Every file the coder's pull request changes SHALL belong to the assigned ticket's scope. | CODE-O02 | scope-creep | Rubric row Scope; changes in another lane's files |
-| CODE-R03 | The coder SHALL split a change above the configured pull request size limit before review. | CODE-O02 | oversize-pr | Rubric row Size; strategy "Split large pull requests" |
+| CODE-R03 | When the team has configured a pull request size limit, the coder SHALL split a change of a Point or Batch above it before review, and SHALL NOT split a Block. | CODE-O02 | oversize-pr | Rubric row Size; strategy "Split large pull requests" |
 | CODE-R04 | The coder's pull request SHALL reach a clean review within the current review round policy. | CODE-O02 | round-excess | Rubric row Rounds |
 | CODE-R05 | The coder SHALL fix every finding sent in a fix round, other than one it reports as too big for the pull request or owned by another repository or lane. | CODE-O02 | unfixed-finding | Rubric row Rework cause; coder skill fix rounds |
 | CODE-R06 | The coder SHALL NOT open a second pull request for a finding on its open pull request. | CODE-O02 | finding-split-off | A pull request per finding caused merge mess and cascading rebases, code-lead never list |
@@ -113,34 +113,36 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R09 | The coder SHALL NOT send a report before the checks it cites have finished. | CODE-O02 | early-report | Rubric row Stalls |
 | CODE-R10 | Unless a repository or organization rule requires it, the coder SHALL NOT run the repository's aggregate gate before review or during a fix round. | CODE-O01 | repeated-gate | Repeated workspace gates without new evidence, code-lead churn retrospective |
 | CODE-R11 | The coder SHALL NOT merge a pull request. | CODE-O02 | unauthorized-merge | Coder skill role boundary: the code lead verifies and merges |
-| CODE-R12 | The coder SHALL NOT push to a reported pull request branch unless its dispatcher has since sent it work on that branch: a fix round, an overlap rebase or the review-file commit. | CODE-O02 | frozen-diff-changed | A branch changed mid-review leaves the reviewed diff stale, code-lead freeze step |
+| CODE-R12 | The coder SHALL NOT push to a reported pull request branch unless its dispatcher has since sent it work on that branch: a fix round or an overlap rebase. | CODE-O02 | frozen-diff-changed | A branch changed mid-review leaves the reviewed diff stale, code-lead freeze step |
 | CODE-R13 | A coder running as a fleet lane SHALL take up the exact ticket its latest order expects by the order's deadline. | CODE-O01 | order-not-taken-up | Queued relay orders treated as delivered, MONITORING-DESIGN |
 | CODE-R14 | The coder SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | CODE-O01 | comms-noise | Status polls and progress messages between lanes, coder skill Communication |
 | CODE-R15 | The coder SHALL NOT open a new ticket for a finding on its open pull request. | CODE-O02 | finding-deferred | Findings filed as new tickets, code-lead never list |
+| CODE-R16 | The coder SHALL NOT commit reviewer SR files into the pull request. | CODE-O02 | review-file-churn | Review-file commits moved heads and reran checks, 2026-11-26 |
 
 ## Evaluations
 
 | ID | Rule | Evidence source | Trigger | Method | Query or rubric | Evaluator | Comparator | Value | Unit | Cadence |
 |---|---|---|---|---|---|---|---|---|---|---|
 | CODE-R01-E1 | CODE-R01 | transcript | hooks.role_turns | deterministic | transcript.coder_extra_trees | evaluator | = | 0 | trees | session-end |
-| CODE-R01-E2 | CODE-R01 | transcript | github.authored_prs | judgement | rubric-coder@1#one-directory | team-retro | >= | 2 | score | daily |
-| CODE-R02-E1 | CODE-R02 | github | github.authored_prs | judgement | rubric-coder@1#scope | team-retro | >= | 2 | score | daily |
+| CODE-R01-E2 | CODE-R01 | transcript | github.authored_prs | judgement | rubric-coder@2#one-directory | team-retro | >= | 2 | score | daily |
+| CODE-R02-E1 | CODE-R02 | github | github.authored_prs | judgement | rubric-coder@2#scope | team-retro | >= | 2 | score | daily |
 | CODE-R03-E1 | CODE-R03 | ix-board-metric | retro.prs_open | deterministic | retro.prs_oversize | evaluator | = | 0 | pull_requests | 3h |
-| CODE-R03-E2 | CODE-R03 | github | github.authored_prs | judgement | rubric-coder@1#size | team-retro | >= | 2 | score | daily |
+| CODE-R03-E2 | CODE-R03 | github | github.authored_prs | judgement | rubric-coder@2#size | team-retro | >= | 2 | score | daily |
 | CODE-R04-E1 | CODE-R04 | ix-board-metric | github.authored_prs | deterministic | retro.review_round_policy_excess | evaluator | = | 0 | pull_requests | 3h |
-| CODE-R04-E2 | CODE-R04 | linear | github.authored_prs | judgement | rubric-coder@1#rounds | team-retro | >= | 2 | score | daily |
+| CODE-R04-E2 | CODE-R04 | linear | github.authored_prs | judgement | rubric-coder@2#rounds | team-retro | >= | 2 | score | daily |
 | CODE-R05-E1 | CODE-R05 | linear | linear.fix_round_findings | deterministic | linear.fix_round_findings_returned_still_open | evaluator | = | 0 | findings | 3h |
-| CODE-R05-E2 | CODE-R05 | linear | linear.fix_round_findings | judgement | rubric-coder@1#rework-cause | team-retro | >= | 2 | score | daily |
-| CODE-R06-E1 | CODE-R06 | github | github.second_prs_during_review | judgement | rubric-coder@1#finding-pull-request | team-retro | >= | 2 | score | daily |
-| CODE-R07-E1 | CODE-R07 | transcript | github.authored_prs | judgement | rubric-coder@1#false-done | team-retro | >= | 2 | score | daily |
-| CODE-R08-E1 | CODE-R08 | transcript | github.authored_prs | judgement | rubric-coder@1#honest-report | team-retro | >= | 2 | score | daily |
-| CODE-R09-E1 | CODE-R09 | transcript | github.authored_prs | judgement | rubric-coder@1#report-timing | team-retro | >= | 2 | score | daily |
+| CODE-R05-E2 | CODE-R05 | linear | linear.fix_round_findings | judgement | rubric-coder@2#rework-cause | team-retro | >= | 2 | score | daily |
+| CODE-R06-E1 | CODE-R06 | github | github.second_prs_during_review | judgement | rubric-coder@2#finding-pull-request | team-retro | >= | 2 | score | daily |
+| CODE-R07-E1 | CODE-R07 | transcript | github.authored_prs | judgement | rubric-coder@2#false-done | team-retro | >= | 2 | score | daily |
+| CODE-R08-E1 | CODE-R08 | transcript | github.authored_prs | judgement | rubric-coder@2#honest-report | team-retro | >= | 2 | score | daily |
+| CODE-R09-E1 | CODE-R09 | transcript | github.authored_prs | judgement | rubric-coder@2#report-timing | team-retro | >= | 2 | score | daily |
 | CODE-R10-E1 | CODE-R10 | transcript | hooks.role_turns | deterministic | transcript.coder_aggregate_gate_runs | evaluator | = | 0 | runs | session-end |
 | CODE-R11-E1 | CODE-R11 | transcript | hooks.role_turns | deterministic | transcript.coder_merge_commands | evaluator | = | 0 | commands | session-end |
 | CODE-R12-E1 | CODE-R12 | transcript | transcript.coder_reports | deterministic | transcript.coder_unrequested_pushes | evaluator | = | 0 | pushes | session-end |
 | CODE-R13-E1 | CODE-R13 | ledger | ledger.lane_orders_due | deterministic | ledger.lane_orders_not_taken_up | evaluator | = | 0 | orders | 3h |
-| CODE-R14-E1 | CODE-R14 | transcript | transcript.outbound_messages | judgement | rubric-coder@1#comms | team-retro | >= | 2 | score | daily |
-| CODE-R15-E1 | CODE-R15 | linear | linear.fix_round_findings | judgement | rubric-coder@1#finding-ticket | team-retro | >= | 2 | score | daily |
+| CODE-R14-E1 | CODE-R14 | transcript | transcript.outbound_messages | judgement | rubric-coder@2#comms | team-retro | >= | 2 | score | daily |
+| CODE-R15-E1 | CODE-R15 | linear | linear.fix_round_findings | judgement | rubric-coder@2#finding-ticket | team-retro | >= | 2 | score | daily |
+| CODE-R16-E1 | CODE-R16 | github | github.authored_prs | judgement | rubric-coder@2#review-files | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -154,6 +156,7 @@ coder skill's Communication section, which had no row.
 | Scope | CODE-R02 | scope |
 | Rounds | CODE-R04 | rounds |
 | Rework cause | CODE-R05, CODE-R06, CODE-R15 | rework-cause, finding-pull-request, finding-ticket |
+| Review files | CODE-R16 | review-files |
 | One directory | CODE-R01 | one-directory |
 | Honest report | CODE-R07, CODE-R08 | false-done, honest-report |
 | Stalls | CODE-R09 | report-timing |

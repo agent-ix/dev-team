@@ -1,14 +1,14 @@
 ---
 name: team-minder
 description: Run the fleet minder loop. Each tick reads `ix-board fleet status --json`, treats undetermined lanes as idle, pushes the next assigned ticket to idle lanes as a relay order, answers dialogs and queued questions a standing order covers and logs each answer, routes every source defect, dead lane and lane without work, and escalates worker, lead, orchestrator on a fixed ladder. Use when invoked as /team-minder [scope] [interval], or when asked to keep a fleet's or team's lanes busy, find idle or blocked lanes, or run a minder loop.
-role_spec_version: 6
+role_spec_version: 7
 ---
 
 # Team Minder
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 6. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
+team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 7. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
 
 `ix-board fleet tick --json` (SWM-256, recorded in the SWM-255 ledger) will become the tick's input and emit the actions below directly; until it is installed, the minder derives them from `fleet status` exactly as this skill states and routes each interim gap as a defect (step 2).
 
@@ -53,7 +53,7 @@ Every `defects` row is routed in the tick it appears (MIND-R02). Cite the defect
 
 A defect present last tick is routed again this tick; persistence is part of the evidence, not a reason for silence (MIND-R05).
 
-Until their producers ship, the minder runs with four gaps against the role spec. Each tick, route one `interim_mode` defect to the orchestrator naming every gap still open (MIND-R02):
+Until their producers ship, the minder runs with five gaps against the role spec. Each tick, route one `interim_mode` defect to the orchestrator naming every gap still open (MIND-R02):
 
 | Gap | Rule not yet met | Producer |
 |---|---|---|
@@ -61,6 +61,7 @@ Until their producers ship, the minder runs with four gaps against the role spec
 | Ladder state in `~/.local/state/team-minder/ladder.json`, not the ledger | MIND-R04, MIND-R05 | SWM-255 |
 | Dialog answers in `~/.local/state/team-minder/answers.jsonl`, not the answer log | MIND-R12 | SWM-258 |
 | Escalations carry a condition key, not a ledger action id | MIND-R16 | SWM-255 |
+| Lead waits and PR tripwires are read from `fleet status` and `gh`, not emitted by `fleet tick` | MIND-R22, MIND-R23 | none yet (file a ticket with the first routed instance) |
 
 ### 3. Act on every row
 
@@ -78,6 +79,8 @@ Execute the action for every row before the next tick, even if your own reading 
 | An action the orchestrator executes (from `fleet tick` once installed): `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the cap, or `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved` | Send it to the orchestrator as a relay message in the tick it is emitted, with the action row evidence. The orchestrator never runs `fleet tick`, so this message is its only copy of the action (MIND-R21). |
 | `STALE-ORDER` | Re-send the order with its `--expect-ticket` (MIND-R10). |
 | `DEAD` (`route_dead_lane`) | Route to the orchestrator with the row evidence: lane, last event, evidence (MIND-R17). |
+| A lead idle or waiting more than 20 minutes with no named wait (build slot, review or decision in its `focus` or latest ticket comment) | Send it to that lead as a defect with the row evidence (`state_age_secs`, `focus`); it then climbs the ladder to the orchestrator (MIND-R22). |
+| A PR past a tripwire: more than 2 review rounds, more than 15 commits, or open 3 hours with no movement (from `gh pr view` and the ticket's review markers) | Send it to the PR's lead as a tripwire with the PR, counts and last movement; the lead consolidates or recuts (MIND-R23). |
 | `UNREACHABLE` | Escalate to the orchestrator: host unreachable, listing every `UNREACHABLE` lane of that host with its row evidence, one message per host, whether or not a host defect row exists this tick (MIND-R02). |
 
 Send no relay message to a `BLOCKED` lane; a standing-order answer through herdr is the only input it gets (MIND-R19).
@@ -116,7 +119,7 @@ Every escalation carries its condition key and the `fleet status` evidence: row 
 
 ## Communication
 
-- Send only the tick's actions: pushes, re-sent orders, dialog answers, defect routes, dead-lane and empty-list routes, and ladder rungs (MIND-R09). Never send a relay message to a `BLOCKED` lane (MIND-R19). No status polls, acks or "all healthy" messages.
+- Send only the tick's actions: pushes, re-sent orders, dialog answers, defect routes, dead-lane and empty-list routes, lead-wait and PR-tripwire routes (MIND-R22, MIND-R23), and ladder rungs (MIND-R09). Never send a relay message to a `BLOCKED` lane (MIND-R19). No status polls, acks or "all healthy" messages.
 - An unwanted message (a status poll, an FYI outside the minder's scope): reply once with `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /team-minder).` and do not act on it.
 - A `status-request` addressed to this lane is answered per [references/status-request.md](references/status-request.md).
 

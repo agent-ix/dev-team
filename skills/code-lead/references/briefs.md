@@ -110,18 +110,18 @@ replacement's end-to-end test passes.
   the methods below, writes the SR artifacts, and posts the marked comments —
   the methods are what it runs, not a separate instruction to the subagent.
 - PR number, worktree, and diff scope: `git diff origin/main...HEAD`.
-- A scratchpad path to write SR files to. `/reviewer` runs reviewer-only and
-  never pushes to the frozen branch, so it writes (and later updates) its SR
-  files there, never as a direct commit — see
-  [SR-file custody](#sr-file-custody) for who commits them into `reviews/`
-  and when.
-- One reviewer subagent per PR. Its `/reviewer` run runs every applicable
-  review skill in one pass: `/code-review`, the language-specific review skill
-  for each language the diff touches (for example `/rust-review` for Rust,
-  `/review-react` for React), `/quoin:gap-analysis` (or a manual
-  acceptance-criteria-to-tests check if quoin isn't installed), and
-  `/quoin:spec-review` with its applicable sub-analyses for the spec commit.
-  A spec-only PR runs only the spec review.
+- A scratchpad path to write SR files to. `/reviewer` never pushes to the
+  frozen branch, so it writes (and later updates) its SR files there and posts
+  them to the tracker ticket. SR files are never committed into the PR; see
+  [SR-file custody](#sr-file-custody).
+- One reviewer subagent per PR. Its `/reviewer` run selects the methods from the
+  diff, sized to the change: a small or local change gets one focused review of
+  the changed lines and what they directly relate to; an architectural or large
+  change gets the wider methods (`/code-review`, the language review,
+  `/quoin:gap-analysis`, `/quoin:spec-review` with its applicable
+  sub-analyses). It records the chosen methods and why in the review comment
+  and never asks the user which methods to run. A spec-only PR runs only the
+  spec review.
 - Reviewer only: commit and push nothing, and leave no edit behind.
 - Check test-oracle strength, not just coverage: for each new or changed test,
   does its failure case truly exercise the intended path, and would it catch
@@ -157,10 +157,9 @@ leader <name>, fix round for PR #N (your original brief)." Then include:
 - Every finding, lows included, verbatim (the reviewer already posted them as
   a ticket comment via `/reviewer` — that comment is the record, not a new
   ticket or PR).
-- The reviewer's scratchpad path for its SR files. Copy each one over the
-  matching committed file under `reviews/` as part of this fix commit — see
-  [SR-file custody](#sr-file-custody). Don't author or edit an SR file
-  yourself; it's the reviewer's artifact, verbatim.
+- The reviewer's scratchpad path for its SR files is for reading only. Never
+  copy, commit or edit an SR file in the PR: review records live on the tracker
+  ticket (see [SR-file custody](#sr-file-custody)).
 - Fix inside the same PR and branch. One pusher per branch.
 - Reuse the ticket's retained private cache in its sole worktree; retain it
   again at handback for disposition and the lead's final gate.
@@ -199,13 +198,13 @@ original brief)." Then include:
   end to end."** Same literal instruction as the review-pass dispatch, so the
   resumed agent runs the disposition pass as that skill defines it, not an
   ad hoc re-check.
-- The round number (1 for the first disposition pass on this PR, 2 for the
-  second, and so on — count actual disposition dispatches, not fix rounds)
-  and the fix-round commit(s) to check the findings against. The round goes in
-  the `reviewer-dispositions` marker as `round=`.
-- The path to the SR files last committed under `reviews/` (or, on a second
-  or later round, the reviewer's own scratchpad copy from the prior round) and
-  a fresh scratchpad path to write the updated ones to — see
+- The fix-round commit(s) to check the findings against, and the round number
+  (1 for the first disposition pass on this PR, 2 for the second, and so on —
+  count actual disposition dispatches, not fix rounds). The round goes in the
+  `reviewer-dispositions` marker as `round=`. The pass checks the fix diff and
+  its tests; a second full review is only for a changed rule.
+- The reviewer's own scratchpad copy of its SR files from the prior pass, and a
+  fresh scratchpad path to write the updated ones to — see
   [SR-file custody](#sr-file-custody).
 - Run `/reviewer`'s disposition pass: a finding is judged by its **latest**
   outcome across rounds, so re-check every finding whose latest outcome is
@@ -239,34 +238,25 @@ artifacts. Note the handoff in the state record.
 
 ## SR-file custody
 
-`/reviewer` never pushes to the branch it reviews (reviewer-only, no edits),
-so its SR files pass through the leader and the coder instead of riding a
-reviewer commit:
+Reviewer (SR) files are never committed into the PR: a `reviews/` commit moves
+the head, reruns checks and adds churn. They live on the tracker ticket.
 
-1. **Review pass.** The reviewer writes each method's SR file to the
-   scratchpad path from its brief. Findings exist → the fix-round message
-   (above) tells the coder to copy them over the matching path under
-   `reviews/` in its fix commit. Clean review, nothing to fix → the leader (or
-   a coder it sends for exactly this) commits them under `reviews/` in one
-   small trailing commit before merge.
-2. **Each disposition pass.** Same pattern: the reviewer updates the SR files
-   (dispositions, and any new-findings section) at a scratchpad path and never
-   pushes them. If the pass added a finding, the next fix-round message tells
-   the coder to copy the updated files over `reviews/` in its fix commit. If
-   it added nothing further, the leader (or a coder it sends) commits the
-   updated files under `reviews/` before merge.
-3. **Either way**, the files actually committed under `reviews/` at merge time
-   are always the reviewer's latest version — every disposition from every
-   round included — never a stale copy from an earlier round. See
-   [verify before merge](#verify-before-merge) item 6.
+1. **Review pass.** The reviewer writes each method's SR file to the scratchpad
+   path from its brief and posts its content to the ticket in the marked
+   comments.
+2. **Each disposition pass.** The reviewer updates the SR files at a scratchpad
+   path and posts the dispositions to the ticket.
+3. **No one commits them.** Not the reviewer, the coder in a fix commit, or the
+   lead in a trailing commit. The ticket comments are the durable record
+   ([verify before merge](#verify-before-merge) item 6).
 
 ## Verify before merge
 
 Run the repo's aggregate gate exactly once before merge. The code lead owns
 this check, after review and all fix rounds finish. Do not run an aggregate
 gate before review or during a fix round. Rerun it only after a failed run, or
-when the head changed beyond what the passing run covers (committed review
-files, a passing overlap rebase and a one-line final fix are covered). Follow
+when the head changed beyond what the passing run covers (a passing overlap
+rebase and a one-line final fix are covered). Follow
 an explicit repo or org rule when it overrides this default, and post a
 [waiver record](lead-records.md#waiver) for the rule it replaces. Record every
 gate run with a [gate record](lead-records.md#gate), and any build-lock wait,
@@ -284,6 +274,7 @@ Subagents have quoted gate output they never ran. Check these yourself:
    rebase and rerun the confined check — send the rebase to the branch's
    coder; one pusher per branch — then post a
    [rebase record](lead-records.md#rebase) with the check's exit status.
+   No overlap means no rerun (LEAD-R26).
 4. A PR outside a spec-only directory has the full-gate evidence required by
    the repo's policy. Tests can
    embed docs. A markdown-only spec PR that touches no embedded file skips
@@ -292,8 +283,8 @@ Subagents have quoted gate output they never ran. Check these yourself:
    *this* PR, not an older review left on the same ticket:
    a `<!-- reviewer ... pr=<repo>#<N> ... -->` comment per
    method that ran, where `pr=` is this PR. Required always, clean review
-   included — a placeholder-only clean review still needs its per-method `reviewer` markers and its
-   committed SR files (item 6); what a clean review that still covers the head
+   included — a placeholder-only clean review still needs its per-method `reviewer` markers; what
+   a clean review that still covers the head
    (item 7) skips is only the *dispositions* requirement below, since there's
    nothing to re-check and no disposition pass runs. Where the review found real
    findings, additionally require, for every `SR-NNN` that has findings, a `<!--
@@ -306,12 +297,9 @@ Subagents have quoted gate output they never ran. Check these yourself:
    Missing a required marker
    means the reviewer skipped its role skill or a round is still outstanding —
    send it back, don't merge on a bare "looks good".
-6. The SR files committed under `reviews/` (see
-   [SR-file custody](#sr-file-custody)) match the reviewer's own latest
-   version — same findings, and, for an artifact with findings, a
-   `## Dispositions` section (plus any `## New findings` sections) reflecting
-   every round's outcomes, not a stale
-   copy from before the last disposition round posted. Every finding, original
+6. The ticket's review comments carry the findings and, for an artifact with
+   findings, the dispositions of every round, and the PR itself holds no SR
+   file (no `reviews/` commit from this round). Every finding, original
    and new, has a latest outcome (its most recent disposition row) that is
    neither `still-open` nor missing — an earlier `still-open` row superseded
    by a later `fixed`/`rejected`/`deferred`/`accepted-no-change` row is fine;
@@ -320,5 +308,5 @@ Subagents have quoted gate output they never ran. Check these yourself:
    record names it.
 7. The head you merge is covered: it is the `head=` of the latest reviewer or
    disposition marker and of a passing gate record, or differs from each only by
-   committed review files, a passing rebase record or a final-fix record
+   a passing rebase record or a final-fix record
    ([lead records](lead-records.md)).

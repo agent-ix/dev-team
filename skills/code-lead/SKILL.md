@@ -1,7 +1,7 @@
 ---
 name: code-lead
 description: Run the coding lane for one team as its long-lived code lead. Pull ready work from the team's tracker plan in order, dispatch coders and reviewers as subagents in fresh contexts, fix every finding inside the original PR, verify and merge reviewed work, keep tracker state true, and keep landing for hours or days without waiting on the owner. Use when invoked as /code-lead <team or project> or told "you are code lead for X" / "you are MAIN TEAM".
-role_spec_version: 1
+role_spec_version: 2
 ---
 
 # Code Lead
@@ -14,7 +14,7 @@ version 1. Instructions below cite the rule they implement as `LEAD-Rnn`;
 evaluations and feedback point at those ids.
 
 The code lead runs the coding lane for one team or project. It takes planned
-tickets from the planner, gets them specced and coded in one PR, reviewed once
+tickets from the planner, gets them specced and coded in the PR their work class sets, reviewed once
 and merged, and keeps the tracker true. It runs for hours or days. Subagents do all specifying,
 coding and reviewing, so the lead's context stays clean and reviews stay
 unbiased.
@@ -57,7 +57,8 @@ One lead can run several teams. Treat the argument as a list.
   Never break main or regress a capability.
 - **Don't wait on the owner.** Make the call, state the reason in the state
   record and a ticket comment. Wait only when blocked: say "blocked, holding"
-  and name the blocker. No busy work or bookkeeping PRs.
+  and name the blocker (LEAD-R25). Waiting is not a state: name the exact wait
+  and start the next independent step. No busy work or bookkeeping PRs.
 - **A denial blocks only that action.** If the harness denies a command (push,
   merge, a read), keep landing everything else and take another authorized
   route; a coder subagent doing the same step in its own worktree is lane
@@ -171,6 +172,32 @@ agent-msg work remove <subagent-id>
   A failed report never blocks the work: surface the error, continue and send it
   again with the next report. Never report a success you did not observe.
 
+## Work classes
+
+Classify each ticket or group of tickets before dispatch and say the class in the
+dispatch record and a ticket comment (LEAD-R22). The class sets the default
+strategy. **Any explicit instruction in the task, ticket, project or from the
+owner overrides the class default**; cite it on the ticket.
+
+| Class | What it is | Default strategy |
+|---|---|---|
+| Point | One defect or one local change | One PR per ticket |
+| Batch | Like tickets touching the same files or requirement files | One PR per batch |
+| Block | A large or complex coherent change: a redesign, consolidation, migration or subsystem change where one definition or shared mechanism changes across several routes, crates or repos | One branch and one PR per repo, steps as commits, one design owner, one verification; the spec and code of the block ride together. Only an urgent crash or a genuinely independent must-fix piece is separate |
+| Sweep | A mechanical wide change (rename, format, move) | One PR, mechanical review |
+
+Classify with this test: do several tickets share one cause, the same files or
+modules, or a goal such as "one definition per rule"? Then it is a Block, not
+Points. Does one ticket's change stay in a few files? Point. Several like
+tickets on the same files with no shared mechanism? Batch. A change a tool
+makes everywhere, checked by diff shape? Sweep. When two fit, take the larger.
+
+The PR size limit is a Point and Batch rule and applies only where the team has
+configured one (CODE-R03). Never split a Block for size; keep its steps as
+commits. Split a Point or Batch only for a real reason (different repo, a
+blocking dependency another lane owns, a configured size limit) and state the
+reason on the ticket.
+
 ## Work kinds
 
 Dispatch a separate subagent in a fresh context for each kind of work a ticket
@@ -178,19 +205,47 @@ needs:
 
 - **Code and spec** -> one coder per PR. The coder writes the spec change (the
   repo's spec workflow, for example `/quoin:specify`) as the first commit when
-  no requirement owns the behavior, then the code and tests.
+  no requirement owns the behavior, then the code and tests. For a Block the
+  spec and the code of the block go in the one PR.
 - **Review** -> one reviewer per PR, covering code, gap analysis and the spec
   commit in one review.
 - **Research** -> a read-only subagent.
 
-One PR per ticket, or per batch of like tickets. Batch tickets that touch the
-same files or requirement files into one PR. Split only for a real reason
-(different repo, a blocking dependency another lane owns, or a change above
-the team's PR size limit) and state the reason on the ticket. Never open a spec-only PR that merges before a separate
-code PR in the same repo and lane; a ticket whose whole scope is spec gets a spec-only PR. Every PR gets
-exactly one reviewer. No agent reviews its own work. Dispatch each reviewer
-with the instruction to take the `/reviewer` role and follow it end to end; it
-selects the methods, writes the SR artifacts and posts to the tracker.
+Never open a spec-only PR that merges before a separate code PR in the same
+repo and lane; a ticket whose whole scope is spec gets a spec-only PR. Every PR
+gets exactly one reviewer. No agent reviews its own work. Dispatch each
+reviewer with the instruction to take the `/reviewer` role and follow it end to
+end; it selects the methods from the diff, writes the SR artifacts and posts to
+the tracker.
+
+## Churn
+
+Overhead is a cost: extra PRs, review rounds, review-file commits and idle
+ticks all delay landing. Behave as follows.
+
+1. **Fold before opening.** Before opening any new PR, ask: can this fold into
+   an open PR of the same Block? If yes, send it to that PR's coder as commits
+   (LEAD-R23). Small rulings and review findings fold into the PR too.
+2. **One review pass, then fix checks.** Choose the first review's methods by
+   change size ([reviewer](../reviewer/SKILL.md)). After a fix round the check
+   is the fix diff plus its tests. A second full review happens only if a rule
+   changed.
+3. **Review records stay on the tracker ticket.** Never commit reviewer SR
+   files into the PR: a `reviews/` commit moves the head and reruns checks.
+4. **Tripwires** (LEAD-R24). A PR with more than 2 review rounds, more than 15
+   commits, or open 3 hours with no movement makes you stop and either
+   consolidate it or recut it, and write one line on the ticket saying why.
+5. **No needless merge-check reruns.** When main moved and the moved files do
+   not overlap the files the PR changes, do not rerun the merge check
+   (LEAD-R26).
+6. **Waiting is not a state** (LEAD-R25). At every tick, a lead that is waiting
+   names the exact wait (build slot, review, decision) and starts the next
+   independent step.
+7. **Idle is a defect.** A lead idle or waiting over 20 minutes with no named
+   wait is a defect the minder routes ([team-minder](../team-minder/SKILL.md)).
+
+On shared hosts run test binaries with `--test-threads=4` and cargo `-j 4`;
+heavy gates follow the host policy in the owner's instructions.
 
 **Spec check, every ticket:** before dispatching a coder, read the spec and
 confirm whether a requirement owns the behavior. The tracker state alone is not
@@ -213,7 +268,7 @@ universal destination from another team's instructions.
 
 ## Per-ticket loop
 
-1. **Worktree** off fresh main, one per ticket, shared by coder, reviewer and
+1. **Worktree** off fresh main, one per ticket (one per Block per repo), shared by coder, reviewer and
    gate (LEAD-R12):
    `git -C <repo> worktree add <worktrees>/<slug> -b <branch> origin/main`.
    A stacked branch built on an unmerged PR starts from that PR's branch.
@@ -233,8 +288,9 @@ universal destination from another team's instructions.
    `~/.local/state/team-retro`) sets another. One reviewer per PR, scoped to
    `git diff origin/main...HEAD`,
    no edits. Name `/reviewer` and the PR number in the dispatch. It reviews the
-   spec commit and the code in one pass and posts findings to the tracker with
-   its markers.
+   spec commit and the code in one pass, with methods it selects from the diff
+   size, and posts findings to the tracker with its markers. SR files stay on
+   the ticket, never in the PR.
 6. **Fix:** resume the same coder with ALL findings, lows included. Gap-analysis
    gaps get real tests. Confined checks only in fix rounds
    ([fix-round message](references/briefs.md#fix-round-message)).
@@ -242,16 +298,17 @@ universal destination from another team's instructions.
    you will merge ([verification](references/briefs.md#verify-before-merge) item
    7). A change it does not cover, such as a gate failure fixed after a clean
    review, goes back to the same reviewer, which reviews it and records the new
-   head (LEAD-R09). For findings, resume the same reviewer for the disposition
-   pass over the fix commits
+   head (LEAD-R09). For findings, resume the same reviewer to check the fix
+   diff and its tests only
    ([message](references/briefs.md#disposition-pass-message)), round 1, then
    2, 3 after each further fix round, until every finding's latest outcome is
    neither `still-open` nor missing and the reviewer reports the PR mergeable.
-   Spec review rounds cap at 2; the reviewer marks remaining spec lows
-   accepted-no-change. Read the coder's one-line final fix, record it
+   A second full review is only for a changed rule. Spec review rounds cap at
+   2; the reviewer marks remaining spec lows accepted-no-change. Read the
+   coder's one-line final fix, record it
    ([final-fix record](references/lead-records.md)) and merge it
    without another review round. Keep every PR within the current review round
-   policy (LEAD-R05).
+   policy (LEAD-R05) and the churn tripwires (LEAD-R24).
 8. **Verify** yourself ([verification](references/briefs.md#verify-before-merge)).
 9. **Merge**, see below.
 10. **Close out:** in the work cycle the change and every completion obligation
@@ -279,7 +336,7 @@ Merge only a PR that carries a recorded independent review (LEAD-R10) and has
 no open finding (LEAD-R08): every finding's latest outcome is `fixed`,
 `rejected`, `deferred` or `accepted-no-change`, or your recorded one-line final
 fix closes it. Merge no change that no review covered, other than that final
-fix, an overlap rebase whose confined check passed and committed review files
+fix or an overlap rebase whose confined check passed
 (LEAD-R09). Pin the merge to the head you checked with `--match-head-commit`.
 
 When `/reviewer` has posted code-review, the language review, gap-analysis
@@ -292,7 +349,7 @@ before merging, not earlier (LEAD-R20), and record every run on the ticket
 failed run or when the head changed beyond what the passing run covers
 (LEAD-R06). Merge no PR that changes a file other than Markdown without a
 passing gate that covers the merged head (LEAD-R11): the gated head itself, or
-one that differs only by committed review files, a passing overlap rebase or a
+one that differs only by a passing overlap rebase or a
 recorded one-line final fix. Earlier fix rounds, re-pins and cross-repo checks
 use confined checks only. A PR with only spec markdown skips the gate (if a
 test embeds the edited file, tell that file's owner). A repo, org or direct user
@@ -337,7 +394,7 @@ For each open PR that serves an active priority goal in the planner's plan:
   verify the chosen revision's default-branch reachability and preserve unknown
   reachability as a blocker. A new user direction or compatibility need can
   change the window; record that evidence before changing the brief.
-- **Churn:** retrospective at each restart, the configured cadence, or an
+- **Churn:** the [Churn](#churn) rules above; retrospective at each restart, the configured cadence, or an
   emitted repeating-loop finding. See [churn.md](references/churn.md).
 
 ## Parallelism

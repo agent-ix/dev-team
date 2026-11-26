@@ -1,7 +1,7 @@
 ---
 name: team-planner
 description: Turn an idea or change request into a structured Linear program, project, and ready tickets with dependencies, specification and architecture gates, then hand execution to a code lead or coder. Also review an existing team focus.
-role_spec_version: 1
+role_spec_version: 2
 ---
 
 # Team Planner
@@ -67,6 +67,17 @@ Create only the missing records with the installed Linear writer. Give every ope
 ## 4. Prepare and hand off execution
 
 Each ticket needs a bounded outcome, acceptance criteria, a relevant specification or design link, verification plan, owner, and structured blockers. Check the ready queue before dispatch. Route a multi-ticket program to `/code-lead`; route an isolated ticket to `/coder` only when that coding lane is assigned. Preserve the issue ID and handoff in Linear. `ix-board focus plan-chunk` is a read-only view for an existing focus, not the creation engine.
+
+Name the work class of each ticket group in the handoff to the code lead (PLAN-R17), with the group's tickets under one project and one design owner for a Block. The classes and their default strategies are defined in [code-lead work classes](../code-lead/SKILL.md#work-classes):
+
+| Class | Plan it as |
+|---|---|
+| Point | One ticket, one PR |
+| Batch | Like tickets on the same files, one PR |
+| Block | A redesign, consolidation, migration or subsystem change where one definition or shared mechanism changes across routes, crates or repos: one ticket group, one design owner, one branch and PR per repo with the spec and code together; do not split it into per-step tickets that need separate PRs |
+| Sweep | A mechanical wide change, one PR with mechanical review |
+
+Test: several tickets sharing one cause, the same files or modules, or a goal such as "one definition per rule" make a Block. The class default applies unless the task, ticket, project or owner instruction says otherwise; an explicit instruction wins and is cited in the handoff.
 
 Keep ticket content proportional to the work. Link a relevant specification or
 design when one exists, but do not paste a generic required-spec-cycle

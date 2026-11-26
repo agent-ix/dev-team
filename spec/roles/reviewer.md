@@ -1,7 +1,7 @@
 ---
 id: REV
 role: reviewer
-version: 1
+version: 2
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -99,11 +99,11 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 |---|---|---|---|---|
 | REV-R01 | Each review method SHALL be run on a pull request by only one reviewer run. | REV-O02 | multiple-reviewers | Rubric row One reviewer; strategy "Tier the review" |
 | REV-R02 | A reviewer SHALL NOT review a pull request it authored. | REV-O03 | self-review | Rubric row One reviewer; no agent reviews its own work, code-lead skill |
-| REV-R03 | The reviewer SHALL NOT commit or push to the branch it reviews. | REV-O02 | reviewer-edits-branch | A branch changed mid-review leaves the reviewed diff stale, code-lead freeze step |
+| REV-R03 | The reviewer SHALL NOT commit or push to the branch it reviews, and its review records SHALL stay on the ticket, never in the pull request. | REV-O02 | reviewer-edits-branch | A branch changed mid-review leaves the reviewed diff stale, code-lead freeze step |
 | REV-R04 | The reviewer SHALL post each method's review to the pull request's ticket. | REV-O02 | review-unrecorded | Rubric row Record; a brief without the role left findings nowhere durable, code-lead never list |
 | REV-R05 | Every reviewer marker comment SHALL carry the fields its kind requires. | REV-O02 | marker-incomplete | Rubric row Record |
 | REV-R06 | The reviewer SHALL NOT post findings, excerpts or review sections to a GitHub pull request or issue. | REV-O03 | findings-leaked | Reviewer skill step 7: findings on a public pull request are published |
-| REV-R07 | Each disposition pass SHALL record an outcome for every finding that was open before it. | REV-O02 | disposition-missing | Rubric row Dispositions |
+| REV-R07 | Each disposition pass SHALL record an outcome for every finding that was open before it, judged from the fix diff and its tests, not from a second full review unless a rule changed. | REV-O02 | disposition-missing | Rubric row Dispositions |
 | REV-R08 | The reviewer SHALL NOT report a pull request mergeable while one of its findings is open. | REV-O02 | open-finding-mergeable | Rubric row Dispositions: findings open at merge |
 | REV-R09 | Each pull request SHALL reach a clean disposition within the current review round policy. | REV-O02 | round-excess | Rubric row Rounds to clean |
 | REV-R10 | Every finding SHALL name a file or line and a failure scenario. | REV-O03 | unactionable-finding | Rubric row Findings quality |
@@ -111,34 +111,36 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | REV-R12 | The reviewer SHALL post its review within the review age limit of its dispatch. | REV-O01 | review-stall | Rubric row Latency |
 | REV-R13 | The reviewer SHALL read each posted comment back and repair one whose data block does not parse or lacks a required field. | REV-O02 | broken-review-data | 3 of 123 reviewer comments did not parse and 19 of 65 fixed rows lacked `after_excerpt`, reviewer skill step 9 |
 | REV-R14 | The reviewer SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | REV-O01 | comms-noise | Status polls and progress messages between lanes, reviewer skill Communication |
+| REV-R15 | The reviewer SHALL select its review methods from the diff, sized to the change, record the methods and why in the review comment, and SHALL NOT ask the user which methods to run. | REV-O02 | method-overreach | Every applicable method run on every pull request, 2026-11-26 |
 
 ## Evaluations
 
 | ID | Rule | Evidence source | Trigger | Method | Query or rubric | Evaluator | Comparator | Value | Unit | Cadence |
 |---|---|---|---|---|---|---|---|---|---|---|
 | REV-R01-E1 | REV-R01 | linear | linear.reviewed_prs | deterministic | linear.pr_methods_with_multiple_runs | evaluator | = | 0 | methods | 3h |
-| REV-R01-E2 | REV-R01 | linear | linear.reviewed_prs | judgement | rubric-reviewer@1#one-reviewer | team-retro | >= | 2 | score | daily |
-| REV-R02-E1 | REV-R02 | github | linear.reviewed_prs | judgement | rubric-reviewer@1#author-independence | team-retro | >= | 2 | score | daily |
+| REV-R01-E2 | REV-R01 | linear | linear.reviewed_prs | judgement | rubric-reviewer@2#one-reviewer | team-retro | >= | 2 | score | daily |
+| REV-R02-E1 | REV-R02 | github | linear.reviewed_prs | judgement | rubric-reviewer@2#author-independence | team-retro | >= | 2 | score | daily |
 | REV-R03-E1 | REV-R03 | transcript | transcript.review_passes | deterministic | transcript.reviewer_branch_commits | evaluator | = | 0 | commands | session-end |
 | REV-R04-E1 | REV-R04 | linear | linear.reviewed_prs | deterministic | linear.merged_prs_without_review_record | evaluator | = | 0 | pull_requests | 3h |
-| REV-R04-E2 | REV-R04 | linear | linear.reviewed_prs | judgement | rubric-reviewer@1#record | team-retro | >= | 2 | score | daily |
+| REV-R04-E2 | REV-R04 | linear | linear.reviewed_prs | judgement | rubric-reviewer@2#record | team-retro | >= | 2 | score | daily |
 | REV-R05-E1 | REV-R05 | linear | linear.review_markers | deterministic | linear.review_markers_missing_fields | evaluator | = | 0 | markers | 3h |
-| REV-R05-E2 | REV-R05 | linear | linear.review_markers | judgement | rubric-reviewer@1#marker-fields | team-retro | >= | 2 | score | daily |
+| REV-R05-E2 | REV-R05 | linear | linear.review_markers | judgement | rubric-reviewer@2#marker-fields | team-retro | >= | 2 | score | daily |
 | REV-R06-E1 | REV-R06 | transcript | transcript.review_passes | deterministic | transcript.reviewer_github_posts_beyond_ticket_id | evaluator | = | 0 | commands | session-end |
 | REV-R07-E1 | REV-R07 | linear | linear.disposition_rounds | deterministic | linear.findings_without_outcome_after_disposition | evaluator | = | 0 | findings | 3h |
-| REV-R07-E2 | REV-R07 | linear | linear.disposition_rounds | judgement | rubric-reviewer@1#dispositions | team-retro | >= | 2 | score | daily |
+| REV-R07-E2 | REV-R07 | linear | linear.disposition_rounds | judgement | rubric-reviewer@2#dispositions | team-retro | >= | 2 | score | daily |
 | REV-R08-E1 | REV-R08 | linear | linear.disposition_rounds | deterministic | linear.mergeable_yes_with_open_finding | evaluator | = | 0 | passes | 3h |
-| REV-R08-E2 | REV-R08 | linear | linear.disposition_rounds | judgement | rubric-reviewer@1#mergeable-report | team-retro | >= | 2 | score | daily |
+| REV-R08-E2 | REV-R08 | linear | linear.disposition_rounds | judgement | rubric-reviewer@2#mergeable-report | team-retro | >= | 2 | score | daily |
 | REV-R09-E1 | REV-R09 | ix-board-metric | linear.reviewed_prs | deterministic | retro.review_round_policy_excess | evaluator | = | 0 | pull_requests | 3h |
-| REV-R09-E2 | REV-R09 | linear | linear.reviewed_prs | judgement | rubric-reviewer@1#rounds-to-clean | team-retro | >= | 2 | score | daily |
+| REV-R09-E2 | REV-R09 | linear | linear.reviewed_prs | judgement | rubric-reviewer@2#rounds-to-clean | team-retro | >= | 2 | score | daily |
 | REV-R10-E1 | REV-R10 | linear | linear.review_findings | deterministic | linear.findings_without_location_or_scenario | evaluator | = | 0 | findings | 3h |
-| REV-R10-E2 | REV-R10 | linear | linear.review_findings | judgement | rubric-reviewer@1#findings-quality | team-retro | >= | 2 | score | daily |
+| REV-R10-E2 | REV-R10 | linear | linear.review_findings | judgement | rubric-reviewer@2#findings-quality | team-retro | >= | 2 | score | daily |
 | REV-R11-E1 | REV-R11 | linear | linear.review_findings | deterministic | linear.outside_diff_findings_without_failure | evaluator | = | 0 | findings | 3h |
-| REV-R11-E2 | REV-R11 | github | linear.review_findings | judgement | rubric-reviewer@1#scope | team-retro | >= | 2 | score | daily |
+| REV-R11-E2 | REV-R11 | github | linear.review_findings | judgement | rubric-reviewer@2#scope | team-retro | >= | 2 | score | daily |
 | REV-R12-E1 | REV-R12 | transcript | transcript.review_passes | deterministic | transcript.review_passes_over_age_limit | evaluator | = | 0 | passes | session-end |
-| REV-R12-E2 | REV-R12 | ix-board-metric | linear.reviewed_prs | judgement | rubric-reviewer@1#latency | team-retro | >= | 2 | score | daily |
+| REV-R12-E2 | REV-R12 | ix-board-metric | linear.reviewed_prs | judgement | rubric-reviewer@2#latency | team-retro | >= | 2 | score | daily |
 | REV-R13-E1 | REV-R13 | linear | linear.review_markers | deterministic | linear.review_comments_unparseable_or_incomplete | evaluator | = | 0 | comments | 3h |
-| REV-R14-E1 | REV-R14 | transcript | transcript.outbound_messages | judgement | rubric-reviewer@1#comms | team-retro | >= | 2 | score | daily |
+| REV-R14-E1 | REV-R14 | transcript | transcript.outbound_messages | judgement | rubric-reviewer@2#comms | team-retro | >= | 2 | score | daily |
+| REV-R15-E1 | REV-R15 | linear | linear.review_markers | judgement | rubric-reviewer@2#method-selection | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -155,6 +157,7 @@ grades the reviewer skill's Communication section, which had no row.
 | Findings quality | REV-R10 | findings-quality |
 | Scope | REV-R11 | scope |
 | Latency | REV-R12 | latency |
+| Method selection | REV-R15 | method-selection |
 
 ## Evaluation notes
 
