@@ -59,7 +59,7 @@ project or per-ticket shell wrapper to admit a build.
 - Ask "does running code read this today?" before adding a gate, pin, config or abstraction. If nothing reads it, use a plain value and move on.
 - No compatibility layers, no vendoring or copying files between repos, and never propose them. Comments explain code, never narrate history or cite tickets.
 - Commit early, and always before running a gate.
-- Cheap tier first, in this order: batch the related code and test edits together, run format, lint and compile, then the focused red/green tests. Do not start an expensive environment (disposable database, external service) until this tier is clean.
+- Cheap tier first, in this order: batch the related code and test edits together, run format, lint and compile, then the focused tests. Do not start an expensive environment (disposable database, external service) until this tier is clean.
 - Each new failing test must be able to fail for the intended reason: its assertion names the targeted behaviour, not a setup error or compile error. When the ticket or CI already records the failure, do not run a separate baseline before the fix; write the fix and the test, then run the focused test once. Only when the ticket carries no failing evidence, run the same focused test once on the parent commit in the same build slot to show red, then green. Follow Evidence and baselines in the code-lead skill (CODE-R18, LEAD-R28); never loop a baseline, hold it for a build slot, run it whole-suite, whole-crate or multi-crate, or redo it because main moved.
 - While iterating, run only the tests and lint the change touches.
 - For Rust, name touched crates and use their focused check/lint/test targets.

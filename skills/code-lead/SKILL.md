@@ -181,8 +181,8 @@ owner overrides the class default**; cite it on the ticket.
 
 | Class | What it is | Default strategy |
 |---|---|---|
-| Point | One defect or one local change | One PR per ticket |
-| Batch | Like tickets touching the same files or requirement files | One PR per batch |
+| Point | One defect or one local change | One PR per ticket; baselines per Evidence and baselines (LEAD-R28) |
+| Batch | Like tickets touching the same files or requirement files | One PR per batch; baselines per Evidence and baselines (LEAD-R28) |
 | Block | A large or complex coherent change: a redesign, consolidation, migration or subsystem change where one definition or shared mechanism changes across several routes, crates or repos | One branch and one PR per repo, steps as commits, one design owner, one verification; the spec and code of the block ride together. Only an urgent crash or a genuinely independent must-fix piece is separate |
 | Sweep | A mechanical wide change (rename, format, move) | One PR, mechanical review |
 
@@ -204,11 +204,11 @@ one the Block is:
   types the tickets share, how the pieces compose, which existing structure is
   reused or changed, and the order of steps. Say why the structure serves all
   tickets and what a later ticket in the same area would add.
-- **Bug Block:** take each ticket's recorded failure as its evidence (see
-  Evidence and baselines, LEAD-R28), find the
-  common cause class (the shared mechanism, data structure, rule or missing
-  definition) and grep the repo for the same pattern in neighbouring code.
-  Choose a general fix and say what other sites it fixes.
+- **Bug Block:** take each ticket's recorded failure as its evidence (LEAD-R28;
+  with no record, one run each on the fixed code and the parent commit, same
+  slot). Find the common cause class (the shared mechanism, data structure, rule
+  or missing definition) and grep the repo for the same pattern in neighbouring
+  code. Choose a general fix and say what other sites it fixes.
 - **Mixed Block:** both, in one note: architecture for the new parts, cause
   class for the defects.
 
@@ -255,10 +255,10 @@ Workflow:
 
 1. Read the evidence on the ticket or CI.
 2. Write the fix and the test.
-3. Run the focused test once on the fixed code.
-4. When the ticket carries no failing evidence, run the same focused test once
-   on the parent commit, in the same build slot as step 3, to show red, then
-   green.
+3. Run the focused test once on the fixed code. That run is the green.
+4. No failing evidence on the ticket or CI: also run the same focused test
+   once on the parent commit, in the same build slot as step 3, to show red.
+   With evidence, this step does not exist.
 
 Barred:
 
