@@ -149,7 +149,7 @@ that reads it names its producer here:
 | MIND-R20 | An `escalate_drain` action SHALL be sent to its owner, the lane's lead, in the tick it is emitted. | MIND-O02 | drain-unescalated | Drain-cap escalation had no sender, SWM-227 review |
 | MIND-R21 | The minder SHALL send the orchestrator, as a relay message in the tick it is emitted, every action the orchestrator executes: `fix_source`, `add_lane`, `need_ready_tickets`, `route_dead_lane`, `route_idle_lane`, a ladder rung 3, `escalate_drain` past the drain cap, and `escalate_stuck`, `escalate_stale_pr` or `escalate_drain` with reason `lead_unresolved`. | MIND-O02 | orchestrator-action-undelivered | Orchestrator cannot run `fleet tick` without consuming rungs, SWM-227 review |
 | MIND-R22 | The minder SHALL route a lead that is idle or waiting for more than 20 minutes without a named wait to that lead and, by the ladder, to the orchestrator. | MIND-O01 | lead-idle-unrouted | Leads idle or waiting for hours with no named wait, 2026-11-26 |
-| MIND-R23 | The minder SHALL route a pull request with more than 2 review rounds, more than 15 commits, or open 3 hours with no movement to its lead as a tripwire in the tick it is found. | MIND-O02 | pr-tripwire-unrouted | One pull request reached 10 review rounds, 2026-11-26 |
+| MIND-R23 | The minder SHALL route a pull request with more than 2 review rounds, more than 15 commits (not counted for a Block), or open 3 hours with no movement to its lead as a tripwire in the tick it is found. | MIND-O02 | pr-tripwire-unrouted | One pull request reached 10 review rounds, 2026-11-26 |
 
 ## Evaluations
 

@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 code-lead is the code lead role of the
 [code lead role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/code-lead.md),
-version 1. Instructions below cite the rule they implement as `LEAD-Rnn`;
+version 2. Instructions below cite the rule they implement as `LEAD-Rnn`;
 evaluations and feedback point at those ids.
 
 The code lead runs the coding lane for one team or project. It takes planned
@@ -193,7 +193,8 @@ tickets on the same files with no shared mechanism? Batch. A change a tool
 makes everywhere, checked by diff shape? Sweep. When two fit, take the larger.
 
 The PR size limit is a Point and Batch rule and applies only where the team has
-configured one (CODE-R03). Never split a Block for size; keep its steps as
+configured one (CODE-R03). Never split a Block for size (unless the task, ticket, project or owner says
+otherwise, LEAD-R22); keep its steps as
 commits. Split a Point or Batch only for a real reason (different repo, a
 blocking dependency another lane owns, a configured size limit) and state the
 reason on the ticket.
@@ -206,8 +207,8 @@ needs:
 - **Code and spec** -> one coder per PR. The coder writes the spec change (the
   repo's spec workflow, for example `/quoin:specify`) as the first commit when
   no requirement owns the behavior, then the code and tests. For a Block the
-  spec and the code of the block go in the one PR.
-- **Review** -> one reviewer per PR, covering code, gap analysis and the spec
+- **Review** -> one reviewer per PR, running the methods it records as selected
+  for the diff (code, gap analysis, spec) in one review.
   commit in one review.
 - **Research** -> a read-only subagent.
 
@@ -233,7 +234,7 @@ ticks all delay landing. Behave as follows.
 3. **Review records stay on the tracker ticket.** Never commit reviewer SR
    files into the PR: a `reviews/` commit moves the head and reruns checks.
 4. **Tripwires** (LEAD-R24). A PR with more than 2 review rounds, more than 15
-   commits, or open 3 hours with no movement makes you stop and either
+   commits (not a Block: its steps are commits), or open 3 hours with no movement makes you stop and either
    consolidate it or recut it, and write one line on the ticket saying why.
 5. **No needless merge-check reruns.** When main moved and the moved files do
    not overlap the files the PR changes, do not rerun the merge check
@@ -298,11 +299,11 @@ universal destination from another team's instructions.
    you will merge ([verification](references/briefs.md#verify-before-merge) item
    7). A change it does not cover, such as a gate failure fixed after a clean
    review, goes back to the same reviewer, which reviews it and records the new
-   head (LEAD-R09). For findings, resume the same reviewer to check the fix
-   diff and its tests only
-   ([message](references/briefs.md#disposition-pass-message)), round 1, then
-   2, 3 after each further fix round, until every finding's latest outcome is
-   neither `still-open` nor missing and the reviewer reports the PR mergeable.
+   head (LEAD-R09). For findings, resume the same reviewer for a disposition
+   pass ([message](references/briefs.md#disposition-pass-message)): one pass,
+   then each later fix round is checked by the fix diff and its tests, until
+   every finding's latest outcome is neither `still-open` nor missing and the
+   reviewer reports the PR mergeable.
    A second full review is only for a changed rule. Spec review rounds cap at
    2; the reviewer marks remaining spec lows accepted-no-change. Read the
    coder's one-line final fix, record it
@@ -339,8 +340,8 @@ fix closes it. Merge no change that no review covered, other than that final
 fix or an overlap rebase whose confined check passed
 (LEAD-R09). Pin the merge to the head you checked with `--match-head-commit`.
 
-When `/reviewer` has posted code-review, the language review, gap-analysis
-and spec-review (for a spec commit) to the tracker, and every finding is fixed, the code lead merges:
+When `/reviewer` has posted the methods it recorded as selected for the diff
+to the tracker, and every finding is fixed, the code lead merges:
 `gh pr merge <N> --squash`, adding `--admin` where org rules allow. That is
 the whole condition. The planner's sign-off and extra evidence comments are not
 required. Run the repo's aggregate gate once, after the review is clean and

@@ -85,10 +85,9 @@ finding to re-check, as when it reviews a change made after a clean review.
   latest unbroken clean span, both read up to the evaluation time or the merge,
   whichever is earlier. A review that is not clean then has no clean time.
 - A commit is **covered** from a starting commit when it is that commit, or it
-  is one step from a covered commit `C`: every file that differs between `C` and
-  it is under `reviews/`; or a `rebase` record with `exit=0` leads from `C` to
-  it; or a `final-fix` record leads from `C` to it and the difference outside
-  `reviews/` adds at most one line and deletes at most one line.
+  is one step from a covered commit `C`: a `rebase` record with `exit=0` leads
+  from `C` to it; or a `final-fix` record leads from `C` to it and the
+  difference adds at most one line and deletes at most one line.
 - A commit is **review-covered** when it is covered from the `head` of the latest
   `reviewer` or `reviewer-dispositions` comment of the pull request.
 - A commit is **gate-covered** when it is covered from the `head` of a `gate`
@@ -146,7 +145,7 @@ command reads the file. The queries name a key as `eval.<key>`.
 |---|---|---|
 | FR-017-AC-1 | A fixture comment of each marker kind missing any one required field is reported as incomplete, naming the field; a complete comment of each kind is accepted. | Test |
 | FR-017-AC-2 | Fixture reviews yield the expected findings, closed state and clean time for a review with no findings, one closed by a disposition, one reopened by a new finding and one closed by a final-fix record. | Test |
-| FR-017-AC-3 | A head that differs from the starting commit only under `reviews/`, by a passing rebase record, or by a recorded one-line fix is covered; a two-line fix, a failed rebase check, an unrecorded change and a broken chain are not. A disposition comment with an empty `dispositions` list makes its `head` the reviewed head, and a pull request is not ready to merge while its head is not review-covered. | Test |
+| FR-017-AC-3 | A head that differs from the starting commit by a passing rebase record, or by a recorded one-line fix is covered; a change under `reviews/` is a change like any other; a two-line fix, a failed rebase check, an unrecorded change and a broken chain are not. A disposition comment with an empty `dispositions` list makes its `head` the reviewed head, and a pull request is not ready to merge while its head is not review-covered. | Test |
 | FR-017-AC-4 | A waiver record naming one rule removes its pull request from that rule's queries that exclude waived pull requests and from no other query, and each such result lists the pull request and the waiver comment as evidence. | Test |
 | FR-017-AC-5 | Fixture transcripts yield the expected command matches, dispatcher, sends and coder reports, and an unreadable transcript yields `unavailable`. | Test |
 | FR-017-AC-6 | Settings are read from `eval.json` with `config.json` unchanged; an absent file or unset `review_age_limit_hours` evaluates with a limit of one hour, and an unset `ready_state` makes the queries that read it `unavailable`. | Test |

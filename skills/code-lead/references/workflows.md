@@ -22,7 +22,8 @@ says otherwise ([work classes](../SKILL.md#work-classes)). Point: one PR per
 ticket. Batch: one PR per batch of tickets that touch the same files or
 requirement files. Block: one branch and one PR per repo, steps as commits.
 Sweep: one PR with a mechanical review. A size limit splits a Point or Batch
-only where the team configured one, never a Block. State the reason for any
+only where the team configured one, never a Block unless the task, ticket,
+project or owner says otherwise (LEAD-R22). State the reason for any
 split on the ticket.
 
 ## Layered waves

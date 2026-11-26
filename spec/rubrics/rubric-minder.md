@@ -11,7 +11,7 @@ relationships:
 The minder rubric grades the judgement evaluations of the
 [minder role spec](../roles/minder.md). A judgement evaluation cites one
 check as `rubric-minder@4#<check-slug>`. `/team-retro` scores the minder
-with this version, which matches minder role spec version 4, the version
+with this version, which matches minder role spec version 7, the version
 the `team-minder` skill is derived from.
 
 Each check scores 0, 1 or 2 with one cited piece of evidence. A check scores

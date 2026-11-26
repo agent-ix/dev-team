@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 reviewer is the reviewer role of the
 [reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
-version 1. Instructions below cite the rule they implement as `REV-Rnn`;
+version 2. Instructions below cite the rule they implement as `REV-Rnn`;
 evaluations and feedback point at those ids. A tracked PR gets one reviewer,
 resumed for disposition passes. Each method is reviewed by one reviewer run
 only (REV-R01): a retried or replacement dispatch posts the methods not yet on
@@ -208,65 +208,32 @@ analysis>` each get their **own** file and their **own** `SR-NNN` id. This
 also matches a precedent: `example-repo#16` got `SR-002` for its
 code-review and a separate `SR-003` for its gap-analysis, not one shared id.
 
-Name each method's file deterministically so a retry can find it. Step 4
-writes this file under the dispatching brief's scratchpad path, not directly
-under `reviews/` (this skill never commits to the branch it reviews), so the
-lookup below must cover both locations — a retried dispatch, or a later
-disposition pass resuming with the same brief, needs to find whichever copy
-exists, wherever the leader last put it:
+The tracker comment is the record, so ids come from the ticket, not from the
+repo. Name each method's scratchpad file `<ticket>-<method>.md` (lowercase
+ticket, `/` in the method as `-`, no date prefix) so a retry or a later
+disposition pass finds it in the brief's scratchpad path:
 
 ```bash
 SLUG="$(tr '[:upper:]' '[:lower:]' <<<"$TICKET")-$(tr '/' '-' <<<"$METHOD")"
-EXISTING=$(ls "$SCRATCHPAD_REVIEWS_DIR"/*"$SLUG".md reviews/*"$SLUG".md 2>/dev/null | head -1)
 ```
 
-**No dates typed by the agent.** File names are `<slug>.md`, with no date
-prefix (the `*` in the glob still matches older `YY-MM-DD-<slug>.md` files).
-Never type a date into a file name, a marker, or a comment. The date of a
-review is the Linear comment's own timestamp or the commit that added the file.
-If quire's schema requires a frontmatter `date:`, take it from the system
-clock (`date -u +%F`); do not write it from memory.
+- **Reuse:** list the ticket's comments and look for a `reviewer` marker whose
+  `method=` is this method and `pr=` is this PR. If one exists, this method
+  already has an artifact: **reuse its `id=`**, do not allocate a new id.
+- **Allocate:** otherwise take the highest `id=SR-NNN` across the ticket's
+  `reviewer` and `reviewer-dispositions` markers, add one, and format it with at
+  least three digits (`SR-004`, not `SR-4`). A ticket with no markers starts at
+  the first id of the range the brief gives, or `SR-001`.
 
-(`$SCRATCHPAD_REVIEWS_DIR` is the scratchpad path from the dispatching brief;
-see [step 4](#4-let-each-method-write-its-own-specreview-artifact). Require it
-before globbing with it — unset, it makes the glob absolute
-(`/*-"$SLUG".md`) and searches the filesystem root instead of finding
-nothing:
+**No dates typed by the agent.** Never type a date into a file name, a marker,
+or a comment. The date of a review is the Linear comment's own timestamp. If
+quire's schema requires a frontmatter `date:`, take it from the system clock
+(`date -u +%F`); do not write it from memory.
 
-```bash
-: "${SCRATCHPAD_REVIEWS_DIR:?reviewer brief must set a scratchpad path}"
-```
-
-If a brief genuinely gives no scratchpad path, skip that half of the glob and
-the id-search below — check `reviews/*-"$SLUG".md` and the repo-wide grep
-alone.)
-
-- If `$EXISTING` is non-empty, this method already has a file for this
-  ticket — **reuse its id**, do not allocate a new one and do not create a
-  second file:
-
-  ```bash
-  grep -oE '^id:[[:space:]]*"?[A-Z]{2,4}-[0-9]+"?' "$EXISTING" | grep -oE '[A-Z]{2,4}-[0-9]+'
-  ```
-
-- Otherwise allocate the next unused id, checking every existing id in the
-  repo **and** the scratchpad — including quoted ones (`id: "SR-014"`), which
-  the naive form misses:
-
-  ```bash
-  grep -rhoE '^id:[[:space:]]*"?[A-Z]{2,4}-[0-9]+"?' --include=*.md . "$SCRATCHPAD_REVIEWS_DIR" \
-    | grep -oE '[0-9]+' | sort -n | tail -1
-  ```
-
-  The next id is that number plus one, formatted `SR-NNN` with at least three
-  digits (`SR-004`, not `SR-4`).
-
-**This check-then-write is not atomic across parallel branches.** Two reviewer
-runs on two branches, started at the same moment, can both compute the same
-"next" id before either commits its file. Don't build a cross-branch lock for
-this — accept the collision as a normal merge conflict (or a duplicate id that
-`quire validate` catches on the next full-repo run), and key any later mining
-on `(repo, file path)`, not on the id alone being globally unique.
+**This check-then-post is not atomic across parallel runs.** Two reviewer runs
+on one ticket started at the same moment can pick the same id. Accept the
+duplicate and key any later mining on `(tracker issue, marker id, run)`, not on
+the id alone being globally unique.
 
 ## 4. Let each method write its own SpecReview artifact
 
@@ -757,12 +724,11 @@ artifact contract, comment layout, marker fields, dedup logic) stays the same:
 5. **List comments** (steps 5/8/9) — for dedup and read-back.
 6. **Edit a comment** (step 9) — to repair a comment that failed read-back.
 
-**On GitHub Issues specifically as the tracker**, the repo is almost always
-public, so posting findings straight to a GitHub Issue (not a Linear ticket
-with a GitHub attachment) still means posting them publicly: never post
-findings there. In that case there is no private tracker to post to, and the
-SR files stay at the brief's scratchpad path and are reported to the lead as the only record, never committed into the PR — say so
-plainly rather than inventing a place to post findings that doesn't exist.
+**On GitHub Issues specifically as the tracker**, the issue comment is the
+record, exactly as a Linear comment is, and ids and read-back work on the issue
+comments. If the repo is public, posting findings there publishes them (REV-R06),
+so do not post; report the findings to the lead in your report and say so
+plainly rather than inventing a place to post. Never commit them into the PR.
 
 ## Output
 

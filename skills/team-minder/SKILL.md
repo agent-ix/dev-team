@@ -80,7 +80,7 @@ Execute the action for every row before the next tick, even if your own reading 
 | `STALE-ORDER` | Re-send the order with its `--expect-ticket` (MIND-R10). |
 | `DEAD` (`route_dead_lane`) | Route to the orchestrator with the row evidence: lane, last event, evidence (MIND-R17). |
 | A lead idle or waiting more than 20 minutes with no named wait (build slot, review or decision in its `focus` or latest ticket comment) | Send it to that lead as a defect with the row evidence (`state_age_secs`, `focus`); it then climbs the ladder to the orchestrator (MIND-R22). |
-| A PR past a tripwire: more than 2 review rounds, more than 15 commits, or open 3 hours with no movement (from `gh pr view` and the ticket's review markers) | Send it to the PR's lead as a tripwire with the PR, counts and last movement; the lead consolidates or recuts (MIND-R23). |
+| A PR past a tripwire: more than 2 review rounds, more than 15 commits (not a Block), or open 3 hours with no movement (from `gh pr view` and the ticket's review markers) | Send it to the PR's lead as a tripwire with the PR, counts and last movement; the lead consolidates or recuts (MIND-R23). |
 | `UNREACHABLE` | Escalate to the orchestrator: host unreachable, listing every `UNREACHABLE` lane of that host with its row evidence, one message per host, whether or not a host defect row exists this tick (MIND-R02). |
 
 Send no relay message to a `BLOCKED` lane; a standing-order answer through herdr is the only input it gets (MIND-R19).

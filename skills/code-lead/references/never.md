@@ -22,7 +22,8 @@ Each item is a mistake an owner has already corrected, with the reason given.
   by default), never as a PR comment, never filed as new tickets, never
   opened as new PRs.
 - Never open a PR per finding. It makes a merge mess and cascading rebases.
-- Never open a PR per ticket step of a Block, commit review (SR) files into a PR,
+- Never open a PR per ticket step of a Block (unless the task, ticket, project
+  or owner says otherwise, LEAD-R22), commit review (SR) files into a PR,
   or run a second full review after a fix round that changed no rule. Each adds
   rounds and heads with no new evidence.
 - Never review before PR time, or run a full review sweep per slice. It wastes

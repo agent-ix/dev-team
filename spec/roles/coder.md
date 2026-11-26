@@ -104,7 +104,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 |---|---|---|---|---|
 | CODE-R01 | The coder SHALL work only in the one worktree its brief names, creating no other worktree or clone of the repository for the ticket. | CODE-O02 | duplicate-worktree | Rubric row One directory; one worktree per ticket (spec.md section 15) |
 | CODE-R02 | Every file the coder's pull request changes SHALL belong to the assigned ticket's scope. | CODE-O02 | scope-creep | Rubric row Scope; changes in another lane's files |
-| CODE-R03 | When the team has configured a pull request size limit, the coder SHALL split a change of a Point or Batch above it before review, and SHALL NOT split a Block. | CODE-O02 | oversize-pr | Rubric row Size; strategy "Split large pull requests" |
+| CODE-R03 | When the team has configured a pull request size limit, the coder SHALL split a change of a Point or Batch above it before review, and, unless the task, ticket, project or owner instruction says otherwise (LEAD-R22), SHALL NOT split a Block. | CODE-O02 | oversize-pr | Rubric row Size; strategy "Split large pull requests" |
 | CODE-R04 | The coder's pull request SHALL reach a clean review within the current review round policy. | CODE-O02 | round-excess | Rubric row Rounds |
 | CODE-R05 | The coder SHALL fix every finding sent in a fix round, other than one it reports as too big for the pull request or owned by another repository or lane. | CODE-O02 | unfixed-finding | Rubric row Rework cause; coder skill fix rounds |
 | CODE-R06 | The coder SHALL NOT open a second pull request for a finding on its open pull request. | CODE-O02 | finding-split-off | A pull request per finding caused merge mess and cascading rebases, code-lead never list |
@@ -126,7 +126,6 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R01-E1 | CODE-R01 | transcript | hooks.role_turns | deterministic | transcript.coder_extra_trees | evaluator | = | 0 | trees | session-end |
 | CODE-R01-E2 | CODE-R01 | transcript | github.authored_prs | judgement | rubric-coder@2#one-directory | team-retro | >= | 2 | score | daily |
 | CODE-R02-E1 | CODE-R02 | github | github.authored_prs | judgement | rubric-coder@2#scope | team-retro | >= | 2 | score | daily |
-| CODE-R03-E1 | CODE-R03 | ix-board-metric | retro.prs_open | deterministic | retro.prs_oversize | evaluator | = | 0 | pull_requests | 3h |
 | CODE-R03-E2 | CODE-R03 | github | github.authored_prs | judgement | rubric-coder@2#size | team-retro | >= | 2 | score | daily |
 | CODE-R04-E1 | CODE-R04 | ix-board-metric | github.authored_prs | deterministic | retro.review_round_policy_excess | evaluator | = | 0 | pull_requests | 3h |
 | CODE-R04-E2 | CODE-R04 | linear | github.authored_prs | judgement | rubric-coder@2#rounds | team-retro | >= | 2 | score | daily |
@@ -169,9 +168,10 @@ coder skill's Communication section, which had no row.
   (report completeness), CODE-R09 (which checks a report cites), CODE-R14
   (message kind) and CODE-R15 (whether a ticket is for a finding). Each depends
   on the meaning of prose, which no recorded fact states.
-- CODE-R03-E1 counts every open oversize pull request. The judgement check
-  `size` separates a recorded split from an ignored one and never overrides the
-  deterministic verdict.
+- CODE-R03 is judgement-only: a deterministic oversize count cannot see the
+  work class, so it would count a Block. This is an interim gap until ix-board
+  can exclude a Block from `retro.prs_oversize`. The judgement check
+  `size` separates a recorded split from an ignored one.
 - CODE-R05-E1 counts a finding once for each round that returned it still-open.
   A finding the coder reports as too big or owned elsewhere gets a `deferred`
   outcome, which is not counted.
