@@ -248,6 +248,12 @@ ticks all delay landing. Behave as follows.
 On shared hosts run test binaries with `--test-threads=4` and cargo `-j 4`;
 heavy gates follow the host policy in the owner's instructions.
 
+Builds use the PATH `cargo` shim or `locked-build run --owner <lane>
+--ticket <ticket> --class <must-fix|point|block|periodic> -- <command>`.
+Choose the class from the work being admitted and the host policy; do not route
+builds through lane wrappers or pass numeric priorities when a named class is
+available.
+
 **Spec check, every ticket:** before dispatching a coder, read the spec and
 confirm whether a requirement owns the behavior. The tracker state alone is not
 proof. Owned -> the coder codes it. Not owned -> the coder adds the requirement

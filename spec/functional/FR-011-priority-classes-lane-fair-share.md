@@ -12,18 +12,27 @@ relationships:
 
 ## Description
 
-A request SHALL carry a named priority class, `gate`, `test` or `check`, that maps
-to the FR-005 base priority range. A lane is the request's owner, written as the bounded lane address `server:workspace:tab`; a session id is not a lane and is refused. The scheduler SHALL keep one lane from monopolizing a host while
+A request MAY carry one of the configured named priority classes
+`must-fix`, `point`, `block` or `periodic`, mapped to the FR-005 base priority
+range by host policy. The example policy maps them to 3, 2, 1 and 0,
+respectively. A caller may select the class with `locked-build run --class` or
+through the `LOCKED_BUILD_CLASS` cargo-shim setting; an unknown or unmapped
+class is refused. If direct `run` omits both `--class` and `--priority`, it
+uses base priority 0 and the effective class `periodic`; the cargo shim defaults
+to class `point`. A lane is the request's owner, written as the bounded lane
+address `server:workspace:tab`; a session id is not a lane and is refused. The
+scheduler SHALL keep one lane from monopolizing a host while
 other lanes wait, without weakening the FR-005 ordering and reservation guarantees.
 
 ## Behavior
 
-The classes map to base priorities `check` = 0, `test` = 1, `gate` = 2 with
-`maximum_priority` = 2 and the profile's aging interval. A merge-ready final gate is
-submitted as `gate` and is admitted before waiting `test` and `check` work, as the
-retired slot wrapper's priority marker did, but a waiting gate cannot hold off a
-lower class forever: FR-005 aging and reservation still apply. Priority is chosen
-by the caller from a closed set; an unknown class is refused. A caller cannot
+The class-to-priority map is configured per host and each value is at most
+`maximum_priority`. A `must-fix` request is submitted for a fix blocking the
+current review or gate; `point` is the ordinary implementation class; `block`
+is for a sustained, multi-step work package; and `periodic` is for scheduled
+maintenance. Higher configured priority is admitted before lower configured
+priority, but aging and reservation still apply. Priority is chosen by the
+caller from the configured closed set; an unknown class is refused. A caller cannot
 raise the priority of a queued request; it can cancel and resubmit.
 
 Fair share per lane: at one effective priority, when more than one lane has
@@ -39,12 +48,13 @@ A request that omits a lane or ticket, or whose lane is not a lane address, is r
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-011-AC-1 | With one slot busy and `check`, `test` and `gate` requests queued in that order, the gate is admitted first, then the test, then the check, before any aging threshold; an unknown class and a missing lane are refused with a request error. | Test |
-| FR-011-AC-2 | Under sustained `gate` arrivals on a deterministic clock, a queued `check` request reaches reservation after `(2+1) * aging` and starts before any later arrival, matching FR-005-AC-1. | Test |
+| FR-011-AC-1 | With one slot busy and `periodic`, `block`, `point`, and `must-fix` requests queued in that order under the example mapping, they are admitted in descending mapped priority before any aging threshold; an unknown or unmapped class and a missing lane are refused with a request error. | Test |
+| FR-011-AC-2 | Under sustained `must-fix` arrivals on a deterministic clock, a queued `periodic` request reaches reservation after `(maximum_priority+1) * aging` and starts before any later arrival, matching FR-005-AC-1. | Test |
 | FR-011-AC-3 | With two slots, lane A holding both and lane B waiting at equal priority, B's request is admitted first when a slot frees even though A's request was enqueued earlier; with B absent, A's waiting requests use free slots in enqueue order. | Test |
 | FR-011-AC-4 | A request at its reservation threshold is admitted ahead of an under-share lane's equal-priority request, and the fair-share rule never signals a running lease. | Test |
-| FR-011-AC-5 | Replaying the reported 70-minute starvation shape (a wrapper waiting behind continuously arriving peers) on the deterministic clock gives that wrapper a lease within the reservation bound. | Test |
+| FR-011-AC-5 | Replaying a request waiting behind continuously arriving higher-priority peers on a deterministic clock gives that request a lease within the reservation bound. | Test |
 | FR-011-AC-6 | With three sustainable units, lane A holding one two-unit lease, lane B holding none, one unit free, and A's one-unit request enqueued before B's, B's request is admitted first because A holds 2 of a share of 2 units (counted in units, not leases). A lane given as a session id is refused. | Test |
+| FR-011-AC-7 | Direct `run` without `--class` or `--priority` is recorded at base priority 0 as class `periodic`; the cargo shim without `LOCKED_BUILD_CLASS` submits class `point`. | Test |
 
 ## Dependencies
 

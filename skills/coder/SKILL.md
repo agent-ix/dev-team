@@ -40,6 +40,11 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 
 ## 2. Build
 
+Run Cargo through the PATH `cargo` shim. For an explicit class, invoke
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`.
+Use the class selected for the work by the current host policy; do not use a
+project or per-ticket shell wrapper to admit a build.
+
 - Behaviour only, backed by tests for the ticket's acceptance criteria. No exhaustive suites beyond them.
 - Spec first, in the same branch: if no requirement owns the behavior, the first
   commit adds it, then the code and tests. Never code unspecced behavior.

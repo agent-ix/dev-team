@@ -127,6 +127,11 @@ check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 
 ## 2. Select the methods from the diff
 
+Run Cargo checks through the PATH `cargo` shim or
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`.
+Use the class selected for the review work by the current host policy; do not
+use project or per-ticket shell wrappers to admit checks.
+
 **You select the methods; never ask the user which to run** (REV-R15). Size the
 review to the change, from the diff:
 

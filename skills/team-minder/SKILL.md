@@ -67,6 +67,12 @@ Until their producers ship, the minder runs with five gaps against the role spec
 
 Execute the action for every row before the next tick, even if your own reading suggests the lane is working (MIND-R09).
 
+When a lane reports waiting for build admission, use the shared `locked-build`
+queue state as the source of that wait. If a scheduled check must be launched,
+use the PATH `cargo` shim or
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
+do not launch a competing Cargo command through a lane wrapper.
+
 | Class | Action |
 |---|---|
 | `WORKING` | None. |

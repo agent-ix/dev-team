@@ -12,7 +12,11 @@ relationships:
 
 ## Description
 
-The shared Rust tool SHALL provide every function of the slot wrapper, the remote test runner, the heat guard and the health logger, so that those scripts can be deleted. The tool is Rust only, with no Python and no logic-bearing shell.
+The shared Rust tool SHALL provide the build admission and execution functions
+of the host and per-lane shell wrappers so those wrappers can be retired. Cargo
+commands SHALL enter through the PATH cargo shim or an explicit
+`locked-build run --class <class>` invocation. The tool is Rust only, with no
+Python and no logic-bearing shell.
 
 ## Behavior
 
@@ -20,28 +24,36 @@ Each retired function maps to a requirement:
 
 | Retired function | Replacement |
 |---|---|
-| Slot wrapper: first-free lockf slot, hand-tuned slot count | FR-005 queue; FR-009 sustainable slots |
-| Slot wrapper: priority marker for merge-ready gates | FR-011 `gate` class |
-| Slot wrapper: default `CARGO_BUILD_JOBS` | FR-009 `jobs_per_slot`, exported to the job |
-| Remote runner: build a pushed sha in a per-slot worktree and target | FR-012 slot, FR-014 dispatch |
-| Remote runner: rc, test result lines, failure and panic lines | FR-013 summary |
-| Remote runner: hold file, memory and disk gates before start | FR-009 required probes and `block_above`; FR-010 `hold` and `resume` |
-| Remote runner: CPU set, nice level, debug-info and incremental env | FR-009 `cpu_set`, `[weight] nice`, `[env]` |
-| Remote runner: per-test RSS watchdog | FR-010 `rss_cap` |
-| Heat guard: stop at high Tctl, resume lower; memory stop | FR-010 governor pause and resume; abort policy |
-| Health logger: Tctl, load, memory, fans every 30 s; HOT marker | FR-015 probe series |
+| Slot wrapper: first-free lockf slot, hand-tuned slot count | `run`, `status`; FR-005 queue and FR-009 capacity policy |
+| Slot wrapper: priority marker for merge-ready gates | `run --class`; FR-011 configured named class |
+| Slot wrapper: default `CARGO_BUILD_JOBS` | `run`; FR-009 `jobs_per_slot` and policy `cargo_build_jobs` |
+| Remote runner: build a pushed sha in an isolated checkout and target | `run`; FR-012 target modes and FR-014 dispatch |
+| Remote runner: rc, test result lines, failure and panic lines | `run`, `status`; FR-013 summary |
+| Remote runner: hold file, memory and disk gates before start | `run`; policy `memory_admission`, `memory_budget_bytes`, and `disk_reserve_bytes` |
+| Remote runner: CPU set, nice level, debug-info and incremental env | `run`; FR-009 `[host]`, `[weight]`, and `[env]` policy keys |
+| Remote runner: per-test RSS watchdog | `run`; policy `memory_cap_bytes` and FR-010 `rss_cap` |
+| Heat guard: stop at high Tctl, resume lower; memory stop | `sample`, `status`; FR-009 probe and FR-010 limit policy |
+| Health logger: Tctl, load, memory, fans every 30 s; HOT marker | `sample`, `metrics`; FR-015 probe series |
+| Host admission wrapper: FIFO/load gate and lane locks | `run`, `status`, `cancel`, `recover` |
+| Per-lane Cargo wrappers and cargo resource controller | `run --class`; cargo-shim policy key `real_cargo` |
+| Per-ticket gate scripts and arch test runner admission | `run --class`; FR-005 lease supervision |
 
-**Retirement gate.** Existing builds finish under their original wrappers; a script is deleted only when `locked-build retire-check --since 24h` passes on that host. The governor records an `admission_stall` event whenever a request has waited longer than `stall_wait` (default 5 minutes) while at least one free slot existed and no admission block reason applied, and a `paused_orphan` event whenever a paused group had no live owner at a sample. The check passes when the window of the last 24 hours holds at least one completed build, zero `admission_stall` events and zero `paused_orphan` events. Deleting the scripts in the lead tooling directory is tracked separately (Linear SWM-244).
+**Retirement gate.** Existing builds finish under their original wrappers. An
+operator uses `status` and `metrics` evidence over a 24-hour window before
+removing a host or lane entry point. The window must contain at least one
+completed build, zero `admission_stall` events (a request waited longer than
+`stall_wait` while a slot was free and no admission block reason applied), and
+zero `paused_orphan` events (a paused group had no live owner at a sample).
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-016-AC-1 | A parity table in the tool reference maps each retired function above to a command or profile key, and every mapped command exists in `--help`. | Inspection |
+| FR-016-AC-1 | A parity table in the tool reference maps each retired function above to commands or policy keys; every named subcommand appears in `locked-build --help`, and every policy key exists in the host policy schema. Class selection is exercised by FR-011-AC-1. | Test |
 | FR-016-AC-2 | A job starts with the profile's `cpu_set`, `[weight] nice` and `[env]` values and `CARGO_BUILD_JOBS` equal to `jobs_per_slot`; a request override is applied within `[request_limits]` and refused outside (FR-009-AC-10). | Test |
 | FR-016-AC-3 | The tool tree contains no `.py` file and no shell script with a conditional or loop; Makefile recipes invoke only `cargo` and the built binary. | Inspection |
-| FR-016-AC-4 | With a fixture where a request waits 6 minutes with a free slot, `retire-check` fails and reports the stall; with a paused orphan event it fails; with 24 hours of builds and neither event it passes; with no builds in the window it fails as unproven. | Test |
-| FR-016-AC-5 | The reference and migration guide state the cutover order and name `retire-check` as the per-script retirement condition. | Inspection |
+| FR-016-AC-4 | With a `status` and `metrics` fixture where a request waits 6 minutes with a free slot, the retirement evidence reports the stall; it also reports a paused orphan; with 24 hours of builds and neither event it passes; with no builds in the window it is unproven and the entry point remains. | Test |
+| FR-016-AC-5 | The reference and migration guide state the cutover order and name `status` and `metrics` as the evidence used for each retirement decision. | Inspection |
 
 ## Dependencies
 
