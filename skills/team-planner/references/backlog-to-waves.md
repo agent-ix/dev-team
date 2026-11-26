@@ -40,9 +40,9 @@ Apply the corrections: close stale tickets with the merge that delivered them, a
 ## 5. Batch by area
 
 1. One batch is one area (crate, module or requirement block) with one owner. Two lanes never edit the same files.
-2. One PR per batch. Its spec commit comes first, then the code. Tickets that touch the same files or requirement files share the batch.
+2. The work class sets the PR shape ([work classes](../../code-lead/SKILL.md#work-classes)): one PR per Batch of tickets that touch the same files or requirement files; one branch and PR per repo for a Block, with its spec and code together. An explicit task, ticket, project or owner instruction overrides the default.
 3. Batch 0 is merge-out: pull requests already reviewed. Land them and close their tickets first.
-4. Split any change above the team's `pr_oversize_lines` limit before review, by area, with the split recorded on the ticket.
+4. Where the team configures a `pr_oversize_lines` limit, split a Point or Batch above it before review, by area, with the split recorded on the ticket. Never split a Block, unless the task, ticket, project or owner says otherwise (LEAD-R22).
 
 ## 6. Waves
 

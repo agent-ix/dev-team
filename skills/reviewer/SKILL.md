@@ -1,7 +1,7 @@
 ---
 name: reviewer
-description: Run a PR's review stage as the dedicated reviewer role — run every applicable review method (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses) in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
-role_spec_version: 1
+description: Run a PR's review stage as the dedicated reviewer role — select review methods from the diff and its size (code-review, rust-review, quoin gap-analysis, quoin spec-review and its sub-analyses), run them in one pass, let each write its own quire-validated SpecReview artifact, and post findings and later dispositions to the project's ticket tracker (Linear by default) with machine-readable markers so review data survives outside chat and each comment can be mined on its own, with no git join needed. Use when invoked as /reviewer, when dispatched as the reviewer subagent for a PR (for example from `/code-lead`), or when a review needs to be logged to the tracker instead of only the PR.
+role_spec_version: 2
 ---
 
 # Reviewer
@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 reviewer is the reviewer role of the
 [reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
-version 1. Instructions below cite the rule they implement as `REV-Rnn`;
+version 2. Instructions below cite the rule they implement as `REV-Rnn`;
 evaluations and feedback point at those ids. A tracked PR gets one reviewer,
 resumed for disposition passes. Each method is reviewed by one reviewer run
 only (REV-R01): a retried or replacement dispatch posts the methods not yet on
@@ -27,7 +27,7 @@ dispatches. The subagent is reviewer-only, with no code edits: never commit or
 push to the branch under review (REV-R03), and revert any temporary mutation
 made to show that a test fails before the pass ends. This skill's
 job stops at reporting: it never fixes a finding and never merges. It runs
-every review method the change needs, lets each write its own artifact, and
+the review methods the change needs (REV-R15), lets each write its own artifact, and
 posts the review to the project's **ticket tracker** so the data outlives the
 chat and the PR thread.
 
@@ -125,7 +125,22 @@ public repo — check `gh repo view --json visibility -q .visibility` — and
 still the rule on a private one (REV-R06), so behavior does not depend on remembering to
 check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 
-## 2. Decide which methods apply
+## 2. Select the methods from the diff
+
+**You select the methods; never ask the user which to run** (REV-R15). Size the
+review to the change, from the diff:
+
+- **Small or local change:** one focused review of the changed lines and what
+  they directly relate to: callers, the sibling route, the criteria they
+  implement. Run only the rows below that the diff's content makes necessary
+  (spec-only, code-only by language, or both).
+- **Architectural or large change** (a redesign, a shared mechanism across
+  routes, crates or repos): the wider methods, including gap analysis and the
+  applicable spec sub-analyses.
+
+State the chosen methods and why in the review comment so the lead can see the
+choice. Ask the user or dispatcher only if the review would otherwise be
+impossible (the diff or ticket cannot be read), never for method choice.
 
 Scope the diff to what the PR actually changed. A finding on a file outside the
 PR's file list, such as the same bug elsewhere or a stale reference the change
@@ -138,10 +153,10 @@ git diff --name-only origin/main...HEAD
 
 | Diff contains | Run |
 |---|---|
-| anything | `code-review` — always |
+| anything | `code-review`, in the focused or wide form its size calls for |
 | `Cargo.toml` / `.rs` | `rust-review`, as a lane of `code-review` (same file, see step 4) |
 | `.tsx`/`.jsx` + `react` in `package.json` | `review-react`, same lane rule |
-| production code outside `spec/`/`plan/` | `quoin:gap-analysis` |
+| production code outside `spec/`/`plan/` in a large or architectural change | `quoin:gap-analysis` |
 | `spec/**` or `plan/**` | `quoin:spec-review` plus the sub-analyses whose stated scope matches what changed |
 
 For spec/plan changes, pick sub-analyses by what they cover, not the full
@@ -193,65 +208,32 @@ analysis>` each get their **own** file and their **own** `SR-NNN` id. This
 also matches a precedent: `example-repo#16` got `SR-002` for its
 code-review and a separate `SR-003` for its gap-analysis, not one shared id.
 
-Name each method's file deterministically so a retry can find it. Step 4
-writes this file under the dispatching brief's scratchpad path, not directly
-under `reviews/` (this skill never commits to the branch it reviews), so the
-lookup below must cover both locations — a retried dispatch, or a later
-disposition pass resuming with the same brief, needs to find whichever copy
-exists, wherever the leader last put it:
+The tracker comment is the record, so ids come from the ticket, not from the
+repo. Name each method's scratchpad file `<ticket>-<method>.md` (lowercase
+ticket, `/` in the method as `-`, no date prefix) so a retry or a later
+disposition pass finds it in the brief's scratchpad path:
 
 ```bash
 SLUG="$(tr '[:upper:]' '[:lower:]' <<<"$TICKET")-$(tr '/' '-' <<<"$METHOD")"
-EXISTING=$(ls "$SCRATCHPAD_REVIEWS_DIR"/*"$SLUG".md reviews/*"$SLUG".md 2>/dev/null | head -1)
 ```
 
-**No dates typed by the agent.** File names are `<slug>.md`, with no date
-prefix (the `*` in the glob still matches older `YY-MM-DD-<slug>.md` files).
-Never type a date into a file name, a marker, or a comment. The date of a
-review is the Linear comment's own timestamp or the commit that added the file.
-If quire's schema requires a frontmatter `date:`, take it from the system
-clock (`date -u +%F`); do not write it from memory.
+- **Reuse:** list the ticket's comments and look for a `reviewer` marker whose
+  `method=` is this method and `pr=` is this PR. If one exists, this method
+  already has an artifact: **reuse its `id=`**, do not allocate a new id.
+- **Allocate:** otherwise take the highest `id=SR-NNN` across the ticket's
+  `reviewer` and `reviewer-dispositions` markers, add one, and format it with at
+  least three digits (`SR-004`, not `SR-4`). A ticket with no markers starts at
+  the first id of the range the brief gives, or `SR-001`.
 
-(`$SCRATCHPAD_REVIEWS_DIR` is the scratchpad path from the dispatching brief;
-see [step 4](#4-let-each-method-write-its-own-specreview-artifact). Require it
-before globbing with it — unset, it makes the glob absolute
-(`/*-"$SLUG".md`) and searches the filesystem root instead of finding
-nothing:
+**No dates typed by the agent.** Never type a date into a file name, a marker,
+or a comment. The date of a review is the Linear comment's own timestamp. If
+quire's schema requires a frontmatter `date:`, take it from the system clock
+(`date -u +%F`); do not write it from memory.
 
-```bash
-: "${SCRATCHPAD_REVIEWS_DIR:?reviewer brief must set a scratchpad path}"
-```
-
-If a brief genuinely gives no scratchpad path, skip that half of the glob and
-the id-search below — check `reviews/*-"$SLUG".md` and the repo-wide grep
-alone.)
-
-- If `$EXISTING` is non-empty, this method already has a file for this
-  ticket — **reuse its id**, do not allocate a new one and do not create a
-  second file:
-
-  ```bash
-  grep -oE '^id:[[:space:]]*"?[A-Z]{2,4}-[0-9]+"?' "$EXISTING" | grep -oE '[A-Z]{2,4}-[0-9]+'
-  ```
-
-- Otherwise allocate the next unused id, checking every existing id in the
-  repo **and** the scratchpad — including quoted ones (`id: "SR-014"`), which
-  the naive form misses:
-
-  ```bash
-  grep -rhoE '^id:[[:space:]]*"?[A-Z]{2,4}-[0-9]+"?' --include=*.md . "$SCRATCHPAD_REVIEWS_DIR" \
-    | grep -oE '[0-9]+' | sort -n | tail -1
-  ```
-
-  The next id is that number plus one, formatted `SR-NNN` with at least three
-  digits (`SR-004`, not `SR-4`).
-
-**This check-then-write is not atomic across parallel branches.** Two reviewer
-runs on two branches, started at the same moment, can both compute the same
-"next" id before either commits its file. Don't build a cross-branch lock for
-this — accept the collision as a normal merge conflict (or a duplicate id that
-`quire validate` catches on the next full-repo run), and key any later mining
-on `(repo, file path)`, not on the id alone being globally unique.
+**This check-then-post is not atomic across parallel runs.** Two reviewer runs
+on one ticket started at the same moment can pick the same id. Accept the
+duplicate and key any later mining on `(tracker issue, marker id, run)`, not on
+the id alone being globally unique.
 
 ## 4. Let each method write its own SpecReview artifact
 
@@ -260,11 +242,9 @@ sub-analysis, …) and let it author `<slug>.md` (no date prefix) per its own Ou
 section, using the id from step 3. This skill runs reviewer-only and never
 pushes to the frozen branch, so the file is written under
 `$SCRATCHPAD_REVIEWS_DIR` (the dispatching brief's scratchpad path), not
-directly under `reviews/` — see [step 6](#6-label-and-keep-the-artifact) for
-who commits it into the repo, under that same eventual `reviews/<slug>.md`
-path, and when. Validate it at its actual, explicit path — a glob
-over `reviews/**/*.md` from the repo root never reaches a file that hasn't
-been committed there yet:
+directly under `reviews/` and never committed (see
+[step 6](#6-label-and-keep-the-artifact)). Validate it at its actual, explicit
+path, since a glob over `reviews/**/*.md` never reaches a scratchpad file:
 
 ```bash
 quire validate --scope . "$SCRATCHPAD_REVIEWS_DIR/<slug>.md"
@@ -501,34 +481,15 @@ linear label create --name has-review --team "${TICKET%%-*}"   # only if the che
 linear issue update "$TICKET" --add-label has-review
 ```
 
-**Keep every SR file committed** — posting to the tracker does not replace
-keeping the artifact in the repo. Both are required. This skill runs
-reviewer-only, no edits — see [step 7](#7-github-gets-the-ticket-id-never-the-findings)'s
-frozen-branch note below for who actually makes that commit: nothing here
-pushes to the PR branch itself; `code-lead` conventions
-(frozen candidate, step 4 of the `code-lead` skill) forbid changing a
-branch mid-review.
-
-**Custody of the SR file, since this skill never pushes to the branch:**
-
-- **Where this skill writes it.** Both the review pass and every disposition
-  pass write (or update) the SR file at the path the dispatching brief names —
-  a scratchpad path outside the frozen branch, never a direct commit to it.
-  The dispatching orchestrator's brief is authoritative for that path; absent
-  one, use the working directory's own scratchpad.
-- **Findings exist (review pass, or any disposition pass that adds a
-  finding)** — the next fix-round coder copies the reviewer's updated SR
-  file over the committed one under `reviews/` as part of its fix-round
-  commit (the `code-lead` role's step 6 already resumes the coder for
-  that round; the brief tells it to copy the file over, not to author one).
-- **Clean review, nothing to fix, or a disposition pass that adds nothing
-  further** — nothing else will touch the branch before merge, so the
-  dispatching lead — or a coder the lead sends for exactly this — commits the
-  reviewer's updated SR file under `reviews/` in one small trailing commit
-  before merging. Never the reviewer subagent itself.
-- Either way, the file committed to `reviews/` is always the reviewer's
-  latest version — dispositions included — never a stale copy from before the
-  disposition pass ran.
+**SR files stay off the PR.** Posting to the tracker ticket is the durable
+record. The SR file is written at the scratchpad path the dispatching brief
+names, never committed to the branch under review (REV-R03): a `reviews/`
+commit moves the head, reruns checks and adds churn. Nobody commits it in
+this skill's name: not the coder in a fix commit, not the lead in a trailing
+commit. Both the review pass and every disposition pass write or update the SR
+file at the brief's scratchpad path, and the marked ticket comments carry
+everything a later reader needs. Absent a brief path, use the working
+directory's own scratchpad.
 
 ## 7. GitHub gets the ticket id, never the findings
 
@@ -552,6 +513,11 @@ gate failure fixed after a clean review. Review everything that changed since
 the `head=` of your latest comment. Re-read each method's SR file and the
 current diff; do not trust a ticket comment's own claim that a finding is resolved — verify it
 against the code and the fix commit yourself.
+
+**The disposition pass checks the fixes, not the whole PR again.** Read the fix
+diff and run its tests; judge each finding against that. A second full review
+happens only if a fix changed a rule, in which case say so in the comment
+(REV-R07). Never wait for a full re-review to report mergeable.
 
 This pass may run more than once — a coder's fix can itself introduce a
 regression, and a leader may resume the same reviewer for a second, third,
@@ -758,12 +724,11 @@ artifact contract, comment layout, marker fields, dedup logic) stays the same:
 5. **List comments** (steps 5/8/9) — for dedup and read-back.
 6. **Edit a comment** (step 9) — to repair a comment that failed read-back.
 
-**On GitHub Issues specifically as the tracker**, the repo is almost always
-public, so posting findings straight to a GitHub Issue (not a Linear ticket
-with a GitHub attachment) still means posting them publicly: never post
-findings there. In that case there is no private tracker to post to, and the
-SR files stay repo-local and committed as the only durable record — say so
-plainly rather than inventing a place to post findings that doesn't exist.
+**On GitHub Issues specifically as the tracker**, the issue comment is the
+record, exactly as a Linear comment is, and ids and read-back work on the issue
+comments. If the repo is public, posting findings there publishes them (REV-R06),
+so do not post; report the findings to the lead in your report and say so
+plainly rather than inventing a place to post. Never commit them into the PR.
 
 ## Output
 

@@ -15,11 +15,16 @@ Read the spec itself; don't trust the tracker state to be current.
 Never code unspecced behavior. Never re-spec work that already has an owning
 requirement — that's churn, not progress.
 
-## One PR per ticket or batch
+## Work class sets the PR shape
 
-Batch tickets that touch the same files or requirement files into one PR. Split
-only for a real reason (different repo, a blocking dependency another lane
-owns, or a change above the team's PR size limit) and state the reason on the ticket.
+The class default applies unless the task, ticket, project or owner instruction
+says otherwise ([work classes](../SKILL.md#work-classes)). Point: one PR per
+ticket. Batch: one PR per batch of tickets that touch the same files or
+requirement files. Block: one branch and one PR per repo, steps as commits.
+Sweep: one PR with a mechanical review. A size limit splits a Point or Batch
+only where the team configured one, never a Block unless the task, ticket,
+project or owner says otherwise (LEAD-R22). State the reason for any
+split on the ticket.
 
 ## Layered waves
 

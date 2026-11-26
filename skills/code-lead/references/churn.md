@@ -34,6 +34,9 @@ source age separately from reported worker activity.
    will it check, and what decision uses the result? Remove repetition that adds
    no evidence within current authority. Keep required review and merge gates.
 3. Use focused checks during iteration and one lead-run final aggregate gate.
+   Fold same-Block work into its one PR, keep review records on the ticket, and
+   act on a tripwire (more than 2 review rounds, 15 commits (not a Block) or 3 idle hours) by
+   consolidating or recutting.
    Keep findings inside their original PR under current review-round policy.
    Fold required pins into consuming PRs under the assigned pin owner/window.
 4. Route cross-team protocol, ownership or authority decisions once to their
