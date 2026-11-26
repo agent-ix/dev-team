@@ -68,10 +68,11 @@ project or per-ticket shell wrapper to admit a build.
   ticket (CODE-R03). With no limit configured, do not split. Never split a
   Block: its steps are commits in one PR, unless the task, ticket, project or
   owner says otherwise (LEAD-R22). The brief names the work class.
-- Block method: implement the mechanism chosen in the design note and add the
-  class-level tests (a property or a table over all sites). A ticket-specific
-  patch outside the mechanism needs the lead's written reason on the ticket
-  (CODE-R17).
+- Block method: implement the structure or mechanism chosen in the design note
+  and add the tests of the Block's kind: contract or interface tests and an
+  integration test per ticket route (features), class-level tests over all
+  sites (bugs). A ticket-specific exception needs the lead's written reason on
+  the ticket (CODE-R17).
 - Read build admission/capacity from the brief's current config or verified
   host source. Never embed a slot count or infer spare slots from agents.
   Report missing capacity or a stale coder-rule/toolchain notice to the lead;

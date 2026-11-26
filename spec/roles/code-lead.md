@@ -154,7 +154,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R24 | When a pull request has more than 2 review rounds, more than 15 commits (not counted for a Block, whose steps are commits), or has been open 3 hours with no movement, the code lead SHALL stop, consolidate or recut it, and write one line on the ticket saying why. | LEAD-O03 | tripwire-ignored | One pull request reached 10 review rounds, 2026-11-26 |
 | LEAD-R25 | A code lead that is idle or waiting for more than 20 minutes SHALL name the exact wait (build slot, review or decision) and start the next independent step in the same tick. | LEAD-O01 | unnamed-wait | Leads idle or waiting for hours with no named wait, 2026-11-26 |
 | LEAD-R26 | The code lead SHALL NOT rerun a merge check because main moved when the moved files do not overlap the files the pull request changes. | LEAD-O02 | repeated-merge-check | Merge checks rerun on every main move, 2026-11-26 |
-| LEAD-R27 | For a Block, the code lead SHALL have a design note on the parent ticket (cause class, candidate mechanisms with cost, the chosen one, other sites it fixes, tests that prove the class closed) and a recorded design review of it before the first code commit, SHALL close each ticket by the chosen mechanism, SHALL require class-level tests over all sites, and SHALL list the cause class, sites covered and class-level tests in the pull request description. Tickets with no shared cause are split into Points with the evidence on the ticket. | LEAD-O03 | block-as-serial-patches | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
+| LEAD-R27 | For a Block, the code lead SHALL treat the group as one piece of work with one consistent structure: a design note on the parent ticket before the first code commit, by kind (feature: concepts and their single definitions, module or crate boundaries and interfaces, shared data types, composition, reused or changed structure, order of steps, why the structure serves all tickets and what a later ticket in the area adds; bug: cause class, other sites, the general fix; mixed: both in one note), with a recorded design review of it; SHALL close each ticket by the shared structure or mechanism, a ticket-specific exception needing the lead's written reason on the ticket; SHALL require the tests of the kind (feature: contract or interface tests for the shared pieces and an integration test per ticket route; bug: class-level tests over all sites); and SHALL list the structure or cause class, the sites or routes covered and those tests in the pull request description. Tickets that share neither a structure nor a cause are split into Points with the evidence on the ticket. | LEAD-O03 | block-as-serial-patches | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
 
 ## Evaluations
 
@@ -200,7 +200,7 @@ evaluator query is open; `none` means no ix-board requirement defines it.
 | LEAD-R25-E1 | LEAD-R25 | transcript | hooks.role_turns | judgement | rubric-code-lead@3#named-wait | team-retro | >= | 2 | score | daily |
 | LEAD-R26-E1 | LEAD-R26 | github | github.merged_prs | judgement | rubric-code-lead@3#merge-check | team-retro | >= | 2 | score | daily |
 | LEAD-R27-E1 | LEAD-R27 | linear | linear.plan_items | judgement | rubric-code-lead@3#block-design-note | team-retro | >= | 2 | score | daily |
-| LEAD-R27-E2 | LEAD-R27 | github | retro.prs_open | judgement | rubric-code-lead@3#block-class-tests | team-retro | >= | 2 | score | daily |
+| LEAD-R27-E2 | LEAD-R27 | github | retro.prs_open | judgement | rubric-code-lead@3#block-tests | team-retro | >= | 2 | score | daily |
 | LEAD-R27-E3 | LEAD-R27 | github | retro.prs_open | judgement | rubric-code-lead@3#block-closure | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
@@ -223,7 +223,7 @@ grades the waiver records.
 | Resources | LEAD-R13 | resources |
 | Agent recovery | LEAD-R14 | agent-recovery |
 | Delivery | LEAD-R15 | delivery |
-| Work classes and churn | LEAD-R22, LEAD-R23, LEAD-R24, LEAD-R25, LEAD-R26, LEAD-R27 | work-class, fold-open-pr, tripwires, named-wait, merge-check, block-design-note, block-class-tests, block-closure |
+| Work classes and churn | LEAD-R22, LEAD-R23, LEAD-R24, LEAD-R25, LEAD-R26, LEAD-R27 | work-class, fold-open-pr, tripwires, named-wait, merge-check, block-design-note, block-tests, block-closure |
 
 ## Evaluation notes
 

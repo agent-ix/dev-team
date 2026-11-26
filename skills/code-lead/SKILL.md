@@ -194,27 +194,39 @@ makes everywhere, checked by diff shape? Sweep. When two fit, take the larger.
 
 ### Block method
 
-A Block is one class of problem. Search for the general solution that closes
-the class (LEAD-R27); do not fix the tickets one after another.
+A Block is a group of related tickets coded together. Treat the group as one
+piece of work and give it one consistent structure (LEAD-R27); do not build the
+tickets one after another. The design note says which kind the Block is.
 
-0. **Design before code.** Reproduce each ticket with a focused measured test.
-   Find the common cause class: the shared mechanism, data structure, rule or
-   missing definition. Grep the repo for the same pattern in neighbouring code.
-   Write a one-page design note on the parent ticket: the cause class; the
-   candidate mechanisms with their cost; the chosen one and why; the other sites
-   it fixes; the tests that prove the class closed. The independent reviewer
-   checks the note before any coding starts (design review); its findings go on
-   the ticket.
+- **Feature Block:** design the architecture first. Name the concepts and their
+  single definitions, the module or crate boundaries and interfaces, the data
+  types the tickets share, how the pieces compose, which existing structure is
+  reused or changed, and the order of steps. Say why the structure serves all
+  tickets and what a later ticket in the same area would add.
+- **Bug Block:** reproduce each ticket with a focused measured test, find the
+  common cause class (the shared mechanism, data structure, rule or missing
+  definition) and grep the repo for the same pattern in neighbouring code.
+  Choose a general fix and say what other sites it fixes.
+- **Mixed Block:** both, in one note: architecture for the new parts, cause
+  class for the defects.
+
+Steps:
+
+0. **Design note before code**, on the parent ticket: the kind above; candidate
+   structures or mechanisms with their cost; the chosen one and why; the tests
+   that prove it. The independent reviewer checks the note before any coding
+   starts (design review); its findings go on the ticket.
 1. **Implement** on one branch and one PR per repo, steps as commits. Close each
-   ticket by the mechanism, not by a patch beside it. A ticket-specific patch
-   outside the mechanism needs your written reason on the ticket.
-2. **Class-level tests.** Add a property or a table over all sites, so the next
-   instance fails.
-3. **No shared cause.** If the tickets do not share a cause, record the evidence
-   on the ticket and split them into Points. That is allowed and is not a
-   failure.
-4. **PR description.** List the cause class, the sites covered and the
-   class-level tests.
+   ticket by the shared structure or mechanism, not by a patch beside it. A
+   ticket-specific exception needs your written reason on the ticket.
+2. **Tests of the kind.** Feature: contract or interface tests for the shared
+   pieces and an integration test per ticket route. Bug: class-level tests (a
+   property or a table over all sites) so the next instance fails.
+3. **No shared basis.** If the tickets share neither a structure nor a cause,
+   record the evidence on the ticket and split them into Points. That is
+   allowed and is not a failure.
+4. **PR description.** List the structure or cause class, the sites or routes
+   covered and the tests.
 
 The PR size limit is a Point and Batch rule and applies only where the team has
 configured one (CODE-R03). Never split a Block for size (unless the task, ticket, project or owner says

@@ -120,7 +120,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | PLAN-R15 | The planner SHALL NOT change code, start a coder subagent or merge a pull request. | PLAN-O01 | role-boundary | Rubric note Role boundaries: planner plans and routes, code lead dispatches and merges |
 | PLAN-R16 | The planner SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | PLAN-O03 | comms-noise | Status polls and progress messages between lanes, team-planner skill Communication |
 | PLAN-R17 | The planner SHALL name the work class (Point, Batch, Block or Sweep) of each ticket group in its handoff to a code lead, and group the tickets of one Block under one design owner. | PLAN-O01 | class-unnamed | Five consolidation leads split one redesign into one pull request per ticket step, 2026-11-26 |
-| PLAN-R18 | When the planner groups tickets as a Block, it SHALL name the suspected common cause or goal in the parent ticket; when it cannot name one, it SHALL plan the tickets as Points. | PLAN-O01 | block-without-cause | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
+| PLAN-R18 | When the planner groups tickets as a Block, it SHALL name the suspected shared structure or common cause in the parent ticket; when it can name neither, it SHALL plan the tickets as Points. | PLAN-O01 | block-without-basis | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
 
 ## Evaluations
 
@@ -150,7 +150,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | PLAN-R15-E1 | PLAN-R15 | transcript | hooks.role_turns | deterministic | transcript.planner_code_or_merge_actions | evaluator | = | 0 | actions | session-end |
 | PLAN-R16-E1 | PLAN-R16 | transcript | transcript.outbound_messages | judgement | rubric-planner@3#comms | team-retro | >= | 2 | score | daily |
 | PLAN-R17-E1 | PLAN-R17 | linear | linear.plan_items | judgement | rubric-planner@3#work-class | team-retro | >= | 2 | score | daily |
-| PLAN-R18-E1 | PLAN-R18 | linear | linear.plan_items | judgement | rubric-planner@3#block-cause | team-retro | >= | 2 | score | daily |
+| PLAN-R18-E1 | PLAN-R18 | linear | linear.plan_items | judgement | rubric-planner@3#block-basis | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -170,7 +170,7 @@ the team-planner skill's Communication section, which had no row.
 | Capacity | PLAN-R08 | capacity |
 | End-tick audit | PLAN-R09 | end-tick-audit |
 | Decisions | PLAN-R10, PLAN-R11 | decision-owner, decision-recommendation |
-| Work class | PLAN-R17, PLAN-R18 | work-class, block-cause |
+| Work class | PLAN-R17, PLAN-R18 | work-class, block-basis |
 
 ## Evaluation notes
 

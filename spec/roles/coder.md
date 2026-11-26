@@ -118,7 +118,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R14 | The coder SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | CODE-O01 | comms-noise | Status polls and progress messages between lanes, coder skill Communication |
 | CODE-R15 | The coder SHALL NOT open a new ticket for a finding on its open pull request. | CODE-O02 | finding-deferred | Findings filed as new tickets, code-lead never list |
 | CODE-R16 | The coder SHALL NOT commit reviewer SR files into the pull request. | CODE-O02 | review-file-churn | Review-file commits moved heads and reran checks, 2026-11-26 |
-| CODE-R17 | In a Block, the coder SHALL implement the mechanism chosen in the design note and add the class-level tests, and SHALL NOT add a ticket-specific patch outside the mechanism unless the code lead gave a written reason on the ticket. | CODE-O02 | ticket-patch-in-block | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
+| CODE-R17 | In a Block, the coder SHALL implement the structure or mechanism chosen in the design note and add the tests of the Block's kind (feature: contract or interface tests and an integration test per ticket route; bug: class-level tests), and SHALL NOT add a ticket-specific exception outside it unless the code lead gave a written reason on the ticket. | CODE-O02 | ticket-patch-in-block | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
 
 ## Evaluations
 
@@ -143,7 +143,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R14-E1 | CODE-R14 | transcript | transcript.outbound_messages | judgement | rubric-coder@3#comms | team-retro | >= | 2 | score | daily |
 | CODE-R15-E1 | CODE-R15 | linear | linear.fix_round_findings | judgement | rubric-coder@3#finding-ticket | team-retro | >= | 2 | score | daily |
 | CODE-R16-E1 | CODE-R16 | github | github.authored_prs | judgement | rubric-coder@3#review-files | team-retro | >= | 2 | score | daily |
-| CODE-R17-E1 | CODE-R17 | github | github.authored_prs | judgement | rubric-coder@3#block-mechanism | team-retro | >= | 2 | score | daily |
+| CODE-R17-E1 | CODE-R17 | github | github.authored_prs | judgement | rubric-coder@3#block-structure | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -158,7 +158,7 @@ coder skill's Communication section, which had no row.
 | Rounds | CODE-R04 | rounds |
 | Rework cause | CODE-R05, CODE-R06, CODE-R15 | rework-cause, finding-pull-request, finding-ticket |
 | Review files | CODE-R16 | review-files |
-| Block mechanism | CODE-R17 | block-mechanism |
+| Block structure | CODE-R17 | block-structure |
 | One directory | CODE-R01 | one-directory |
 | Honest report | CODE-R07, CODE-R08 | false-done, honest-report |
 | Stalls | CODE-R09 | report-timing |
