@@ -1,14 +1,14 @@
 ---
 name: team-minder
 description: Run the fleet minder loop. Each tick reads `ix-board fleet status --json`, treats undetermined lanes as idle, pushes the next assigned ticket to idle lanes as a relay order, answers dialogs and queued questions a standing order covers and logs each answer, routes every source defect, dead lane and lane without work, and escalates worker, lead, orchestrator on a fixed ladder. Use when invoked as /team-minder [scope] [interval], or when asked to keep a fleet's or team's lanes busy, find idle or blocked lanes, or run a minder loop.
-role_spec_version: 7
+role_spec_version: 8
 ---
 
 # Team Minder
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 7. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
+team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 8. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
 
 `ix-board fleet tick --json` (SWM-256, recorded in the SWM-255 ledger) will become the tick's input and emit the actions below directly; until it is installed, the minder derives them from `fleet status` exactly as this skill states and routes each interim gap as a defect (step 2).
 
@@ -70,8 +70,10 @@ Execute the action for every row before the next tick, even if your own reading 
 When a lane reports waiting for build admission, use the shared `locked-build`
 queue state as the source of that wait. If a scheduled check must be launched,
 use the PATH `cargo` shim or
-`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
-do not launch a competing Cargo command through a lane wrapper.
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+Admission charges each lease cap against the sum of active lease caps and the
+configured memory budget in `lease_accounted` mode. Do not launch a competing
+Cargo command through a project wrapper.
 
 | Class | Action |
 |---|---|

@@ -31,6 +31,12 @@ assigned ticket chain. The coder does not review its own work, run the aggregate
 gate or merge: the [reviewer](reviewer.md) reviews and the code lead gates and
 merges.
 
+Builds use the PATH `cargo` shim or
+`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+In `lease_accounted` mode, admission sums active lease caps with the requested
+cap against the configured memory budget, and enforces each running lease at
+its cap.
+
 Targets are initial values. The evaluator's role rows (dev-team FR-008) show
 whether a target is met and whether a rule moves its objective; the director
 proposes changes through a role spec version bump.

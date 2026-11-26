@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "code-lead",
-      "version": "0.5.1",
+      "version": "0.5.2",
       "files": [
         "SKILL.md",
         "references/briefs.md",
@@ -18,7 +18,7 @@
     },
     {
       "name": "coder",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "files": [
         "SKILL.md"
       ]
@@ -53,7 +53,7 @@
     },
     {
       "name": "fleet-orchestrator",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "files": [
         "SKILL.md",
         "references/ownership.md",
@@ -72,7 +72,7 @@
     },
     {
       "name": "reviewer",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "files": [
         "SKILL.md"
       ]
@@ -100,7 +100,7 @@
     },
     {
       "name": "team-minder",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "files": [
         "SKILL.md",
         "references/standing-orders.md",

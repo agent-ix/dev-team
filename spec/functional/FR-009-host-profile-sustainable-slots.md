@@ -41,11 +41,10 @@ Probes include CPU package temperature (titan Tctl) and package power; memory co
 
 Sustainable slots are the minimum of: `max_slots`; floor((available RAM minus `[memory] reserve` and `[reserve] memory`, plus RAM held by running leases that is already measured) divided by RAM per job); floor(free pool disk above `min_free` divided by the per-slot disk estimate); floor((`cpu_cores` minus `[reserve] cpu_cores`) divided by `jobs_per_slot`); and any bound a limit declares (zero while a thermal pause is active, zero while `block_above` is exceeded).
 
-The available-RAM input above sets the sustainable capacity ceiling; it is not
-the `lease_accounted` memory-admission floor. In FR-005's default
-`lease_accounted` mode, admission compares lease caps with
-`memory_budget_bytes`; live available-memory admission is used only when the
-host selects `live_available`.
+The available-RAM input above sets the sustainable capacity ceiling. In
+FR-005's default `lease_accounted` mode, admission sums active per-lease caps
+against `memory_budget_bytes`; live available-memory admission with the
+configured reserve is used only when the host selects `live_available`.
 
 RAM per job is the profile default until job history exists, then the 90th percentile of measured peak memory for that repo and priority class over the last `history_window` jobs, never below `ram_per_job_min`. Peak memory of a job's whole process group is measured per platform: cgroup v2 `memory.peak` of the job's systemd scope on Linux and WSL; on macOS the sum of resident memory over the group's processes sampled each `sample_interval` through `proc_pid_rusage`, whose sampling error (short peaks missed, shared pages counted twice) is accepted at 15 percent for history and for `rss_cap`.
 
