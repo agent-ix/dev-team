@@ -147,6 +147,10 @@ State the chosen methods and why in the review comment so the lead can see the
 choice. Ask the user or dispatcher only if the review would otherwise be
 impossible (the diff or ticket cannot be read), never for method choice.
 
+**Block.** For a Block, review the design note on the parent ticket first (REV-R16): is the
+cause class right, are other sites missed, would the class-level tests fail on
+an unfixed site. Then review the diff. Post the findings on the ticket.
+
 Scope the diff to what the PR actually changed. A finding on a file outside the
 PR's file list, such as the same bug elsewhere or a stale reference the change
 leaves behind, needs a failing result observed at that path, recorded in the

@@ -192,6 +192,30 @@ Points. Does one ticket's change stay in a few files? Point. Several like
 tickets on the same files with no shared mechanism? Batch. A change a tool
 makes everywhere, checked by diff shape? Sweep. When two fit, take the larger.
 
+### Block method
+
+A Block is one class of problem. Search for the general solution that closes
+the class (LEAD-R27); do not fix the tickets one after another.
+
+0. **Design before code.** Reproduce each ticket with a focused measured test.
+   Find the common cause class: the shared mechanism, data structure, rule or
+   missing definition. Grep the repo for the same pattern in neighbouring code.
+   Write a one-page design note on the parent ticket: the cause class; the
+   candidate mechanisms with their cost; the chosen one and why; the other sites
+   it fixes; the tests that prove the class closed. The independent reviewer
+   checks the note before any coding starts (design review); its findings go on
+   the ticket.
+1. **Implement** on one branch and one PR per repo, steps as commits. Close each
+   ticket by the mechanism, not by a patch beside it. A ticket-specific patch
+   outside the mechanism needs your written reason on the ticket.
+2. **Class-level tests.** Add a property or a table over all sites, so the next
+   instance fails.
+3. **No shared cause.** If the tickets do not share a cause, record the evidence
+   on the ticket and split them into Points. That is allowed and is not a
+   failure.
+4. **PR description.** List the cause class, the sites covered and the
+   class-level tests.
+
 The PR size limit is a Point and Batch rule and applies only where the team has
 configured one (CODE-R03). Never split a Block for size (unless the task, ticket, project or owner says
 otherwise, LEAD-R22); keep its steps as
