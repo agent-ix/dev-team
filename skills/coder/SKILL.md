@@ -71,7 +71,7 @@ project or per-ticket shell wrapper to admit a build.
 - Block method: implement the structure or mechanism chosen in the design note
   and add the tests of the Block's kind: contract or interface tests and an
   integration test per ticket route (features), class-level tests over all
-  sites (bugs). A ticket-specific exception needs the lead's written reason on
+  sites (bugs), both for a mixed Block. A ticket-specific exception needs the lead's written reason on
   the ticket (CODE-R17).
 - Read build admission/capacity from the brief's current config or verified
   host source. Never embed a slot count or infer spare slots from agents.

@@ -196,7 +196,8 @@ makes everywhere, checked by diff shape? Sweep. When two fit, take the larger.
 
 A Block is a group of related tickets coded together. Treat the group as one
 piece of work and give it one consistent structure (LEAD-R27); do not build the
-tickets one after another. The design note says which kind the Block is.
+tickets one after another. There are three kinds, and the design note says which
+one the Block is:
 
 - **Feature Block:** design the architecture first. Name the concepts and their
   single definitions, the module or crate boundaries and interfaces, the data
@@ -221,57 +222,17 @@ Steps:
    ticket-specific exception needs your written reason on the ticket.
 2. **Tests of the kind.** Feature: contract or interface tests for the shared
    pieces and an integration test per ticket route. Bug: class-level tests (a
-   property or a table over all sites) so the next instance fails.
+   property or a table over all sites) so the next instance fails. Mixed: both
+   sets.
 3. **No shared basis.** If the tickets share neither a structure nor a cause,
    record the evidence on the ticket and split them into Points. That is
-   allowed and is not a failure.
-4. **PR description.** List the structure or cause class, the sites or routes
-   covered and the tests.
-
-The PR size limit is a Point and Batch rule and applies only where the team has
-configured one (CODE-R03). Never split a Block for size (unless the task, ticket, project or owner says
-otherwise, LEAD-R22); keep its steps as
-commits. Split a Point or Batch only for a real reason (different repo, a
-blocking dependency another lane owns, a configured size limit) and state the
-reason on the ticket.
-
-## Work kinds
-
-Dispatch a separate subagent in a fresh context for each kind of work a ticket
-needs:
-
-- **Code and spec** -> one coder per PR. The coder writes the spec change (the
-  repo's spec workflow, for example `/quoin:specify`) as the first commit when
-  no requirement owns the behavior, then the code and tests. For a Block the
-- **Review** -> one reviewer per PR, running the methods it records as selected
-  for the diff (code, gap analysis, spec) in one review.
-  commit in one review.
-- **Research** -> a read-only subagent.
-
-Never open a spec-only PR that merges before a separate code PR in the same
-repo and lane; a ticket whose whole scope is spec gets a spec-only PR. Every PR
-gets exactly one reviewer. No agent reviews its own work. Dispatch each
-reviewer with the instruction to take the `/reviewer` role and follow it end to
-end; it selects the methods from the diff, writes the SR artifacts and posts to
-the tracker.
-
-## Churn
-
-Overhead is a cost: extra PRs, review rounds, review-file commits and idle
-ticks all delay landing. Behave as follows.
-
-1. **Fold before opening.** Before opening any new PR, ask: can this fold into
-   an open PR of the same Block? If yes, send it to that PR's coder as commits
-   (LEAD-R23). Small rulings and review findings fold into the PR too.
-2. **One review pass, then fix checks.** Choose the first review's methods by
-   change size ([reviewer](../reviewer/SKILL.md)). After a fix round the check
-   is the fix diff plus its tests. A second full review happens only if a rule
-   changed.
-3. **Review records stay on the tracker ticket.** Never commit reviewer SR
-   files into the PR: a `reviews/` commit moves the head and reruns checks.
-4. **Tripwires** (LEAD-R24). A PR with more than 2 review rounds, more than 15
-   commits (not a Block: its steps are commits), or open 3 hours with no movement makes you stop and either
-   consolidate it or recut it, and write one line on the ticket saying why.
+   allowed and is not a failure. Exception: when the owner, ticket or project
+   explicitly says Block (LEAD-R22), record the missing basis on the ticket and
+   keep the Block.
+4. **Design review.** It is a review of the note on the parent ticket before any
+   PR exists. It is not a PR review: it does not count toward one reviewer review
+   per PR (REV-R01) or the review-round tripwire (LEAD-R24). Resume the same
+   reviewer for the diff review when possible.
 5. **No needless merge-check reruns.** When main moved and the moved files do
    not overlap the files the PR changes, do not rerun the merge check
    (LEAD-R26).

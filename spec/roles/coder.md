@@ -118,7 +118,7 @@ query, or the stored rows or series it reads, and no code returns the query;
 | CODE-R14 | The coder SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | CODE-O01 | comms-noise | Status polls and progress messages between lanes, coder skill Communication |
 | CODE-R15 | The coder SHALL NOT open a new ticket for a finding on its open pull request. | CODE-O02 | finding-deferred | Findings filed as new tickets, code-lead never list |
 | CODE-R16 | The coder SHALL NOT commit reviewer SR files into the pull request. | CODE-O02 | review-file-churn | Review-file commits moved heads and reran checks, 2026-11-26 |
-| CODE-R17 | In a Block, the coder SHALL implement the structure or mechanism chosen in the design note and add the tests of the Block's kind (feature: contract or interface tests and an integration test per ticket route; bug: class-level tests), and SHALL NOT add a ticket-specific exception outside it unless the code lead gave a written reason on the ticket. | CODE-O02 | ticket-patch-in-block | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
+| CODE-R17 | In a Block, the coder SHALL implement the structure or mechanism chosen in the design note and add the tests of the Block's kind (feature: contract or interface tests and an integration test per ticket route; bug: class-level tests; mixed: both sets), and SHALL NOT add a ticket-specific exception outside it unless the code lead gave a written reason on the ticket. | CODE-O02 | ticket-patch-in-block | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
 
 ## Evaluations
 

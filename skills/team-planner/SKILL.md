@@ -79,7 +79,7 @@ Name the work class of each ticket group in the handoff to the code lead (PLAN-R
 
 Test: several tickets sharing one cause, the same files or modules, or a goal such as "one definition per rule" make a Block. The class default applies unless the task, ticket, project or owner instruction says otherwise; an explicit instruction wins and is cited in the handoff.
 
-When you group tickets as a Block, name the suspected shared structure (features) or common cause (bugs) in the parent ticket so the lead has a starting point (PLAN-R18). If you can name neither, plan Points.
+When you group tickets as a Block, name the suspected shared structure (features) or common cause (bugs) in the parent ticket so the lead has a starting point (PLAN-R18). If you can name neither, plan Points, unless the owner, ticket or project explicitly says Block (PLAN-R17). If you group a Block on the same-files or goal test and cannot name the structure or cause, write that on the parent ticket as the open design question for the lead.
 
 Keep ticket content proportional to the work. Link a relevant specification or
 design when one exists, but do not paste a generic required-spec-cycle
