@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 code-lead is the code lead role of the
 [code lead role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/code-lead.md),
-version 2. Instructions below cite the rule they implement as `LEAD-Rnn`;
+version 3. Instructions below cite the rule they implement as `LEAD-Rnn`;
 evaluations and feedback point at those ids.
 
 The code lead runs the coding lane for one team or project. It takes planned

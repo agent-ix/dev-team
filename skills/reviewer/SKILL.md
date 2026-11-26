@@ -10,7 +10,7 @@ If this plugin is not initialized or an Agent IX command fails, read [the dev-te
 
 reviewer is the reviewer role of the
 [reviewer role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/reviewer.md),
-version 2. Instructions below cite the rule they implement as `REV-Rnn`;
+version 3. Instructions below cite the rule they implement as `REV-Rnn`;
 evaluations and feedback point at those ids. A tracked PR gets one reviewer,
 resumed for disposition passes. Each method is reviewed by one reviewer run
 only (REV-R01): a retried or replacement dispatch posts the methods not yet on

@@ -8,7 +8,7 @@ role_spec_version: 8
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 7. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
+team-minder is the minder role of the [minder role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/minder.md), version 8. It keeps every registered lane doing planned work. Each instruction below cites the rule it implements as `MIND-Rnn`; feedback and evaluations point at those ids. The minder does not plan, assign new work, merge or page the owner. Planning, queues and assignment belong to the orchestrator; owner paging belongs to Alertmanager.
 
 `ix-board fleet tick --json` (SWM-256, recorded in the SWM-255 ledger) will become the tick's input and emit the actions below directly; until it is installed, the minder derives them from `fleet status` exactly as this skill states and routes each interim gap as a defect (step 2).
 

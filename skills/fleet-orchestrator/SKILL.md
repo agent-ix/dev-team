@@ -8,7 +8,7 @@ role_spec_version: 7
 
 If this plugin is not initialized or an Agent IX command fails, read [the dev-team setup guide](https://github.com/agent-ix/dev-team/blob/main/setup.md) for its prerequisites and local diagnosis.
 
-fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 6. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
+fleet-orchestrator is the orchestrator role of the [orchestrator role spec](https://github.com/agent-ix/dev-team/blob/main/spec/roles/orchestrator.md), version 7. It owns the fleet plan: which ready tickets go to which lane, in what order, and how many lanes each host runs. Each instruction below cites the rule it implements as `ORCH-Rnn`, or the spec section it comes from; evaluations and feedback point at those ids. The orchestrator does not code, review, merge or plan projects, and it does not own build slots, which belong to the build scheduler (Ownership table). The [minder](../team-minder/SKILL.md) runs `fleet tick` and sends the orchestrator its actions.
 
 Builds run through the PATH `cargo` shim or
 `locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
