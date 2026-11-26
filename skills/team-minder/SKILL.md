@@ -119,6 +119,12 @@ Every escalation carries its condition key and the `fleet status` evidence: row 
 
 ## Communication
 
+When a lane reports waiting for build admission, use the shared
+`locked-build` queue state as the source of that wait. If a scheduled check
+must be launched, use the PATH `cargo` shim or
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
+do not launch a competing Cargo command through a lane wrapper.
+
 - Send only the tick's actions: pushes, re-sent orders, dialog answers, defect routes, dead-lane and empty-list routes, lead-wait and PR-tripwire routes (MIND-R22, MIND-R23), and ladder rungs (MIND-R09). Never send a relay message to a `BLOCKED` lane (MIND-R19). No status polls, acks or "all healthy" messages.
 - An unwanted message (a status poll, an FYI outside the minder's scope): reply once with `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /team-minder).` and do not act on it.
 - A `status-request` addressed to this lane is answered per [references/status-request.md](references/status-request.md).

@@ -17,6 +17,15 @@ The shared package is `dev-tools/tools/locked-build`. Operator planning
 annotations such as ix-relay `ServerCapacity.max_agents` are not measured build
 slots and cannot substitute for the configured/verified capacity source.
 
+Memory admission SHALL account for the configured `memory_cap_bytes` of each
+active lease against the host's `memory_budget_bytes`. Each lease receives a
+cap from the host default, optionally overridden by its priority class. When
+the host runs Linux, the child process group SHALL run under `systemd-run` with
+`MemoryMax` set to that cap and `MemorySwapMax=0`; exceeding the cap is reported
+as a terminal lease outcome. When the host runs macOS, the scheduler SHALL
+enforce the cap with its RSS watchdog. Admission SHALL NOT use a raw
+`MemAvailable` floor.
+
 ## Behavior
 
 A request has a stable ID, scoped ticket/owner, host, requested resource units,
@@ -51,7 +60,7 @@ Cancellation follows the same cleanup. Heartbeat loss marks a lease suspect;
 recovery verifies process identity/exit before reclaiming it. PID reuse cannot
 prove exit or ownership. Restart recovers persisted queued/running requests.
 
-The wrapper returns the child's exit status exactly once, including exit 75;
+The command entry point returns the child's exit status exactly once, including exit 75;
 it does not retry a child because its exit resembles lock contention. A signaled
 child produces non-success with its signal/termination reason. Acquisition
 contention and a running child's outcome are separate events.
@@ -68,6 +77,7 @@ contention and a running child's outcome are separate events.
 | FR-005-AC-6 | Logic is Rust in a shared tool with a thin Make invocation; consumers migrate from project wrappers rather than copying shell/Python arbitration into Rust repositories. | Inspection |
 | FR-005-AC-7 | A child returning 75 is invoked once and its status is propagated; a signaled child returns non-success. Neither outcome re-enters acquisition contention or silently reruns the build. | Test |
 | FR-005-AC-8 | On a host with total capacity two units, a queued two-unit request reaches the reservation threshold while one-unit jobs keep arriving. The request is reservation-eligible even with fewer than two free units; no newer job consumes subsequently released units, and the reserved request starts after both units are free. | Test |
+| FR-005-AC-9 | Admission charges each active lease's configured memory cap against the configured memory budget; a request is not admitted when that budget would be exceeded, regardless of `MemAvailable`. Linux children run with `MemoryMax` equal to their cap and `MemorySwapMax=0`; exceeding the cap yields a terminal outcome. On macOS, the RSS watchdog enforces the cap. | Test |
 
 ## Dependencies
 

@@ -74,6 +74,11 @@ outcomes go in the comment itself. See
 
 ## 0. Resolve the ticket (stop if none is found)
 
+Run Cargo checks through the PATH `cargo` shim or
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`.
+Use the class selected for the review work by the current host policy; do not
+use project or per-ticket shell wrappers to admit checks.
+
 ```bash
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 TITLE=$(gh pr view --json title -q .title 2>/dev/null || true)
