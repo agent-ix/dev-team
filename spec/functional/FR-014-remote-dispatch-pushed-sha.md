@@ -14,7 +14,7 @@ relationships:
 
 ## Description
 
-`run --host <name> --repo <repo> --sha <sha> --prio <class> -- <cargo args>` SHALL build the pushed commit on the named host under that host's scheduler, profile and target pool, and return the [FR-013](FR-013-structured-job-output.md) summary. This is the first routing step. Choosing a host automatically is a later flag and is not specified here.
+`run --host <name> --repo <repo> --sha <sha> --class <class> -- <cargo args>` SHALL build the pushed commit on the named host under that host's scheduler, profile and repository/toolchain target-pool mode ([FR-012](FR-012-target-dir-pool.md)), and return the [FR-013](FR-013-structured-job-output.md) summary. This is the first routing step. Choosing a host automatically is a later flag and is not specified here.
 
 ## Behavior
 
@@ -30,12 +30,12 @@ The remote runs the job under its own queue with the same lane, ticket and prior
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-014-AC-1 | Against a fixture remote reached through a local transport command, the pushed sha is built in a pool slot of a configured mirror and the summary names host, sha and slot; the caller's working tree is not read. | Test |
+| FR-014-AC-1 | Against a fixture remote reached through a local transport command, the pushed sha is built in a repository/toolchain pool slot of a configured mirror and the summary names host, sha and slot; the caller's working tree is not read. | Test |
 | FR-014-AC-2 | An unpushed sha is refused before any remote execution, naming sha and remote; the tool performs no push. A repo with no configured mirror is refused naming the repo. | Test |
 | FR-014-AC-3 | Severing the transport after submission leaves the job running; `result --host` later returns its summary and the build ran exactly once. | Test |
 | FR-014-AC-4 | Severing the transport after the remote enqueued but before the job id reaches the caller, then retrying `run` with the same job key, yields one remote request and one build; the retry returns that job's id or summary. | Test |
 | FR-014-AC-5 | An unreachable host and an unknown host return distinct nonzero exit codes with the host named; no local run occurs; with `--fallback local` the run occurs locally and the summary flags it. | Test |
-| FR-014-AC-6 | Two remote requests of classes `gate` and `check` on a one-slot host are admitted in FR-011 order on the remote queue. | Test |
+| FR-014-AC-6 | Two remote requests of classes `must-fix` and `periodic` on a one-slot host are admitted in configured FR-011 order on the remote queue; the request event and summary retain the named class for each. | Test |
 | FR-014-AC-7 | `--host auto` is refused with a not-available message and creates no request. | Test |
 | FR-014-AC-8 | Two concurrent submissions for one repo fetch into the mirror one after the other under the lock, and both slots check out their commits without corrupting the mirror. | Test |
 | FR-014-AC-9 | A transport defined as `wsl.exe --` and one defined as `ssh <alias>` dispatch through one code path with no host-specific branch outside configuration. | Inspection |
@@ -43,5 +43,5 @@ The remote runs the job under its own queue with the same lane, ticket and prior
 ## Dependencies
 
 - [FR-011](FR-011-priority-classes-lane-fair-share.md), priority and fair share on the remote queue.
-- [FR-012](FR-012-target-dir-pool.md), slot checkout of the commit and disk budget.
+- [FR-012](FR-012-target-dir-pool.md), repository/toolchain pool slot checkout of the commit and disk budget.
 - [FR-013](FR-013-structured-job-output.md), returned summary.

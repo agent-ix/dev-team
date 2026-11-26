@@ -67,6 +67,12 @@ Until their producers ship, the minder runs with five gaps against the role spec
 
 Execute the action for every row before the next tick, even if your own reading suggests the lane is working (MIND-R09).
 
+When a lane reports waiting for build admission, use the shared `locked-build`
+queue state as the source of that wait. If a scheduled check must be launched,
+use the PATH `cargo` shim or
+`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
+do not launch a competing Cargo command through a lane wrapper.
+
 | Class | Action |
 |---|---|
 | `WORKING` | None. |
@@ -118,12 +124,6 @@ Send each rung in its tick (MIND-R04). Send it even when the same recipient alre
 Every escalation carries its condition key and the `fleet status` evidence: row `class`, `reason`, `state_age_secs`, `evidence`, `focus` and `run_ms`, or the defect row (MIND-R16).
 
 ## Communication
-
-When a lane reports waiting for build admission, use the shared
-`locked-build` queue state as the source of that wait. If a scheduled check
-must be launched, use the PATH `cargo` shim or
-`locked-build run --owner <lane> --ticket <ticket> --class <must-fix|point|block|periodic> -- cargo ...`;
-do not launch a competing Cargo command through a lane wrapper.
 
 - Send only the tick's actions: pushes, re-sent orders, dialog answers, defect routes, dead-lane and empty-list routes, lead-wait and PR-tripwire routes (MIND-R22, MIND-R23), and ladder rungs (MIND-R09). Never send a relay message to a `BLOCKED` lane (MIND-R19). No status polls, acks or "all healthy" messages.
 - An unwanted message (a status poll, an FYI outside the minder's scope): reply once with `Comms etiquette: send only done / blocked / decision / handoff (see Communication in /team-minder).` and do not act on it.
