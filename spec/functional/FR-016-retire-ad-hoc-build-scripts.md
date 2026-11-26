@@ -12,7 +12,7 @@ relationships:
 
 ## Description
 
-The shared Rust tool SHALL provide the build admission and execution functions
+The shared Rust tool SHALL implement the build admission and execution functions
 of the host and per-lane shell wrappers so those wrappers can be retired. Cargo
 commands SHALL enter through the PATH `cargo` shim or an explicit
 `locked-build run --class <must-fix|point|block|periodic> -- cargo ...`
