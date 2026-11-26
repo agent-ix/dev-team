@@ -1,7 +1,7 @@
 ---
 id: PLAN
 role: planner
-version: 2
+version: 3
 type: RoleSpec
 relationships:
   - target: ix://agent-ix/dev-team/FR-006
@@ -120,35 +120,37 @@ query, or the stored rows or series it reads, and no code returns the query;
 | PLAN-R15 | The planner SHALL NOT change code, start a coder subagent or merge a pull request. | PLAN-O01 | role-boundary | Rubric note Role boundaries: planner plans and routes, code lead dispatches and merges |
 | PLAN-R16 | The planner SHALL NOT send a message other than done, blocked, decision, handoff or the one-line etiquette reply. | PLAN-O03 | comms-noise | Status polls and progress messages between lanes, team-planner skill Communication |
 | PLAN-R17 | The planner SHALL name the work class (Point, Batch, Block or Sweep) of each ticket group in its handoff to a code lead, and group the tickets of one Block under one design owner. | PLAN-O01 | class-unnamed | Five consolidation leads split one redesign into one pull request per ticket step, 2026-11-26 |
+| PLAN-R18 | When the planner groups tickets as a Block, it SHALL name the suspected shared structure or common cause in the parent ticket; when it can name neither, it SHALL plan the tickets as Points unless the owner, ticket or project explicitly says Block (PLAN-R17). A planner that groups a Block on the same-files or goal test but cannot name the structure or cause SHALL write that on the parent ticket as the open design question for the lead. | PLAN-O01 | block-without-basis | Five consolidation leads fixed a Block's tickets one after another inside one pull request, 2026-11-26 |
 
 ## Evaluations
 
 | ID | Rule | Evidence source | Trigger | Method | Query or rubric | Evaluator | Comparator | Value | Unit | Cadence |
 |---|---|---|---|---|---|---|---|---|---|---|
-| PLAN-R01-E1 | PLAN-R01 | linear | linear.plan_items | judgement | rubric-planner@2#explicit-plan | team-retro | >= | 2 | score | daily |
-| PLAN-R02-E1 | PLAN-R02 | transcript | transcript.outbound_messages | judgement | rubric-planner@2#order-checks | team-retro | >= | 2 | score | daily |
+| PLAN-R01-E1 | PLAN-R01 | linear | linear.plan_items | judgement | rubric-planner@3#explicit-plan | team-retro | >= | 2 | score | daily |
+| PLAN-R02-E1 | PLAN-R02 | transcript | transcript.outbound_messages | judgement | rubric-planner@3#order-checks | team-retro | >= | 2 | score | daily |
 | PLAN-R03-E1 | PLAN-R03 | ix-board-metric | transcript.outbound_messages | deterministic | retro.planner_ad_hoc_assignments | evaluator | = | 0 | assignments | 3h |
-| PLAN-R03-E2 | PLAN-R03 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@2#ad-hoc-work | team-retro | >= | 2 | score | daily |
+| PLAN-R03-E2 | PLAN-R03 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@3#ad-hoc-work | team-retro | >= | 2 | score | daily |
 | PLAN-R04-E1 | PLAN-R04 | ix-board-metric | transcript.outbound_messages | deterministic | retro.planner_scope_violations | evaluator | = | 0 | assignments | 3h |
-| PLAN-R04-E2 | PLAN-R04 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@2#scope-discipline | team-retro | >= | 2 | score | daily |
+| PLAN-R04-E2 | PLAN-R04 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@3#scope-discipline | team-retro | >= | 2 | score | daily |
 | PLAN-R05-E1 | PLAN-R05 | ix-board-metric | transcript.outbound_messages | deterministic | retro.planner_unbatched_sends | evaluator | = | 0 | messages | 3h |
-| PLAN-R05-E2 | PLAN-R05 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@2#batching | team-retro | >= | 2 | score | daily |
+| PLAN-R05-E2 | PLAN-R05 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@3#batching | team-retro | >= | 2 | score | daily |
 | PLAN-R06-E1 | PLAN-R06 | ix-board-metric | transcript.outbound_messages | deterministic | retro.order_flip_loop | evaluator | = | 0 | loops | 3h |
-| PLAN-R06-E2 | PLAN-R06 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@2#stable-orders | team-retro | >= | 2 | score | daily |
+| PLAN-R06-E2 | PLAN-R06 | ix-board-metric | transcript.outbound_messages | judgement | rubric-planner@3#stable-orders | team-retro | >= | 2 | score | daily |
 | PLAN-R07-E1 | PLAN-R07 | ix-board-metric | retro.wip_active | deterministic | retro.in_progress_stale | evaluator | = | 0 | issues | daily |
-| PLAN-R07-E2 | PLAN-R07 | linear | retro.wip_active | judgement | rubric-planner@2#honest-flow | team-retro | >= | 2 | score | daily |
+| PLAN-R07-E2 | PLAN-R07 | linear | retro.wip_active | judgement | rubric-planner@3#honest-flow | team-retro | >= | 2 | score | daily |
 | PLAN-R08-E1 | PLAN-R08 | ix-board-metric | retro.wip_active | deterministic | retro.wip_capacity_ratio_max | evaluator | <= | 1 | ratio | 3h |
-| PLAN-R08-E2 | PLAN-R08 | ix-board-metric | retro.wip_active | judgement | rubric-planner@2#capacity | team-retro | >= | 2 | score | daily |
-| PLAN-R09-E1 | PLAN-R09 | transcript | hooks.role_turns | judgement | rubric-planner@2#end-tick-audit | team-retro | >= | 2 | score | daily |
+| PLAN-R08-E2 | PLAN-R08 | ix-board-metric | retro.wip_active | judgement | rubric-planner@3#capacity | team-retro | >= | 2 | score | daily |
+| PLAN-R09-E1 | PLAN-R09 | transcript | hooks.role_turns | judgement | rubric-planner@3#end-tick-audit | team-retro | >= | 2 | score | daily |
 | PLAN-R10-E1 | PLAN-R10 | linear | retro.decisions_open | deterministic | linear.open_decisions_without_owner | evaluator | = | 0 | issues | daily |
-| PLAN-R10-E2 | PLAN-R10 | linear | retro.decisions_open | judgement | rubric-planner@2#decision-owner | team-retro | >= | 2 | score | daily |
-| PLAN-R11-E1 | PLAN-R11 | linear | retro.decisions_open | judgement | rubric-planner@2#decision-recommendation | team-retro | >= | 2 | score | daily |
+| PLAN-R10-E2 | PLAN-R10 | linear | retro.decisions_open | judgement | rubric-planner@3#decision-owner | team-retro | >= | 2 | score | daily |
+| PLAN-R11-E1 | PLAN-R11 | linear | retro.decisions_open | judgement | rubric-planner@3#decision-recommendation | team-retro | >= | 2 | score | daily |
 | PLAN-R12-E1 | PLAN-R12 | ix-board-metric | hooks.role_turns | deterministic | retro.issues_without_project | evaluator | = | 0 | issues | daily |
 | PLAN-R13-E1 | PLAN-R13 | ix-board-metric | hooks.role_turns | deterministic | retro.issues_without_milestone | evaluator | = | 0 | issues | daily |
 | PLAN-R14-E1 | PLAN-R14 | ledger | ledger.need_ready_tickets_due | deterministic | ledger.need_ready_tickets_unanswered | evaluator | = | 0 | actions | daily |
 | PLAN-R15-E1 | PLAN-R15 | transcript | hooks.role_turns | deterministic | transcript.planner_code_or_merge_actions | evaluator | = | 0 | actions | session-end |
-| PLAN-R16-E1 | PLAN-R16 | transcript | transcript.outbound_messages | judgement | rubric-planner@2#comms | team-retro | >= | 2 | score | daily |
-| PLAN-R17-E1 | PLAN-R17 | linear | linear.plan_items | judgement | rubric-planner@2#work-class | team-retro | >= | 2 | score | daily |
+| PLAN-R16-E1 | PLAN-R16 | transcript | transcript.outbound_messages | judgement | rubric-planner@3#comms | team-retro | >= | 2 | score | daily |
+| PLAN-R17-E1 | PLAN-R17 | linear | linear.plan_items | judgement | rubric-planner@3#work-class | team-retro | >= | 2 | score | daily |
+| PLAN-R18-E1 | PLAN-R18 | linear | linear.plan_items | judgement | rubric-planner@3#block-basis | team-retro | >= | 2 | score | daily |
 
 ## Rubric mapping
 
@@ -168,7 +170,7 @@ the team-planner skill's Communication section, which had no row.
 | Capacity | PLAN-R08 | capacity |
 | End-tick audit | PLAN-R09 | end-tick-audit |
 | Decisions | PLAN-R10, PLAN-R11 | decision-owner, decision-recommendation |
-| Work class | PLAN-R17 | work-class |
+| Work class | PLAN-R17, PLAN-R18 | work-class, block-basis |
 
 ## Evaluation notes
 

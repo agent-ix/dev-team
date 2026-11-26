@@ -147,6 +147,18 @@ State the chosen methods and why in the review comment so the lead can see the
 choice. Ask the user or dispatcher only if the review would otherwise be
 impossible (the diff or ticket cannot be read), never for method choice.
 
+**Block.** For a Block, review the design note on the parent ticket first
+(REV-R16), then the diff. Post the findings on the ticket. Questions for a
+feature Block: does the structure fit all tickets, does it duplicate an
+existing one, would a sibling ticket in the area fit without redesign. For a
+bug Block: is the cause class right, are other sites missed, would the class
+tests fail on an unfixed site. For a mixed Block ask both sets. The design
+review is of the note on the parent ticket, before any PR exists. It is not a PR
+review and does not count toward REV-R01 or the LEAD-R24 round tripwire.
+Resume the same reviewer for the diff review when possible. FR-017 has no
+pr-less `reviewer` marker; post the design review as a `reviewer` marker with
+`method=design-note`, `pr=none`, `head=none` (open question).
+
 Scope the diff to what the PR actually changed. A finding on a file outside the
 PR's file list, such as the same bug elsewhere or a stale reference the change
 leaves behind, needs a failing result observed at that path, recorded in the
