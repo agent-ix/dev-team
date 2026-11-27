@@ -61,6 +61,13 @@
       ]
     },
     {
+      "name": "program-manager",
+      "version": "0.1.0",
+      "files": [
+        "SKILL.md"
+      ]
+    },
+    {
       "name": "program-reviewer",
       "version": "0.1.1",
       "files": [
