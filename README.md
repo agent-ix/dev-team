@@ -35,6 +35,7 @@ If the setup checks leave a reproducible Agent IX dev-team bug that blocks progr
 | `feature-check` | Check delivered behavior against each ticket acceptance criterion. |
 | `status-report` | Report program progress, blockers, and next actions from Linear evidence. |
 | `program-reviewer` | Run a seven-step program review and publish an evidence-backed HTML report. |
+| `program-manager` | Start or attach a program team and handle due work through ix-board cadence. |
 
 `team-planner` and `status-report` use Linear and ix-board for structured project status and blockers. `reviewer` can invoke review methods from `dev-tools` and specification methods from Quoin when installed. `coder` can use `dev-tools:rust-style` for Rust work. Get companion plugins from the [Agent IX marketplace](https://github.com/agent-ix/agent-plugins) and install them as `ix-board@agent-ix`, `dev-tools@agent-ix`, or `quoin@agent-ix` when the corresponding methods are needed. The role skills report unavailable methods rather than inventing results.
 
