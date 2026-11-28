@@ -13,7 +13,7 @@ relationships:
 The shared Rust build scheduler SHALL grant build leases from configured or
 verified live host capacity using stable FIFO order within a lane and bounded priority aging.
 
-The shared package is `dev-tools/tools/locked-build`. Operator planning
+The shared package is `dev-tools/tools/ix-build`. Operator planning
 annotations such as ix-relay `ServerCapacity.max_agents` are not measured build
 slots and cannot substitute for the configured/verified capacity source.
 

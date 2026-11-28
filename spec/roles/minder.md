@@ -40,7 +40,7 @@ Planning, queues and assignment belong to the
 [orchestrator](orchestrator.md).
 
 When a scheduled Cargo check must be launched, use the PATH `cargo` shim or
-`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+`ix-build run --class <must-fix|point|block|periodic> -- cargo ...`.
 In `lease_accounted` mode, admission sums active lease caps with the requested
 cap against the configured memory budget.
 

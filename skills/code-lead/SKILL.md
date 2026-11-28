@@ -278,7 +278,7 @@ for example peak memory.
 On shared hosts run test binaries with `--test-threads=4` and cargo `-j 4`;
 heavy gates follow the host policy in the owner's instructions.
 
-Builds use the PATH `cargo` shim or `locked-build run --class
+Builds use the PATH `cargo` shim or `ix-build run --class
 <must-fix|point|block|periodic> -- cargo ...`. Choose the class from the work
 being admitted and the host policy. Memory admission charges each lease's cap
 against the sum of active lease caps and the configured memory budget.

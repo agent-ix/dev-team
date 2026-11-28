@@ -41,7 +41,7 @@ The dispatching brief is authoritative for ticket, scope, worktree, branch and b
 ## 2. Build
 
 Run Cargo through the PATH `cargo` shim. For an explicit class, invoke
-`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+`ix-build run --class <must-fix|point|block|periodic> -- cargo ...`.
 Use the class selected for the work by the current host policy. In
 `lease_accounted` mode, admission charges the requested lease cap against the
 sum of active lease caps and the configured memory budget; do not use a

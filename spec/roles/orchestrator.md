@@ -116,8 +116,8 @@ planner and host.
 | Lane queues and queue depth | orchestrator |
 | Work selection from the ready queue | orchestrator |
 | Lanes per host, and lane capacity discovery | orchestrator |
-| Build slots per host | build scheduler (locked-build, dev-team FR-009, FR-010) |
-| Build admission | PATH `cargo` shim or `locked-build run --class <must-fix|point|block|periodic> -- cargo ...`; default `lease_accounted` admission sums per-lease caps against the configured memory budget ([FR-005](../functional/FR-005-fair-build-scheduler.md)) |
+| Build slots per host | build scheduler (ix-build, dev-team FR-009, FR-010) |
+| Build admission | PATH `cargo` shim or `ix-build run --class <must-fix|point|block|periodic> -- cargo ...`; default `lease_accounted` admission sums per-lease caps against the configured memory budget ([FR-005](../functional/FR-005-fair-build-scheduler.md)) |
 | Fleet probes and source defects (`fix_source`) | orchestrator, until routed by ticket to the owning repository |
 | Executing tick actions, dialog answers, in-fleet ladder sends | minder |
 | Paging the owner | Alertmanager (plan W3) |

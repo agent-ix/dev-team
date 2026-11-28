@@ -27,7 +27,7 @@ orchestrates and does not author code, specs or reviews. Planning and order
 belong to the [planner](planner.md).
 
 Builds use the PATH `cargo` shim or
-`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+`ix-build run --class <must-fix|point|block|periodic> -- cargo ...`.
 In `lease_accounted` mode, each lease is charged against the memory budget
 alongside active lease caps and enforced at its own cap.
 

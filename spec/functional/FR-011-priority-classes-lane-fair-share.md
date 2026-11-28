@@ -15,16 +15,16 @@ relationships:
 A request MAY carry one of the configured named priority classes
 `must-fix`, `point`, `block` or `periodic`, mapped to the FR-005 base priority
 range by host policy. The example policy maps them to 3, 2, 1 and 0,
-respectively. A caller may select the class with `locked-build run --class` or
-through the `LOCKED_BUILD_CLASS` cargo-shim setting; an unknown or unmapped
+respectively. A caller may select the class with `ix-build run --class` or
+through the `IX_BUILD_CLASS` cargo-shim setting; an unknown or unmapped
 class is refused. If direct `run` omits both `--class` and `--priority`, it
 uses base priority 0 and the effective class `periodic`; the cargo shim defaults
 to class `point`. Direct runs derive the owner from user, host and worktree
 directory, and the ticket from the branch; `--owner`, `--ticket`,
-`LOCKED_BUILD_OWNER` and `LOCKED_BUILD_TICKET` override those defaults. The
+`IX_BUILD_OWNER` and `IX_BUILD_TICKET` override those defaults. The
 cargo shim uses the same owner derivation, defaults its ticket to `MANUAL`, and
-accepts `LOCKED_BUILD_OWNER`, `LOCKED_BUILD_TICKET` and
-`LOCKED_BUILD_CLASS` overrides. An owner is a bounded label; the shipped tool
+accepts `IX_BUILD_OWNER`, `IX_BUILD_TICKET` and
+`IX_BUILD_CLASS` overrides. An owner is a bounded label; the shipped tool
 does not validate it as a relay lane address or enforce cross-lane fair share.
 Lane address attribution and fair-share behavior below remain requirements for
 the implementation that provides those features.
@@ -59,7 +59,7 @@ A request that omits a lane or ticket, or whose lane is not a lane address, is r
 | FR-011-AC-4 | A request at its reservation threshold is admitted ahead of an under-share lane's equal-priority request, and the fair-share rule never signals a running lease. | Test |
 | FR-011-AC-5 | Replaying a request waiting behind continuously arriving higher-priority peers on a deterministic clock gives that request a lease within the reservation bound. | Test |
 | FR-011-AC-6 | With three sustainable units, lane A holding one two-unit lease, lane B holding none, one unit free, and A's one-unit request enqueued before B's, B's request is admitted first because A holds 2 of a share of 2 units (counted in units, not leases). A lane given as a session id is refused. | Test |
-| FR-011-AC-7 | Direct `run` without `--class` or `--priority` is recorded at base priority 0 as class `periodic`; the cargo shim without `LOCKED_BUILD_CLASS` submits class `point`. | Test |
+| FR-011-AC-7 | Direct `run` without `--class` or `--priority` is recorded at base priority 0 as class `periodic`; the cargo shim without `IX_BUILD_CLASS` submits class `point`. | Test |
 
 ## Dependencies
 
