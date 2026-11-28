@@ -9,7 +9,7 @@ review_set: subset
 
 ## Summary
 
-Ticket: SWM-242. Reviewed the FR-015 diff for consistency with the retained FR-015 text and with ix-build on dev-tools origin/main; one inconsistency remains in the current-build producer lists.
+Ticket: SWM-242. Reviewed the FR-015 diff for consistency with the retained FR-015 text and with locked-build on dev-tools origin/main; one inconsistency remains in the current-build producer lists.
 
 ## Verdict
 

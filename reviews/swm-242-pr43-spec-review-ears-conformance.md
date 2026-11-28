@@ -3,7 +3,7 @@ id: SR-065
 title: "EARS conformance analysis of the SWM-242 observe contract wording"
 type: SpecReview
 analysis: ears-conformance
-scope: "agent-ix/dev-team; spec/functional/FR-015-build-metrics-export.md (PR #43 diff, head 890d7a78a4a68ac64fc5e89a8bd257f4112e7b67), checked against agent-ix/dev-tools ix-build at bce5f4a7a20000a56275e3bc49b290fc1053732d"
+scope: "agent-ix/dev-team; spec/functional/FR-015-build-metrics-export.md (PR #43 diff, head 890d7a78a4a68ac64fc5e89a8bd257f4112e7b67), checked against agent-ix/dev-tools locked-build at bce5f4a7a20000a56275e3bc49b290fc1053732d"
 review_set: subset
 ---
 

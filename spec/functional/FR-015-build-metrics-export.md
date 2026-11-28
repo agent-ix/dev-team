@@ -20,6 +20,12 @@ relationships:
 
 The scheduler SHALL export per-host metrics in Prometheus text format and as the versioned JSON snapshot ix-board reads, so that queue wait, configured and sustainable slot capacity, pause time, admission blocking, and disk use can be seen for every host, including source-based samples of build activity without changing external wrappers.
 
+## Shipped CLI
+
+Dev-tools #55 exports metrics with `ix-build metrics [--output PATH]` and
+installs the textfile producer with `ix-build install-tools --owner OWNER`.
+The `serve --listen` governor interface required below is not shipped.
+
 ## Behavior
 
 The supervised governor (`ix-build serve`, [FR-010](FR-010-scheduler-owned-throttling.md)) serves the Prometheus text over HTTP at `--listen ADDR`, bound to loopback unless told otherwise; it is the same process that samples and throttles. `metrics` writes the same text to standard output or atomically to a file for a textfile collector when the governor is down. The JSON status snapshot of FR-005 carries the same values. Series, labelled by `host` unless noted:

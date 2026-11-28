@@ -14,6 +14,15 @@ relationships:
 
 A supervised governor process, `ix-build serve`, SHALL own host sampling, throttling (pause, resume, abort), operator hold and the Prometheus endpoint ([FR-015](FR-015-build-metrics-export.md)) for one host. The per-request watchdogs SHALL act as the fallback that resumes any paused group whose governor is gone, so that no process death leaves a build stopped indefinitely.
 
+## Shipped CLI and required governor
+
+The CLI in dev-tools #55 ships `ix-build queue pause`, `ix-build queue resume`,
+`ix-build metrics` and `ix-build install-tools`. Queue pause holds new admissions
+while running leases finish; it does not pause running processes.
+The `hold --reason TEXT [--pause]`, top-level `resume`, `serve`, and
+`service install/status` names below specify the required governor interface;
+they are not shipped commands and must not be used as operator instructions.
+
 ## Behavior
 
 **Governor and supervision.** `ix-build service install` writes and enables a launchd agent on macOS or a systemd user unit on Linux and WSL, both restarting the governor on failure; `service status` reports the unit and the governor heartbeat. The governor takes one sample set per `sample_interval` and writes a heartbeat with each sample. It is the only sampler; watchdogs read the last sample.

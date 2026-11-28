@@ -18,7 +18,7 @@ Ticket: SWM-237. PR: dev-team#31 at 071569c. Lead decisions on the author's open
 
 ## Verdict
 
-**FAIL**. Two high findings must be fixed before merge: the US-002/FR-006/FR-007/FR-008 ID collision with dev-team#30, and FR-007's watchdog-only throttling model that contradicts the required supervised `serve` governor. Consistent with the lead decisions: spec lives in dev-team (1); no rename, the new FRs keep FR-005's `ix-build` package (2); abort order lowest class, newest first, one per interval with thresholds held in the profile (4); fair share ceil(slots/active lanes) with reservation exempt (5); `--fallback local` explicit opt-in (6); one agent-day retirement gate (7, but see FND-005). Requirement statements are atomic, use SHALL, and every AC names a verification method.
+**FAIL**. Two high findings must be fixed before merge: the US-002/FR-006/FR-007/FR-008 ID collision with dev-team#30, and FR-007's watchdog-only throttling model that contradicts the required supervised `serve` governor. Consistent with the lead decisions: spec lives in dev-team (1); no rename, the new FRs keep FR-005's `locked-build` package (2); abort order lowest class, newest first, one per interval with thresholds held in the profile (4); fair share ceil(slots/active lanes) with reservation exempt (5); `--fallback local` explicit opt-in (6); one agent-day retirement gate (7, but see FND-005). Requirement statements are atomic, use SHALL, and every AC names a verification method.
 
 ## Findings
 

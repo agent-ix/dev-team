@@ -29,13 +29,13 @@ Ticket: SWM-242. Traced observed commands through FR-005, FR-010 and FR-011; the
 spec/functional/FR-015-build-metrics-export.md:47, insert after the sentence ending "or terminates the observed command.":
 
 ```text
-An observed command is not an FR-005 request or lease: FR-005, FR-010 and FR-011 admission, ordering, hold, throttling, recovery signalling and termination do not apply to it. No ix-build process or command (`observe`, `serve`, a watchdog, `hold`, `resume`, `cancel`, `recover` or `prune`) originates a signal to the observed command or its process group.
+An observed command is not an FR-005 request or lease: FR-005, FR-010 and FR-011 admission, ordering, hold, throttling, recovery signalling and termination do not apply to it. No locked-build process or command (`observe`, `serve`, a watchdog, `hold`, `resume`, `cancel`, `recover` or `prune`) originates a signal to the observed command or its process group.
 ```
 
 spec/functional/FR-015-build-metrics-export.md:87, replace the FR-015-AC-13 row with:
 
 ```text
-| FR-015-AC-13 | `observe` starts a wrapper-admitted command even when busy slots equal or exceed configured slots, and `ix_build_slots_busy` reports the actual count. With a governor serving the observed store while a thermal or memory limit is breached, after `hold_ms` has elapsed, and across `hold --pause`, `cancel`, `recover` and `prune`, no process in the command's group is signalled, paused or terminated by ix-build. | Test |
+| FR-015-AC-13 | `observe` starts a wrapper-admitted command even when busy slots equal or exceed configured slots, and `ix_build_slots_busy` reports the actual count. With a governor serving the observed store while a thermal or memory limit is breached, after `hold_ms` has elapsed, and across `hold --pause`, `cancel`, `recover` and `prune`, no process in the command's group is signalled, paused or terminated by locked-build. | Test |
 ```
 
 ### FND-002
