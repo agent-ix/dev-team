@@ -25,7 +25,7 @@ and never changes the branch. It does not fix findings or merge: the
 [coder](coder.md) fixes and the [code lead](code-lead.md) dispatches and merges.
 
 Review checks use the PATH `cargo` shim or
-`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+`ix-build run --class <must-fix|point|block|periodic> -- cargo ...`.
 In `lease_accounted` mode, admission sums active lease caps with the requested
 cap against the configured memory budget, and enforces each running lease at
 its cap.

@@ -128,7 +128,7 @@ check. See [step 7](#7-github-gets-the-ticket-id-never-the-findings).
 ## 2. Select the methods from the diff
 
 Run Cargo checks through the PATH `cargo` shim or
-`locked-build run --class <must-fix|point|block|periodic> -- cargo ...`.
+`ix-build run --class <must-fix|point|block|periodic> -- cargo ...`.
 Use the class selected for the review work by the current host policy. In
 `lease_accounted` mode, admission charges each lease cap against the sum of
 active lease caps and the configured memory budget; do not use project or

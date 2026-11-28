@@ -8,7 +8,7 @@ This table is the orchestrator's answer to the owner's "who owns X" questions (O
 | Lane queues and queue depth | orchestrator |
 | Work selection from the ready queue | orchestrator |
 | Lanes per host, and lane capacity discovery | orchestrator |
-| Build slots per host | build scheduler (locked-build, dev-team FR-009, FR-010) |
+| Build slots per host | build scheduler (ix-build, dev-team FR-009, FR-010) |
 | Fleet probes and source defects (`fix_source`) | orchestrator, until routed by ticket to the owning repository |
 | Executing tick actions, dialog answers, in-fleet ladder sends | minder |
 | Paging the owner | Alertmanager |

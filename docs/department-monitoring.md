@@ -11,7 +11,7 @@ planner incidents is the pilot; selectors and thresholds remain configurable.
 |---|---|---|
 | ix-board | Read-only source adapters, normalized events, deterministic metrics, snapshot/delta/baseline, report model | Extend existing retro FR-024..028; reuse lifecycle correction SWM-158 and attributed history SWM-132 |
 | dev-team | Planner/minder/retro/lead guidance, role rubric, department-health interpretation and owned actions | Preserve SWM-159 lifecycle consumer changes; no reimplementation of detector calculations in prose |
-| shared build tool, dev-tools lane | Rust scheduler at dev-tools/tools/locked-build, host capacity configuration, safe leases, fair queue and telemetry | Migrate project wrappers; do not duplicate per project; operator max_agents annotations are not measured build slots |
+| shared build tool, dev-tools lane | Rust scheduler at dev-tools/tools/ix-build, host capacity configuration, safe leases, fair queue and telemetry | Migrate project wrappers; do not duplicate per project; operator max_agents annotations are not measured build slots |
 | monitoring TUI | Focused status, health and retro renderers and navigation | Shared versioned model for later Claude plugin/desktop; do not add a parallel metric engine |
 | source owners | Tracker/VCS/panes/host/relay observations and repairs | Monitoring reports uncertainty; it does not invent or repair associations |
 
